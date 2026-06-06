@@ -1,0 +1,90 @@
+# Dependencies
+node_modules/
+packages/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+bld/
+bin/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+obj/
+[Bb]in/
+[Oo]bj/
+wwwroot/
+.vs/
+_ReSharper*/
+Content/
+Content/QuestionGroupTemp
+App_Data/
+.quasar/
+/src-cordova/platforms/
+/src-cordova/plugins/
+/src-cordova/www/
+
+# Logs
+*.log
+msbuild.log
+msbuild.err
+msbuild.wrn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+.thumbs.db
+
+# Visual Studio / MSBuild
+*.obj
+*.exe
+*.pdb
+*.user
+*.aps
+*.pch
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.ilk
+*.lib
+*.sbr
+*.userosscache
+*.sln.docstates
+*.ntvs*
+*.njsproj
+*.sln
+
+# NuGet
+packages/
+nupkg/
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.*~
+project.lock.json
+
+# Python
+*.pyc
+
+# Misc
+.git/
+.gi  t   # corrected to .git (original typo)
