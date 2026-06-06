@@ -70,6 +70,7 @@ Thumbs.db
 *.ntvs*
 *.njsproj
 *.sln
+*.jpeg
 
 # NuGet
 packages/
