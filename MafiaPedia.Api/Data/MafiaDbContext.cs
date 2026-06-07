@@ -32,6 +32,8 @@ public partial class MafiaDbContext : DbContext
 
     public virtual DbSet<Side> Sides { get; set; }
 
+    public virtual DbSet<Comment> Comments { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -248,6 +250,37 @@ public partial class MafiaDbContext : DbContext
                 .UseCollation("utf8mb3_general_ci");
 
             entity.Property(e => e.Name).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<Comment>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("comments");
+
+            entity.HasIndex(e => e.CreatedAt, "IX_Comments_CreatedAt");
+
+            entity.HasIndex(e => new { e.EntityType, e.EntityId }, "IX_Comments_Entity");
+
+            entity.HasIndex(e => e.ParentCommentId, "IX_Comments_Parent");
+
+            entity.HasIndex(e => e.UserId, "IX_Comments_User");
+
+            entity.Property(e => e.Content).HasColumnType("text");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime");
+            entity.Property(e => e.EntityType).HasMaxLength(50);
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Comments)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_Comments_User");
+
+            entity.HasOne(d => d.ParentComment).WithMany(p => p.InverseParentComment)
+                .HasForeignKey(d => d.ParentCommentId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Comments_Parent");
         });
 
         modelBuilder.Entity<User>(entity =>

@@ -1,0 +1,9 @@
+using MafiaPedia.Api.DTOs;
+
+namespace MafiaPedia.Api.Services;
+
+public interface IPlayerCommentService
+{
+    Task<IEnumerable<CommentDto>> GetCommentsAsync(int playerId);
+    Task<CommentDto> AddCommentAsync(int playerId, CreateCommentDto dto);
+}

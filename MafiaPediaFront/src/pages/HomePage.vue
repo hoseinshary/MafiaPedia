@@ -51,7 +51,25 @@
     </div>
 
     <div class="w-full md:w-3/4 mx-auto mt-8">
-      <h1 class="text-2xl md:text-3xl font-bold mb-6">Overall Ranking</h1>
+      <div class="flex gap-3 mb-6">
+          <h1 class="text-2xl md:text-3xl font-bold mb-6">آمار برترین بازیکنان</h1>
+        <button
+          class="px-5 py-2 rounded font-medium transition"
+          :class="selectedFilter === 0 ? 'bg-white text-gray-900 shadow' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'"
+          @click="fetchData()"
+        >کل</button>
+        <button
+          class="px-5 py-2 rounded font-medium transition"
+          :class="selectedFilter === 1 ? 'bg-red-500 text-white shadow' : 'bg-red-100 text-red-600 hover:bg-red-200'"
+          @click="fetchData(1)"
+        >دن کلاب</button>
+        <button
+          class="px-5 py-2 rounded font-medium transition"
+          :class="selectedFilter === 2 ? 'bg-green-500 text-white shadow' : 'bg-green-100 text-green-600 hover:bg-green-200'"
+          @click="fetchData(2)"
+        >لجندری</button>
+      </div>
+    
 
       <div v-if="loading" class="flex justify-center py-20">
         <div class="w-10 h-10 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
@@ -154,6 +172,7 @@ const columns: ColumnDef[] = [
 const currentSlide = ref(0)
 let slideTimer: ReturnType<typeof setInterval>
 
+const selectedFilter = ref(0)
 const data = ref<OverallRankingEntry[]>([])
 const loading = ref(true)
 const sortKey = ref<SortKey>('overallWinRate')
@@ -194,16 +213,23 @@ function formatPercent(value: number): string {
   return `${value.toFixed(2)}%`
 }
 
-onMounted(async () => {
-  slideTimer = setInterval(() => {
-    currentSlide.value = (currentSlide.value + 1) % 3
-  }, 4000)
+async function fetchData(clubId?: number) {
+  selectedFilter.value = clubId ?? 0
+  loading.value = true
   try {
-    const res = await RankingApi.getOverallRanking()
+    const res = await RankingApi.getOverallRanking(clubId)
     data.value = res.data
   } finally {
     loading.value = false
   }
+  page.value = 1
+}
+
+onMounted(async () => {
+  slideTimer = setInterval(() => {
+    currentSlide.value = (currentSlide.value + 1) % 3
+  }, 4000)
+  await fetchData()
 })
 
 onUnmounted(() => {

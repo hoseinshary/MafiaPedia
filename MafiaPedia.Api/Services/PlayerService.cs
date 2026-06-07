@@ -111,4 +111,31 @@ public class PlayerService : IPlayerService
             RecentGames = recentGames
         };
     }
+
+    public async Task<IEnumerable<PlayerSearchDto>> SearchPlayersAsync(string query, int limit = 10)
+    {
+        var results = await _context.Players
+            .AsNoTracking()
+            .Where(p => p.Name != null && p.Name.Contains(query))
+            .Select(p => new
+            {
+                p.Id,
+                p.Name,
+                p.Picture,
+                TotalGames = p.Playplayers.Count
+            })
+            .Where(x => x.TotalGames > 0)
+            .OrderByDescending(x => x.TotalGames)
+            .ThenBy(x => x.Name)
+            .Take(limit)
+            .ToListAsync();
+
+        return results.Select(x => new PlayerSearchDto
+        {
+            Id = x.Id,
+            Name = x.Name,
+            Picture = x.Picture,
+            TotalGames = x.TotalGames
+        });
+    }
 }

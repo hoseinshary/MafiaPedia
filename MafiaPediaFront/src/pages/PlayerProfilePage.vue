@@ -73,6 +73,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { PlayerApi } from '@/api'
+import { watch } from 'vue'
 import type { PlayerProfile } from '@/types'
 import PlayerStatisticsCard from '@/components/PlayerStatisticsCard.vue'
 import RolesTable from '@/components/RolesTable.vue'
@@ -86,17 +87,27 @@ function formatPercent(value: number): string {
   return `${value.toFixed(2)}%`
 }
 
-onMounted(async () => {
-  const playerId = Number(route.params.id)
-  if (!playerId) {
-    error.value = 'Invalid player ID.'
-    return
-  }
+// این تابع رو اضافه کن
+async function fetchPlayer(id: number) {
+  player.value = null  // reset برای نمایش skeleton
+  error.value = null
   try {
-    const res = await PlayerApi.getPlayerProfile(playerId)
+    const res = await PlayerApi.getPlayerProfile(id)
     player.value = res.data
   } catch {
     error.value = 'Failed to load player profile. Please try again.'
   }
-})
+}
+
+watch(
+  () => Number(route.params.id),
+  (newId) => {
+    if (!newId) {
+      error.value = 'Invalid player ID.'
+      return
+    }
+    fetchPlayer(newId)
+  },
+  { immediate: true }  // اجرا میشه از اول هم مثل onMounted
+)
 </script>

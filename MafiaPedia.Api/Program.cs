@@ -8,7 +8,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<IRankingService, RankingService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
+builder.Services.AddScoped<IPlayerCommentService, PlayerCommentService>();
 builder.Services.AddScoped<IDropdownService, DropdownService>();
+builder.Services.AddScoped<IPlayWriteService, PlayWriteService>();
 
 builder.Services.AddDbContext<MafiaDbContext>(options =>
     options.UseMySql(

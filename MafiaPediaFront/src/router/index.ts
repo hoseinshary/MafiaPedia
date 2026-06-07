@@ -26,6 +26,11 @@ const routes: RouteRecordRaw[] = [
         name: 'PlayerProfile',
         component: () => import('@/pages/PlayerProfilePage.vue'),
       },
+      {
+        path: 'plays/create',
+        name: 'CreatePlay',
+        component: () => import('@/pages/CreatePlayPage.vue'),
+      },
     ],
   },
 ]

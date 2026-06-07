@@ -13,12 +13,19 @@ public class RankingService : IRankingService
         _context = context;
     }
 
-    public async Task<IEnumerable<RankingDto>> GetOverallRankingsAsync()
+    public async Task<IEnumerable<RankingDto>> GetOverallRankingsAsync(int? clubId = null)
     {
         const int citizenSideId = 2;
         const int mafiaSideId = 1;
 
-        var rankings = await _context.Playplayers
+        IQueryable<Entities.Playplayer> query = _context.Playplayers;
+
+        if (clubId.HasValue)
+        {
+            query = query.Where(pp => pp.Play.Event != null && pp.Play.Event.ClubId == clubId.Value);
+        }
+
+        var rankings = await query
             .GroupBy(pp => new { pp.PlayerId, pp.Player.Name })
             .Select(g => new
             {

@@ -70,7 +70,37 @@ export interface Scenario {
 export interface Role {
   id: number
   name: string
-  scenarioId: number
+  senarioId: number
+}
+
+export interface PlayerSearchResult {
+  id: number
+  name: string
+  totalGames: number
+  picture: string | null
+}
+
+export interface PlayPlayerInput {
+  playerId: number
+  roleId: number
+  action: number
+  rank: number
+}
+
+export interface CreatePlayPayload {
+  title: string
+  dateTime: string
+  playersCount: number
+  desc: string
+  senarioId: number
+  winnersideId: number
+  eventId: number
+  roomId: number
+  masterId: number
+  userId: number
+  guestCount: number
+  link: string
+  players: PlayPlayerInput[]
 }
 
 export interface SideRankingParams {
