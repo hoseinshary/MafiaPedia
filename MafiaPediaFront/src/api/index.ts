@@ -1,4 +1,7 @@
+export { AuthApi } from './AuthApi'
+export { CommentApi } from './CommentApi'
 export { RankingApi } from './RankingApi'
 export { PlayerApi } from './PlayerApi'
 export { LookupApi } from './LookupApi'
 export { PlaysApi } from './PlaysApi'
+export { UserApi } from './userApi'

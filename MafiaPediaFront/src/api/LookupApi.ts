@@ -1,5 +1,5 @@
 import apiClient from './apiClient'
-import type { Club, Event, Scenario, Role } from '@/types'
+import type { Club, Event, Scenario, Role, DropdownData } from '@/types'
 
 export const LookupApi = {
   getClubs() {
@@ -16,5 +16,9 @@ export const LookupApi = {
 
   getRoles() {
     return apiClient.get<Role[]>('/roles')
+  },
+
+  getDropdown() {
+    return apiClient.get<DropdownData>('/dropdown')
   },
 }

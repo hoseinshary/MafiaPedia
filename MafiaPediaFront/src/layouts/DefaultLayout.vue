@@ -28,11 +28,17 @@
               <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
             </svg>
           </button>
-          <button class="hover:text-gray-300 transition opacity-60 cursor-not-allowed">
+          <template v-if="authStore.isAuthenticated">
+            <span class="text-sm text-gray-300 hidden md:inline">{{ authStore.displayName }}</span>
+            <button @click="handleLogout" class="text-sm text-red-400 hover:text-red-300 transition">
+              خروج
+            </button>
+          </template>
+          <router-link v-else to="/login" class="hover:text-gray-300 transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
             </svg>
-          </button>
+          </router-link>
         </div>
       </div>
       <div v-if="mobileSearchOpen" class="md:hidden border-t border-gray-700 px-4 py-3">
@@ -40,7 +46,9 @@
       </div>
     </header>
 
-    <main class="flex-1 container mx-auto px-4 py-6">
+    <AdminSidebar v-if="authStore.isAdmin" />
+
+    <main class="flex-1 container mx-auto px-4 py-6" :class="authStore.isAdmin ? 'mr-48' : ''">
       <router-view />
     </main>
 
@@ -52,8 +60,19 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import PlayerSearchAutocomplete from '@/components/PlayerSearchAutocomplete.vue'
+import AdminSidebar from '@/components/AdminSidebar.vue'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const mobileSearchOpen = ref(false)
 const currentYear = new Date().getFullYear()
+
+function handleLogout() {
+  authStore.logout()
+  router.push('/')
+}
 </script>

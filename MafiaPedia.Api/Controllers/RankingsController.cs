@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MafiaPedia.Api.DTOs;
 using MafiaPedia.Api.Services;
+using MafiaPedia.Api.Services.Iservices;
 
 namespace MafiaPedia.Api.Controllers;
 

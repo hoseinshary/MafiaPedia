@@ -1,6 +1,6 @@
 using MafiaPedia.Api.DTOs;
 
-namespace MafiaPedia.Api.Services;
+namespace MafiaPedia.Api.Services.Iservices;
 
 public interface IRankingService
 {

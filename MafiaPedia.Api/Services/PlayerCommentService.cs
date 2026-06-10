@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MafiaPedia.Api.Data;
 using MafiaPedia.Api.DTOs;
 using MafiaPedia.Api.Entities;
+using MafiaPedia.Api.Services.Iservices;
 
 namespace MafiaPedia.Api.Services;
 
@@ -26,7 +27,7 @@ public class PlayerCommentService : IPlayerCommentService
                 UserName = c.User.Username ?? "",
                 Content = c.Content,
                 CreatedAt = c.CreatedAt,
-                LikeCount = 0,
+                LikeCount = c.Commentlikes.Count,
                 ReplyCount = c.InverseParentComment.Count
             })
             .ToListAsync();

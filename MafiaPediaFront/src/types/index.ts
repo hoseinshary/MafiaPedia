@@ -97,10 +97,21 @@ export interface CreatePlayPayload {
   eventId: number
   roomId: number
   masterId: number
-  userId: number
   guestCount: number
   link: string
   players: PlayPlayerInput[]
+}
+
+export interface CommentDto {
+  id: number
+  content: string
+  userDisplayName: string
+  userId: number
+  parentCommentId: number | null
+  createdAt: string
+  likeCount: number
+  isLikedByCurrentUser: boolean
+  replies: CommentDto[]
 }
 
 export interface SideRankingParams {
@@ -109,4 +120,119 @@ export interface SideRankingParams {
   eventId?: number
   scenarioId?: number
   minimumGames?: number
+}
+
+export interface PlayDto {
+  id: number
+  title: string
+  dateTime: string
+  playersCount: number
+  guestCount: number
+  desc: string | null
+  link: string | null
+  senarioId: number
+  senarioName: string
+  winnersideId: number
+  winnersideName: string
+  eventId: number
+  eventName: string
+  roomId: number
+  roomName: string
+  masterId: number
+  masterName: string
+  userId?: number
+  players?: PlayPlayerInput[]
+}
+
+export interface PaginatedPlays {
+  items: PlayDto[]
+  totalItems: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface DropdownMaster {
+  id: number
+  name: string
+}
+
+export interface DropdownRoom {
+  id: number
+  name: string
+}
+
+export interface DropdownSide {
+  id: number
+  name: string
+}
+
+export interface DropdownData {
+  senarios: Scenario[]
+  masters: DropdownMaster[]
+  events: Event[]
+  rooms: DropdownRoom[]
+  sides: DropdownSide[]
+  roles: Role[]
+}
+
+export interface PlayerListItem {
+  id: number
+  name: string
+  code: string
+  picture: string | null
+  totalGames: number
+}
+
+export interface PaginatedPlayers {
+  items: PlayerListItem[]
+  totalItems: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface PlayerDetail {
+  id: number
+  name: string
+  code: string
+  mobile: string
+  birthday: string | null
+  picture: string | null
+  desc: string | null
+}
+
+export interface UserDto {
+  id: number
+  username: string
+  displayName: string
+  mobile: string
+  role: string
+  isActive: boolean
+  lastLogin: string | null
+  createdAt: string
+}
+
+export interface PaginatedUsers {
+  items: UserDto[]
+  totalItems: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface CreateUserDto {
+  username: string
+  password: string
+  displayName?: string
+  mobile?: string
+  role: string
+}
+
+export interface UpdateUserDto {
+  displayName?: string
+  mobile?: string
+  role?: string
+  isActive?: boolean
+  password?: string
 }

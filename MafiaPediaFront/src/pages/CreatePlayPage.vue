@@ -13,40 +13,14 @@
           <label class="text-sm text-gray-600">عنوان</label>
           <input v-model="form.title" type="text" class="border border-gray-300 rounded px-3 py-2 text-sm" />
         </div>
-        <div class="flex flex-col gap-1 relative" ref="datePickerRef">
+        <div class="flex flex-col gap-1">
           <label class="text-sm text-gray-600">تاریخ</label>
           <input
-            type="text"
-            :value="persianDateDisplay"
-            @focus="calendarOpen = true"
-            placeholder="مثال: ۱۴۰۳/۰۱/۱۵"
-            class="border border-gray-300 rounded px-3 py-2 text-sm cursor-pointer"
-            readonly
+            v-model="form.dateTime"
+            type="date"
+            class="border border-gray-300 rounded px-3 py-2 text-sm"
+            dir="ltr"
           />
-          <div
-            v-if="calendarOpen"
-            class="absolute left-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 p-3 w-72"
-          >
-            <div class="flex items-center justify-between mb-3">
-              <button @click="prevMonth" class="text-sm px-2 py-1 hover:bg-gray-100 rounded">&lt;</button>
-              <span class="text-sm font-semibold">{{ persianMonthName(calJy, calJm) }} {{ calJy }}</span>
-              <button @click="nextMonth" class="text-sm px-2 py-1 hover:bg-gray-100 rounded">&gt;</button>
-            </div>
-            <div class="grid grid-cols-7 gap-1 text-center mb-1">
-              <div v-for="d in ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج']" :key="d" class="text-xs text-gray-500 py-1">{{ d }}</div>
-            </div>
-            <div class="grid grid-cols-7 gap-1 text-center">
-              <template v-for="(day, idx) in calendarDays" :key="idx">
-                <div
-                  v-if="day"
-                  @click="selectDate(day)"
-                  class="text-sm py-1 rounded cursor-pointer transition"
-                  :class="dayClass(day)"
-                >{{ day }}</div>
-                <div v-else class="text-sm py-1"></div>
-              </template>
-            </div>
-          </div>
           <div v-if="!form.dateTime && touched" class="text-xs text-red-500 mt-1">
             الزامی
           </div>
@@ -191,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { LookupApi, PlayerApi, PlaysApi } from '@/api'
 import type { Scenario, Event as EventItem, Role, Club, PlayerSearchResult } from '@/types'
 
@@ -394,7 +368,6 @@ async function submitForm() {
       eventId: form.eventId,
       roomId: 1,
       masterId: 1,
-      userId: 1,
       guestCount: 0,
       link: form.link,
       players: form.players.map(p => ({
@@ -435,150 +408,5 @@ onMounted(async () => {
   roles.value = rolesRes.data
   clubs.value = clubsRes.data
   syncPlayerRows()
-})
-
-function gregorianToJalali(gy: number, gm: number, gd: number): [number, number, number] {
-  const gdm = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
-  const gy2 = gm > 2 ? gy + 1 : gy
-  let days = 355666 + 365 * gy + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) + gd + gdm[gm - 1]
-  let jy = -1595 + 33 * Math.floor(days / 12053)
-  days %= 12053
-  jy += 4 * Math.floor(days / 1461)
-  days %= 1461
-  if (days > 365) {
-    jy += Math.floor((days - 1) / 365)
-    days = (days - 1) % 365
-  }
-  const jm = days < 186 ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30)
-  const jd = 1 + (days < 186 ? days % 31 : (days - 186) % 30)
-  return [jy, jm, jd]
-}
-
-function jalaliToGregorian(jy: number, jm: number, jd: number): [number, number, number] {
-  let ep = jy - 979
-  let ey = -61 + 33 * Math.floor(ep / 33)
-  ep %= 33
-  if (ep >= 0) ey += 4 * Math.floor(ep / 4) - 2 * Math.floor((ep % 4) / 3)
-  else ey += 4 * Math.ceil(ep / 4) - 2 * Math.ceil(((-ep - 1) % 4) / 3)
-  const em = jm < 7 ? (jm - 1) * 31 : (jm - 7) * 30 + 186
-  const ed = jd + em + 365 * ey
-  const gy = ey + 621
-  const gdm = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-  const isLeap = (gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0
-  if (isLeap) gdm[2] = 29
-  let remaining = ed
-  let gm = 1
-  while (gm <= 12 && remaining > gdm[gm]) {
-    remaining -= gdm[gm]
-    gm++
-  }
-  return [gy, gm, remaining]
-}
-
-const persianMonthNames = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند']
-
-function persianMonthName(_jy: number, jm: number): string {
-  return persianMonthNames[jm - 1] || ''
-}
-
-function daysInJalaliMonth(_jy: number, jm: number): number {
-  if (jm <= 6) return 31
-  if (jm <= 11) return 30
-  const isLeap = (_jy + 1) % 4 === 0 && ((_jy + 1) % 100 !== 0 || (_jy + 1) % 400 === 0)
-  return isLeap ? 30 : 29
-}
-
-function todayJalali(): [number, number, number] {
-  const now = new Date()
-  return gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate())
-}
-
-const calendarOpen = ref(false)
-const datePickerRef = ref<HTMLElement | null>(null)
-const calJy = ref(todayJalali()[0])
-const calJm = ref(todayJalali()[1])
-const selectedJy = ref(0)
-const selectedJm = ref(0)
-const selectedJd = ref(0)
-
-const persianDateDisplay = computed(() => {
-  if (!form.dateTime) return ''
-  const [jy, jm, jd] = gregorianToJalali(
-    new Date(form.dateTime).getFullYear(),
-    new Date(form.dateTime).getMonth() + 1,
-    new Date(form.dateTime).getDate()
-  )
-  selectedJy.value = jy
-  selectedJm.value = jm
-  selectedJd.value = jd
-  return `${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`
-})
-
-const calendarDays = computed(() => {
-  const firstDayOfMonth = new Date(
-    ...jalaliToGregorian(calJy.value, calJm.value, 1)
-  ).getDay()
-  const daysInMonth = daysInJalaliMonth(calJy.value, calJm.value)
-  const days: (number | null)[] = []
-  for (let i = 0; i < (firstDayOfMonth + 1) % 7; i++) {
-    days.push(null)
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    days.push(d)
-  }
-  return days
-})
-
-function prevMonth() {
-  if (calJm.value === 1) {
-    calJm.value = 12
-    calJy.value--
-  } else {
-    calJm.value--
-  }
-}
-
-function nextMonth() {
-  if (calJm.value === 12) {
-    calJm.value = 1
-    calJy.value++
-  } else {
-    calJm.value++
-  }
-}
-
-function dayClass(day: number): string {
-  const isSelected = selectedJy.value === calJy.value && selectedJm.value === calJm.value && selectedJd.value === day
-  const isToday = (() => {
-    const [ty, tm, td] = todayJalali()
-    return ty === calJy.value && tm === calJm.value && td === day
-  })()
-  if (isSelected) return 'bg-blue-600 text-white'
-  if (isToday) return 'bg-blue-100 text-blue-700 font-semibold'
-  return 'hover:bg-gray-100'
-}
-
-function selectDate(day: number) {
-  const [gy, gm, gd] = jalaliToGregorian(calJy.value, calJm.value, day)
-  const d = new Date(gy, gm - 1, gd)
-  form.dateTime = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T00:00:00`
-  selectedJy.value = calJy.value
-  selectedJm.value = calJm.value
-  selectedJd.value = day
-  calendarOpen.value = false
-}
-
-function handleClickOutside(e: MouseEvent) {
-  if (datePickerRef.value && !datePickerRef.value.contains(e.target as Node)) {
-    calendarOpen.value = false
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
 })
 </script>

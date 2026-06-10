@@ -1,16 +1,77 @@
 using Microsoft.EntityFrameworkCore;
 using MafiaPedia.Api.Data;
 using MafiaPedia.Api.DTOs;
+using MafiaPedia.Api.Entities;
+using MafiaPedia.Api.Services.Iservices;
 
 namespace MafiaPedia.Api.Services;
 
 public class PlayerService : IPlayerService
 {
     private readonly MafiaDbContext _context;
+    private readonly IWebHostEnvironment _env;
 
-    public PlayerService(MafiaDbContext context)
+    public PlayerService(MafiaDbContext context, IWebHostEnvironment env)
     {
         _context = context;
+        _env = env;
+    }
+
+    public async Task<PlayerDto> CreatePlayerAsync(CreatePlayerDto dto)
+    {
+        string? picturePath = null;
+
+        if (dto.Picture is not null)
+        {
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var extension = Path.GetExtension(dto.Picture.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(extension))
+                throw new InvalidOperationException("Only jpg, jpeg, png, webp files are allowed.");
+
+            if (dto.Picture.Length > 2 * 1024 * 1024)
+                throw new InvalidOperationException("File size must be less than 2 MB.");
+
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "players");
+
+            if (!Directory.Exists(uploadsDir))
+                Directory.CreateDirectory(uploadsDir);
+
+            var filePath = Path.Combine(uploadsDir, fileName);
+
+            await using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await dto.Picture.CopyToAsync(stream);
+            }
+
+            picturePath = $"/uploads/players/{fileName}";
+        }
+
+        DateOnly? birthday = null;
+        if (!string.IsNullOrWhiteSpace(dto.Birthday) && DateOnly.TryParse(dto.Birthday, out var parsed))
+            birthday = parsed;
+
+        var player = new Player
+        {
+            Name = dto.Name,
+            Mobile = dto.Mobile,
+            Code = dto.Code,
+            Birthday = birthday,
+            Desc = dto.Desc,
+            Picture = picturePath
+        };
+
+        _context.Players.Add(player);
+        await _context.SaveChangesAsync();
+
+        return new PlayerDto
+        {
+            Id = player.Id,
+            Name = player.Name!,
+            Code = player.Code,
+            Picture = player.Picture
+        };
     }
 
     public async Task<PlayerProfileDto?> GetProfileAsync(int playerId)
@@ -112,6 +173,136 @@ public class PlayerService : IPlayerService
         };
     }
 
+    public async Task<PlayerListResponseDto> GetPlayersAsync(int page = 1, int pageSize = 20, string? search = null)
+    {
+        var query = _context.Players.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(p =>
+                (p.Name != null && p.Name.Contains(term)) ||
+                (p.Code != null && p.Code.Contains(term)));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderBy(p => p.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new PlayerListDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Code = p.Code,
+                Picture = p.Picture,
+                Mobile = p.Mobile,
+                TotalGames = p.Playplayers.Count
+            })
+            .ToListAsync();
+
+        return new PlayerListResponseDto
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        };
+    }
+
+    public async Task<bool> UpdatePlayerAsync(int playerId, UpdatePlayerDto dto)
+    {
+        var player = await _context.Players.FindAsync(playerId);
+        if (player is null) return false;
+
+        if (dto.Name != null) player.Name = dto.Name;
+        if (dto.Mobile != null) player.Mobile = dto.Mobile;
+        if (dto.Code != null) player.Code = dto.Code;
+        if (dto.Desc != null) player.Desc = dto.Desc;
+
+        if (dto.Birthday != null)
+        {
+            if (DateOnly.TryParse(dto.Birthday, out var parsed))
+                player.Birthday = parsed;
+        }
+
+        if (dto.Picture != null)
+        {
+            var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var ext = Path.GetExtension(dto.Picture.FileName).ToLowerInvariant();
+            if (!allowed.Contains(ext))
+                throw new ArgumentException("فرمت فایل مجاز نیست");
+            if (dto.Picture.Length > 2 * 1024 * 1024)
+                throw new ArgumentException("حجم فایل بیش از ۲ مگابایت است");
+
+            if (!string.IsNullOrEmpty(player.Picture))
+            {
+                var oldPath = Path.Combine(_env.WebRootPath, player.Picture.TrimStart('/'));
+                if (File.Exists(oldPath))
+                    File.Delete(oldPath);
+            }
+
+            var filename = $"{Guid.NewGuid()}{ext}";
+            var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "players");
+            if (!Directory.Exists(uploadsDir))
+                Directory.CreateDirectory(uploadsDir);
+
+            var path = Path.Combine(uploadsDir, filename);
+            await using (var stream = new FileStream(path, FileMode.Create))
+            {
+                await dto.Picture.CopyToAsync(stream);
+            }
+
+            player.Picture = $"/uploads/players/{filename}";
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<PlayerDetailDto?> GetPlayerDetailAsync(int playerId)
+    {
+        var player = await _context.Players.FindAsync(playerId);
+        if (player is null) return null;
+
+        return new PlayerDetailDto
+        {
+            Id = player.Id,
+            Name = player.Name,
+            Mobile = player.Mobile,
+            Code = player.Code,
+            Birthday = player.Birthday?.ToString(),
+            Desc = player.Desc,
+            Picture = player.Picture
+        };
+    }
+
+    public async Task<(bool Success, string? Error)> DeletePlayerAsync(int playerId)
+    {
+        var player = await _context.Players
+            .Include(p => p.Playplayers)
+            .FirstOrDefaultAsync(p => p.Id == playerId);
+
+        if (player is null)
+            return (false, "بازیکن یافت نشد");
+
+        if (player.Playplayers.Any())
+            return (false, $"این بازیکن در {player.Playplayers.Count} بازی شرکت داشته و قابل حذف نیست");
+
+        if (!string.IsNullOrEmpty(player.Picture))
+        {
+            var picturePath = Path.Combine(_env.WebRootPath, player.Picture.TrimStart('/'));
+            if (File.Exists(picturePath))
+                File.Delete(picturePath);
+        }
+
+        _context.Players.Remove(player);
+        await _context.SaveChangesAsync();
+        return (true, null);
+    }
+
     public async Task<IEnumerable<PlayerSearchDto>> SearchPlayersAsync(string query, int limit = 10)
     {
         var results = await _context.Players
@@ -124,7 +315,6 @@ public class PlayerService : IPlayerService
                 p.Picture,
                 TotalGames = p.Playplayers.Count
             })
-            .Where(x => x.TotalGames > 0)
             .OrderByDescending(x => x.TotalGames)
             .ThenBy(x => x.Name)
             .Take(limit)

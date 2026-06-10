@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MafiaPedia.Api.DTOs;
 using MafiaPedia.Api.Services;
+using MafiaPedia.Api.Services.Iservices;
 
 namespace MafiaPedia.Api.Controllers;
 
@@ -18,6 +20,17 @@ public class PlayersController : ControllerBase
         _playerCommentService = playerCommentService;
     }
 
+    [HttpGet]
+    [ProducesResponseType(typeof(PlayerListResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPlayers(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? search = null)
+    {
+        var result = await _playerService.GetPlayersAsync(page, pageSize, search);
+        return Ok(result);
+    }
+
     [HttpGet("{playerId:int}")]
     [ProducesResponseType(typeof(PlayerProfileDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -26,6 +39,17 @@ public class PlayersController : ControllerBase
         var profile = await _playerService.GetProfileAsync(playerId);
         if (profile is null) return NotFound();
         return Ok(profile);
+    }
+
+    [HttpGet("{playerId:int}/detail")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(typeof(PlayerDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPlayerDetail(int playerId)
+    {
+        var player = await _playerService.GetPlayerDetailAsync(playerId);
+        if (player is null) return NotFound(new { message = "بازیکن یافت نشد" });
+        return Ok(player);
     }
 
     [HttpGet("{playerId:int}/comments")]
@@ -46,6 +70,71 @@ public class PlayersController : ControllerBase
 
         var comment = await _playerCommentService.AddCommentAsync(playerId, dto);
         return CreatedAtAction(nameof(GetComments), new { playerId }, comment);
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(PlayerDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CreatePlayer([FromForm] CreatePlayerDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            return BadRequest("Name is required.");
+
+        try
+        {
+            var player = await _playerService.CreatePlayerAsync(dto);
+            return CreatedAtAction(nameof(GetProfile), new { playerId = player.Id }, player);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("{playerId:int}")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DeletePlayer(int playerId)
+    {
+        var (success, error) = await _playerService.DeletePlayerAsync(playerId);
+
+        if (!success && error == "بازیکن یافت نشد")
+            return NotFound(new { message = error });
+
+        if (!success)
+            return Conflict(new { message = error });
+
+        return Ok(new { message = "بازیکن با موفقیت حذف شد" });
+    }
+
+    [HttpPut("{playerId:int}")]
+    [Authorize(Policy = "AdminOnly")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdatePlayer(int playerId, [FromForm] UpdatePlayerDto dto)
+    {
+        try
+        {
+            var result = await _playerService.UpdatePlayerAsync(playerId, dto);
+            if (!result) return NotFound(new { message = "بازیکن یافت نشد" });
+            return Ok(new { message = "بازیکن با موفقیت ویرایش شد" });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("search")]

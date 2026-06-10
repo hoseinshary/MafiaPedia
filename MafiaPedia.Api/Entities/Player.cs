@@ -19,5 +19,9 @@ public partial class Player
 
     public string? Desc { get; set; }
 
+    public int? UserId { get; set; }
+
     public virtual ICollection<Playplayer> Playplayers { get; set; } = new List<Playplayer>();
+
+    public virtual User? User { get; set; }
 }

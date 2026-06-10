@@ -49,6 +49,10 @@
         <h2 class="text-lg font-semibold mb-4">بازی‌های اخیر</h2>
         <RecentGamesTable :games="player.recentGames" />
       </section>
+
+      <section class="mb-8">
+        <PlayerComments entityType="player" :entityId="player.id" />
+      </section>
     </template>
 
     <div v-else class="space-y-6 animate-pulse">
@@ -78,6 +82,7 @@ import type { PlayerProfile } from '@/types'
 import PlayerStatisticsCard from '@/components/PlayerStatisticsCard.vue'
 import RolesTable from '@/components/RolesTable.vue'
 import RecentGamesTable from '@/components/RecentGamesTable.vue'
+import PlayerComments from '@/components/PlayerComments.vue'
 
 const route = useRoute()
 const player = ref<PlayerProfile | null>(null)

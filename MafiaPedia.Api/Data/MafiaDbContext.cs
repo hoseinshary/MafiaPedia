@@ -14,6 +14,10 @@ public partial class MafiaDbContext : DbContext
 
     public virtual DbSet<Club> Clubs { get; set; }
 
+    public virtual DbSet<Comment> Comments { get; set; }
+
+    public virtual DbSet<Commentlike> Commentlikes { get; set; }
+
     public virtual DbSet<Event> Events { get; set; }
 
     public virtual DbSet<Master> Masters { get; set; }
@@ -24,6 +28,8 @@ public partial class MafiaDbContext : DbContext
 
     public virtual DbSet<Playplayer> Playplayers { get; set; }
 
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<Room> Rooms { get; set; }
@@ -32,7 +38,7 @@ public partial class MafiaDbContext : DbContext
 
     public virtual DbSet<Side> Sides { get; set; }
 
-    public virtual DbSet<Comment> Comments { get; set; }
+    public virtual DbSet<Subscription> Subscriptions { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -54,6 +60,61 @@ public partial class MafiaDbContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(45)
                 .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<Comment>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("comments");
+
+            entity.HasIndex(e => e.CreatedAt, "IX_Comments_CreatedAt");
+
+            entity.HasIndex(e => new { e.EntityType, e.EntityId }, "IX_Comments_Entity");
+
+            entity.HasIndex(e => e.ParentCommentId, "IX_Comments_Parent");
+
+            entity.HasIndex(e => e.UserId, "IX_Comments_User");
+
+            entity.Property(e => e.Content).HasColumnType("text");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime");
+            entity.Property(e => e.EntityType).HasMaxLength(50);
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.ParentComment).WithMany(p => p.InverseParentComment)
+                .HasForeignKey(d => d.ParentCommentId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Comments_Parent");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Comments)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Comments_User");
+        });
+
+        modelBuilder.Entity<Commentlike>(entity =>
+        {
+            entity.HasKey(e => new { e.CommentId, e.UserId })
+                .HasName("PRIMARY")
+                .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+
+            entity.ToTable("commentlikes");
+
+            entity.HasIndex(e => e.UserId, "FK_CommentLikes_User");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Comment).WithMany(p => p.Commentlikes)
+                .HasForeignKey(d => d.CommentId)
+                .HasConstraintName("FK_CommentLikes_Comment");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Commentlikes)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_CommentLikes_User");
         });
 
         modelBuilder.Entity<Event>(entity =>
@@ -152,11 +213,19 @@ public partial class MafiaDbContext : DbContext
                 .HasCharSet("utf8mb3")
                 .UseCollation("utf8mb3_general_ci");
 
+            entity.HasIndex(e => e.UserId, "user_id").IsUnique();
+
             entity.Property(e => e.Code).HasMaxLength(10);
             entity.Property(e => e.Desc).HasMaxLength(300);
             entity.Property(e => e.Mobile).HasMaxLength(11);
             entity.Property(e => e.Name).HasMaxLength(50);
             entity.Property(e => e.Picture).HasMaxLength(300);
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithOne(p => p.Player)
+                .HasForeignKey<Player>(d => d.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("player_ibfk_1");
         });
 
         modelBuilder.Entity<Playplayer>(entity =>
@@ -188,6 +257,35 @@ public partial class MafiaDbContext : DbContext
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_playplayer_role1");
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("refresh_tokens");
+
+            entity.HasIndex(e => e.UserId, "user_id");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ExpiresAt)
+                .HasColumnType("datetime")
+                .HasColumnName("expires_at");
+            entity.Property(e => e.IsRevoked)
+                .HasDefaultValueSql("'0'")
+                .HasColumnName("is_revoked");
+            entity.Property(e => e.Token)
+                .HasMaxLength(500)
+                .HasColumnName("token");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("refresh_tokens_ibfk_1");
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -252,35 +350,33 @@ public partial class MafiaDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(20);
         });
 
-        modelBuilder.Entity<Comment>(entity =>
+        modelBuilder.Entity<Subscription>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("comments");
+            entity.ToTable("subscriptions");
 
-            entity.HasIndex(e => e.CreatedAt, "IX_Comments_CreatedAt");
+            entity.HasIndex(e => e.UserId, "user_id");
 
-            entity.HasIndex(e => new { e.EntityType, e.EntityId }, "IX_Comments_Entity");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ExpiresAt)
+                .HasColumnType("datetime")
+                .HasColumnName("expires_at");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("is_active");
+            entity.Property(e => e.Plan)
+                .HasColumnType("enum('player_basic','player_pro','cafe_basic','cafe_pro')")
+                .HasColumnName("plan");
+            entity.Property(e => e.StartedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("started_at");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
 
-            entity.HasIndex(e => e.ParentCommentId, "IX_Comments_Parent");
-
-            entity.HasIndex(e => e.UserId, "IX_Comments_User");
-
-            entity.Property(e => e.Content).HasColumnType("text");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("datetime");
-            entity.Property(e => e.EntityType).HasMaxLength(50);
-            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Comments)
+            entity.HasOne(d => d.User).WithMany(p => p.Subscriptions)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK_Comments_User");
-
-            entity.HasOne(d => d.ParentComment).WithMany(p => p.InverseParentComment)
-                .HasForeignKey(d => d.ParentCommentId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_Comments_Parent");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("subscriptions_ibfk_1");
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -292,7 +388,44 @@ public partial class MafiaDbContext : DbContext
                 .HasCharSet("utf8mb3")
                 .UseCollation("utf8mb3_general_ci");
 
+            entity.HasIndex(e => e.Mobile, "mobile").IsUnique();
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.DisplayName)
+                .HasMaxLength(50)
+                .HasColumnName("display_name");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("is_active");
+            entity.Property(e => e.LastLoginAt)
+                .HasColumnType("datetime")
+                .HasColumnName("last_login_at");
+            entity.Property(e => e.Mobile)
+                .HasMaxLength(11)
+                .HasColumnName("mobile");
+            entity.Property(e => e.MobileVerified)
+                .HasDefaultValueSql("'0'")
+                .HasColumnName("mobile_verified");
+            entity.Property(e => e.OtpCode)
+                .HasMaxLength(6)
+                .HasColumnName("otp_code");
+            entity.Property(e => e.OtpExpiresAt)
+                .HasColumnType("datetime")
+                .HasColumnName("otp_expires_at");
             entity.Property(e => e.Password).HasMaxLength(20);
+            entity.Property(e => e.PasswordHash)
+                .HasMaxLength(255)
+                .HasColumnName("password_hash");
+            entity.Property(e => e.PasswordSalt)
+                .HasMaxLength(255)
+                .HasColumnName("password_salt");
+            entity.Property(e => e.Role)
+                .HasDefaultValueSql("'player'")
+                .HasColumnType("enum('admin','player','master','cafe_owner')")
+                .HasColumnName("role");
             entity.Property(e => e.Username).HasMaxLength(20);
         });
 
