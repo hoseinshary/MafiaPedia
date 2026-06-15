@@ -4,6 +4,7 @@ namespace MafiaPedia.Api.Services;
 
 public interface IPlayReadService
 {
-    Task<PlayListResponseDto> GetPlaysAsync(int page = 1, int pageSize = 20, string? search = null);
+    Task<PlayListResponseDto> GetPlaysAsync(PlayFilterDto filter);
     Task<PlayDetailDto?> GetPlayByIdAsync(int playId);
+    Task<HeadToHeadDto?> GetHeadToHeadAsync(int player1Id, int player2Id);
 }

@@ -1,10 +1,10 @@
 import apiClient from './apiClient'
-import type { OverallRankingEntry, SideRankingEntry, SideRankingParams } from '@/types'
+import type { OverallRankingEntry, SideRankingEntry, SideRankingParams, OverallRankingFilterDto } from '@/types'
 
 export const RankingApi = {
-  getOverallRanking(clubId?: number) {
+  getOverallRanking(filter: OverallRankingFilterDto = {}) {
     return apiClient.get<OverallRankingEntry[]>('/rankings/overall', {
-      params: clubId !== undefined ? { clubId } : undefined,
+      params: filter,
     })
   },
 

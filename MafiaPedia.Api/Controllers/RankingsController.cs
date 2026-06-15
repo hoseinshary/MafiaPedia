@@ -20,9 +20,9 @@ public class RankingsController : ControllerBase
     [HttpGet("overall")]
     [ProducesResponseType(typeof(IEnumerable<RankingDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<RankingDto>>> GetOverall(
-        [FromQuery] int? clubId = null)
+        [FromQuery] OverallRankingFilterDto filter)
     {
-        var rankings = await _rankingService.GetOverallRankingsAsync(clubId);
+        var rankings = await _rankingService.GetOverallRankingAsync(filter);
         return Ok(rankings);
     }
 

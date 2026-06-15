@@ -23,6 +23,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/HomePage.vue'),
       },
       {
+        path: 'ranking/overall',
+        name: 'OverallRanking',
+        component: () => import('@/pages/OverallRankingPage.vue'),
+      },
+      {
         path: 'ranking/citizen',
         name: 'CitizenRanking',
         component: () => import('@/pages/CitizenRankingPage.vue'),
@@ -50,15 +55,35 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
+        path: 'plays-public',
+        name: 'PlaysPublic',
+        component: () => import('@/pages/PlaysPage.vue'),
+      },
+      {
         path: 'plays',
         name: 'PlaysList',
         component: () => import('@/pages/PlaysListPage.vue'),
+      },
+      {
+        path: 'plays/:id',
+        name: 'PlayDetail',
+        component: () => import('@/pages/PlayDetailPage.vue'),
       },
       {
         path: 'plays/:id/edit',
         name: 'EditPlay',
         component: () => import('@/pages/EditPlayPage.vue'),
         meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
+        path: 'statistics',
+        name: 'Statistics',
+        component: () => import('@/pages/StatisticsPage.vue'),
+      },
+      {
+        path: 'head-to-head',
+        name: 'HeadToHead',
+        component: () => import('@/pages/HeadToHeadPage.vue'),
       },
       {
         path: 'players/list',

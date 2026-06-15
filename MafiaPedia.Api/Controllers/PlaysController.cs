@@ -33,12 +33,9 @@ public class PlaysController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(PlayListResponseDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetPlays(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
-        [FromQuery] string? search = null)
+    public async Task<IActionResult> GetPlays([FromQuery] PlayFilterDto filter)
     {
-        var result = await _playReadService.GetPlaysAsync(page, pageSize, search);
+        var result = await _playReadService.GetPlaysAsync(filter);
         return Ok(result);
     }
 

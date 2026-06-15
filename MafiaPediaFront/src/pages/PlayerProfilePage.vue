@@ -36,6 +36,60 @@
       </section>
 
       <section class="mb-8">
+        <h2 class="text-lg font-semibold mb-4">رکوردها</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <PlayerStatisticsCard label="🔥 Win Streak فعلی" :value="`${player.winStreak} بازی`" />
+          <PlayerStatisticsCard label="🏆 بهترین رکورد برد پیاپی" :value="`${player.bestRun} بازی`" />
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-lg font-semibold mb-4">بهترین هم‌تیمی‌ها</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-white rounded-lg border border-gray-200 p-4 text-center shadow-sm">
+            <p class="text-sm text-gray-500 mb-1">بهترین هم‌تیمی مافیایی</p>
+            <template v-if="player.bestMafiaPartner">
+              <router-link
+                :to="`/player/${player.bestMafiaPartner.playerId}`"
+                class="text-lg font-bold text-blue-600 hover:underline"
+              >
+                {{ player.bestMafiaPartner.playerName }}
+              </router-link>
+              <p class="text-sm text-gray-500 mt-1">{{ player.bestMafiaPartner.sharedGames }} بازی مشترک</p>
+              <p class="text-sm text-gray-500">{{ (player.bestMafiaPartner.winRate ).toFixed(2) }}% برد</p>
+            </template>
+            <p v-else class="text-gray-400 mt-2">اطلاعات کافی نیست</p>
+          </div>
+          <div class="bg-white rounded-lg border border-gray-200 p-4 text-center shadow-sm">
+            <p class="text-sm text-gray-500 mb-1">بهترین هم‌تیمی شهروندی</p>
+            <template v-if="player.bestCitizenPartner">
+              <router-link
+                :to="`/player/${player.bestCitizenPartner.playerId}`"
+                class="text-lg font-bold text-blue-600 hover:underline"
+              >
+                {{ player.bestCitizenPartner.playerName }}
+              </router-link>
+              <p class="text-sm text-gray-500 mt-1">{{ player.bestCitizenPartner.sharedGames }} بازی مشترک</p>
+              <p class="text-sm text-gray-500">{{ (player.bestCitizenPartner.winRate ).toFixed(2) }}% برد</p>
+            </template>
+            <p v-else class="text-gray-400 mt-2">اطلاعات کافی نیست</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="text-lg font-semibold mb-4">روند برد</h2>
+        <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+          <template v-if="player.winRateTrend.length >= 5">
+            <div style="height: 250px">
+              <Line :data="chartData" :options="chartOptions" />
+            </div>
+          </template>
+          <p v-else class="text-center text-gray-400 py-10">برای نمایش نمودار حداقل 10 بازی لازم است</p>
+        </div>
+      </section>
+
+      <section class="mb-8">
         <h2 class="text-lg font-semibold mb-4">پر تکرارترین نقش‌ها</h2>
         <RolesTable :roles="player.mostPlayedRoles.slice(0, 5)" />
       </section>
@@ -74,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { PlayerApi } from '@/api'
 import { watch } from 'vue'
@@ -83,6 +137,19 @@ import PlayerStatisticsCard from '@/components/PlayerStatisticsCard.vue'
 import RolesTable from '@/components/RolesTable.vue'
 import RecentGamesTable from '@/components/RecentGamesTable.vue'
 import PlayerComments from '@/components/PlayerComments.vue'
+import { Line } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip as ChartTooltip,
+  Filler
+} from 'chart.js'
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Filler)
 
 const route = useRoute()
 const player = ref<PlayerProfile | null>(null)
@@ -101,6 +168,53 @@ async function fetchPlayer(id: number) {
     player.value = res.data
   } catch {
     error.value = 'Failed to load player profile. Please try again.'
+  }
+}
+
+const chartData = computed(() => ({
+  labels: player.value?.winRateTrend.map((_, i) => i + 1) ?? [],
+  datasets: [{
+    label: 'درصد برد',
+    data: player.value?.winRateTrend.map(p => +(p.winRate ).toFixed(1)) ?? [],
+    borderColor: '#e94560',
+    backgroundColor: 'rgba(233, 69, 96, 0.1)',
+    fill: true,
+    tension: 0.4,
+    pointBackgroundColor: '#e94560',
+    pointRadius: 3,
+    pointHoverRadius: 5,
+  }]
+}))
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    tooltip: {
+      backgroundColor: '#1a1a2e',
+      titleColor: '#e0e0e0',
+      bodyColor: '#e0e0e0',
+      borderColor: '#16213e',
+      borderWidth: 1,
+      padding: 10,
+      callbacks: {
+        label: (ctx: { parsed: { y?: number | null } }) => `${ctx.parsed.y ?? 0}%`,
+      }
+    }
+  },
+  scales: {
+    x: {
+      title: { display: true, text: 'بازی', color: '#666' },
+      grid: { color: 'rgba(0,0,0,0.05)' },
+      ticks: { color: '#666' }
+    },
+    y: {
+      min: 0,
+      max: 100,
+      title: { display: true, text: 'درصد برد', color: '#666' },
+      grid: { color: 'rgba(0,0,0,0.05)' },
+      ticks: { color: '#666', callback: (v: string | number) => `${v}%` }
+    }
   }
 }
 

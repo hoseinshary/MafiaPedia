@@ -33,9 +33,25 @@ function extractUserId(token: string): number | null {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const accessToken = ref(localStorage.getItem('accessToken') || '')
-  const refreshToken = ref(localStorage.getItem('refreshToken') || '')
-  const displayName = ref(localStorage.getItem('displayName') || '')
+  let useLocalStorage = true
+
+  function getInitialToken(key: string): string {
+    const local = localStorage.getItem(key)
+    if (local) {
+      useLocalStorage = true
+      return local
+    }
+    const session = sessionStorage.getItem(key)
+    if (session) {
+      useLocalStorage = false
+      return session
+    }
+    return ''
+  }
+
+  const accessToken = ref(getInitialToken('accessToken'))
+  const refreshToken = ref(getInitialToken('refreshToken'))
+  const displayName = ref(getInitialToken('displayName'))
 
   const role = computed(() => accessToken.value ? extractRole(accessToken.value) : '')
   const isAuthenticated = computed(() => !!accessToken.value)
@@ -43,27 +59,33 @@ export const useAuthStore = defineStore('auth', () => {
 
   const userId = computed(() => accessToken.value ? extractUserId(accessToken.value) : null)
 
+  function getStorage() {
+    return useLocalStorage ? localStorage : sessionStorage
+  }
+
   function persist() {
+    const storage = getStorage()
     if (accessToken.value) {
-      localStorage.setItem('accessToken', accessToken.value)
+      storage.setItem('accessToken', accessToken.value)
     } else {
-      localStorage.removeItem('accessToken')
+      storage.removeItem('accessToken')
     }
     if (refreshToken.value) {
-      localStorage.setItem('refreshToken', refreshToken.value)
+      storage.setItem('refreshToken', refreshToken.value)
     } else {
-      localStorage.removeItem('refreshToken')
+      storage.removeItem('refreshToken')
     }
     if (displayName.value) {
-      localStorage.setItem('displayName', displayName.value)
+      storage.setItem('displayName', displayName.value)
     } else {
-      localStorage.removeItem('displayName')
+      storage.removeItem('displayName')
     }
   }
 
-  async function login(mobile: string, password: string) {
+  async function login(mobile: string, password: string, rememberMe = false) {
     const res = await AuthApi.login(mobile, password)
     const data = res.data
+    useLocalStorage = rememberMe
     accessToken.value = data.accessToken
     refreshToken.value = data.refreshToken
     displayName.value = data.displayName
@@ -89,7 +111,12 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = ''
     refreshToken.value = ''
     displayName.value = ''
-    persist()
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('displayName')
+    sessionStorage.removeItem('accessToken')
+    sessionStorage.removeItem('refreshToken')
+    sessionStorage.removeItem('displayName')
   }
 
   return {

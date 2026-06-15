@@ -14,17 +14,29 @@ public class RankingService : IRankingService
         _context = context;
     }
 
-    public async Task<IEnumerable<RankingDto>> GetOverallRankingsAsync(int? clubId = null)
+    public async Task<IEnumerable<RankingDto>> GetOverallRankingAsync(OverallRankingFilterDto filter)
     {
         const int citizenSideId = 2;
         const int mafiaSideId = 1;
 
         IQueryable<Entities.Playplayer> query = _context.Playplayers;
 
-        if (clubId.HasValue)
+        if (filter.ClubId.HasValue)
         {
-            query = query.Where(pp => pp.Play.Event != null && pp.Play.Event.ClubId == clubId.Value);
+            query = query.Where(pp => pp.Play.Event != null && pp.Play.Event.ClubId == filter.ClubId.Value);
         }
+
+        if (filter.EventId.HasValue)
+        {
+            query = query.Where(pp => pp.Play.EventId == filter.EventId.Value);
+        }
+
+        if (filter.ScenarioId.HasValue)
+        {
+            query = query.Where(pp => pp.Play.SenarioId == filter.ScenarioId.Value);
+        }
+
+        var minGames = filter.MinimumGames;
 
         var rankings = await query
             .GroupBy(pp => new { pp.PlayerId, pp.Player.Name })
@@ -39,7 +51,7 @@ public class RankingService : IRankingService
                 MafiaGames = g.Count(pp => pp.Role.SideId == mafiaSideId),
                 MafiaWins = g.Count(pp => pp.Role.SideId == mafiaSideId && pp.Play.WinnersideId == mafiaSideId)
             })
-            .Where(x => x.TotalGames >= 10)
+            .Where(x => x.TotalGames >= minGames)
             .OrderByDescending(x => x.OverallWins * 1.0 / x.TotalGames)
             .ToListAsync();
 

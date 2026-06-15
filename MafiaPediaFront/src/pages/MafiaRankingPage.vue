@@ -1,6 +1,6 @@
 <template>
   <div dir="rtl" class="w-full md:w-3/4 mx-auto">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6">Mafia Ranking</h1>
+    <h1 class="text-2xl md:text-3xl font-bold mb-6">رنکینگ بهترین بازیکنان مافیا</h1>
 
     <div class="flex flex-wrap gap-4 mb-6 items-end">
       <div class="flex flex-col gap-1">
@@ -80,10 +80,16 @@
         </thead>
         <tbody>
           <tr
-            v-for="row in paginated"
+            v-for="(row, index) in paginated"
             :key="row.playerId"
             class="border-b border-gray-200 hover:bg-gray-50 transition"
           >
+            <td class="px-4 py-3 text-center">
+              <span v-if="showTrophies && (page - 1) * perPage + index < 3" class="ml-1">
+                {{ ['🥇', '🥈', '🥉'][(page - 1) * perPage + index] }}
+              </span>
+              {{ (page - 1) * perPage + index + 1 }}
+            </td>
             <td class="px-4 py-3">
               <router-link
                 :to="`/player/${row.playerId}`"
@@ -125,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, watch, onMounted } from 'vue'
 import { RankingApi, LookupApi } from '@/api'
 import type { SideRankingEntry, Club, Event, Scenario } from '@/types'
 
@@ -133,11 +139,12 @@ type SortKey = keyof SideRankingEntry
 type SortDir = 'asc' | 'desc'
 
 interface ColumnDef {
-  key: SortKey
+  key: SortKey | 'rowNumber'
   label: string
 }
 
 const columns: ColumnDef[] = [
+  { key: 'rowNumber', label: 'ردیف' },
   { key: 'playerName', label: 'نام بازیکن' },
   { key: 'games', label: 'تعداد بازی' },
   { key: 'wins', label: 'تعداد برد' },
@@ -150,6 +157,9 @@ const sortKey = ref<SortKey>('winRate')
 const sortDir = ref<SortDir>('desc')
 const page = ref(1)
 const perPage = 50
+const showTrophies = ref(true)
+
+watch([sortKey, sortDir], () => { showTrophies.value = false })
 
 const clubs = ref<Club[]>([])
 const events = ref<Event[]>([])
@@ -161,6 +171,11 @@ const filters = reactive({
   scenarioId: undefined as number | undefined,
   minimumGames: undefined as number | undefined,
 })
+
+watch(() => filters.clubId, () => { showTrophies.value = false })
+watch(() => filters.eventId, () => { showTrophies.value = false })
+watch(() => filters.scenarioId, () => { showTrophies.value = false })
+watch(() => filters.minimumGames, () => { showTrophies.value = false })
 
 const filteredEvents = computed(() =>
   filters.clubId
@@ -187,7 +202,8 @@ const paginated = computed(() => {
   return sorted.value.slice(start, start + perPage)
 })
 
-function toggleSort(key: SortKey) {
+function toggleSort(key: SortKey | 'rowNumber') {
+  if (key === 'rowNumber') return
   if (sortKey.value === key) {
     sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
   } else {

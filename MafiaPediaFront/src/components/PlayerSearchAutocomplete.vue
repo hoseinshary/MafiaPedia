@@ -56,6 +56,16 @@ import { useRouter } from 'vue-router'
 import { PlayerApi } from '@/api'
 import type { PlayerSearchResult } from '@/types'
 
+const props = withDefaults(defineProps<{
+  filterMode?: boolean
+}>(), {
+  filterMode: false,
+})
+
+const emit = defineEmits<{
+  select: [player: PlayerSearchResult]
+}>()
+
 const router = useRouter()
 
 const query = ref('')
@@ -95,6 +105,10 @@ function onFocus() {
 function selectPlayer(player: PlayerSearchResult) {
   results.value = []
   query.value = ''
+  if (props.filterMode) {
+    emit('select', player)
+    return
+  }
   router.push(`/player/${player.id}`)
 }
 

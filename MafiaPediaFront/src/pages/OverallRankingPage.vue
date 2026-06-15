@@ -1,6 +1,6 @@
 <template>
   <div dir="rtl" class="w-full md:w-3/4 mx-auto">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6">رنکینگ بهترین بازیکنان شهروند</h1>
+    <h1 class="text-2xl md:text-3xl font-bold mb-6">رنکینگ کلی</h1>
 
     <div class="flex flex-wrap gap-4 mb-6 items-end">
       <div class="flex flex-col gap-1">
@@ -8,7 +8,6 @@
         <select
           v-model="filters.clubId"
           class="border border-gray-300 rounded px-3 py-2 text-sm min-w-[140px]"
-          @change="fetchRanking()"
         >
           <option :value="undefined">همه</option>
           <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.name }}</option>
@@ -20,7 +19,6 @@
         <select
           v-model="filters.eventId"
           class="border border-gray-300 rounded px-3 py-2 text-sm min-w-[140px]"
-          @change="fetchRanking()"
         >
           <option :value="undefined">همه</option>
           <option v-for="e in filteredEvents" :key="e.id" :value="e.id">{{ e.name }}</option>
@@ -32,7 +30,6 @@
         <select
           v-model="filters.scenarioId"
           class="border border-gray-300 rounded px-3 py-2 text-sm min-w-[140px]"
-          @change="fetchRanking()"
         >
           <option :value="undefined">همه</option>
           <option v-for="s in scenarios" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -46,9 +43,15 @@
           type="number"
           min="0"
           class="border border-gray-300 rounded px-3 py-2 text-sm w-[120px]"
-          @change="fetchRanking()"
         />
       </div>
+
+      <button
+        class="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-100 transition"
+        @click="resetFilters"
+      >
+        پاک کردن فیلترها
+      </button>
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
@@ -98,9 +101,10 @@
                 {{ row.playerName }}
               </router-link>
             </td>
-            <td class="px-4 py-3">{{ row.games }}</td>
-            <td class="px-4 py-3">{{ row.wins }}</td>
-            <td class="px-4 py-3">{{ formatPercent(row.winRate) }}</td>
+            <td class="px-4 py-3">{{ row.totalGames }}</td>
+            <td class="px-4 py-3">{{ formatPercent(row.overallWinRate) }}</td>
+            <td class="px-4 py-3">{{ formatPercent(row.citizenWinRate) }}</td>
+            <td class="px-4 py-3">{{ formatPercent(row.mafiaWinRate) }}</td>
           </tr>
         </tbody>
       </table>
@@ -132,10 +136,11 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { RankingApi, LookupApi } from '@/api'
-import type { SideRankingEntry, Club, Event, Scenario } from '@/types'
+import type { OverallRankingEntry, Club, Event, Scenario } from '@/types'
 
-type SortKey = keyof SideRankingEntry
+type SortKey = keyof OverallRankingEntry
 type SortDir = 'asc' | 'desc'
 
 interface ColumnDef {
@@ -146,14 +151,15 @@ interface ColumnDef {
 const columns: ColumnDef[] = [
   { key: 'rowNumber', label: 'ردیف' },
   { key: 'playerName', label: 'نام بازیکن' },
-  { key: 'games', label: 'تعداد بازی' },
-  { key: 'wins', label: 'تعداد برد' },
-  { key: 'winRate', label: 'آمار برد' },
+  { key: 'totalGames', label: 'تعداد بازی' },
+  { key: 'overallWinRate', label: 'آمار برد کل' },
+  { key: 'citizenWinRate', label: 'آمار برد شهروندی' },
+  { key: 'mafiaWinRate', label: 'آمار برد مافیایی' },
 ]
 
-const data = ref<SideRankingEntry[]>([])
+const data = ref<OverallRankingEntry[]>([])
 const loading = ref(true)
-const sortKey = ref<SortKey>('winRate')
+const sortKey = ref<SortKey>('overallWinRate')
 const sortDir = ref<SortDir>('desc')
 const page = ref(1)
 const perPage = 50
@@ -165,8 +171,10 @@ const clubs = ref<Club[]>([])
 const events = ref<Event[]>([])
 const scenarios = ref<Scenario[]>([])
 
+const route = useRoute()
+
 const filters = reactive({
-  clubId: undefined as number | undefined,
+  clubId: (route.query.clubId ? Number(route.query.clubId) : undefined) as number | undefined,
   eventId: undefined as number | undefined,
   scenarioId: undefined as number | undefined,
   minimumGames: undefined as number | undefined,
@@ -217,12 +225,19 @@ function formatPercent(value: number): string {
   return `${value.toFixed(2)}%`
 }
 
+function resetFilters() {
+  filters.clubId = undefined
+  filters.eventId = undefined
+  filters.scenarioId = undefined
+  filters.minimumGames = undefined
+  page.value = 1
+}
+
 async function fetchRanking() {
   loading.value = true
   page.value = 1
   try {
-    const res = await RankingApi.getCitizenRanking({
-      sideId: 2,
+    const res = await RankingApi.getOverallRanking({
       clubId: filters.clubId,
       eventId: filters.eventId,
       scenarioId: filters.scenarioId,
@@ -233,6 +248,8 @@ async function fetchRanking() {
     loading.value = false
   }
 }
+
+watch(filters, fetchRanking, { deep: true })
 
 onMounted(async () => {
   const [clubRes, eventRes, scenarioRes] = await Promise.all([

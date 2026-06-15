@@ -14,10 +14,44 @@ public class DropdownService : IDropdownService
         _context = context;
     }
 
-    public async Task<IEnumerable<DropdownDto>> GetClubsAsync()
+    public async Task<DropdownDto> GetAllAsync()
+    {
+        return new DropdownDto
+        {
+            Clubs = await _context.Clubs
+                .Select(c => new DropdownItemDto { Id = c.Id, Name = c.Name })
+                .ToListAsync(),
+
+            Events = await _context.Events
+                .Select(e => new DropdownItemDto { Id = e.Id, Name = e.Name })
+                .ToListAsync(),
+
+            EventsWithClub = await _context.Events
+                .Select(e => new DropdownEventDto { Id = e.Id, Name = e.Name, ClubId = e.ClubId })
+                .ToListAsync(),
+
+            Senarios = await _context.Senarios
+                .Select(s => new DropdownItemDto { Id = s.Id, Name = s.Name })
+                .ToListAsync(),
+
+            Sides = await _context.Sides
+                .Select(s => new DropdownItemDto { Id = s.Id, Name = s.Name })
+                .ToListAsync(),
+
+            Masters = await _context.Masters
+                .Select(m => new DropdownItemDto { Id = m.Id, Name = m.Name })
+                .ToListAsync(),
+
+            Rooms = await _context.Rooms
+                .Select(r => new DropdownItemDto { Id = r.Id, Name = r.Name })
+                .ToListAsync(),
+        };
+    }
+
+    public async Task<IEnumerable<DropdownItemDto>> GetClubsAsync()
     {
         return await _context.Clubs
-            .Select(c => new DropdownDto { Id = c.Id, Name = c.Name })
+            .Select(c => new DropdownItemDto { Id = c.Id, Name = c.Name })
             .ToListAsync();
     }
 
@@ -28,10 +62,10 @@ public class DropdownService : IDropdownService
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<DropdownDto>> GetScenariosAsync()
+    public async Task<IEnumerable<DropdownItemDto>> GetScenariosAsync()
     {
         return await _context.Senarios
-            .Select(s => new DropdownDto { Id = s.Id, Name = s.Name })
+            .Select(s => new DropdownItemDto { Id = s.Id, Name = s.Name })
             .ToListAsync();
     }
 

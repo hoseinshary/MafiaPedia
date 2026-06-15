@@ -31,9 +31,9 @@
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm text-gray-600">سناریو</label>
-          <select v-model.number="form.senarioId" class="border border-gray-300 rounded px-3 py-2 text-sm" @change="onScenarioChange">
+          <select v-model.number="form.senarioId" class="border border-gray-300 rounded px-3 py-2 text-sm" @change="onSenarioChange">
             <option :value="0" disabled>انتخاب سناریو</option>
-            <option v-for="s in scenarios" :key="s.id" :value="s.id">{{ s.name }}</option>
+            <option v-for="s in senarios" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1">
@@ -52,11 +52,8 @@
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm text-gray-600">برنده</label>
-          <select v-model.number="form.winnersideId" class="border border-gray-300 rounded px-3 py-2 text-sm">
-            <option :value="0" disabled>انتخاب برنده</option>
-            <option :value="1">شهروند</option>
-            <option :value="2">مافیا</option>
-          </select>
+
+          
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm text-gray-600">لینک</label>
@@ -167,9 +164,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { LookupApi, PlayerApi, PlaysApi } from '@/api'
-import type { Scenario, Event as EventItem, Role, Club, PlayerSearchResult } from '@/types'
+import type { Senario, Event as EventItem, Role, Club, PlayerSearchResult } from '@/types'
 
-const scenarios = ref<Scenario[]>([])
+const senarios = ref<Senario[]>([])
 const clubs = ref<Club[]>([])
 const events = ref<EventItem[]>([])
 const roles = ref<Role[]>([])
@@ -177,6 +174,7 @@ const roles = ref<Role[]>([])
 const filteredEvents = computed(() =>
   events.value.filter(e => e.clubId === form.clubId)
 )
+
 const saving = ref(false)
 const touched = ref(false)
 
@@ -328,7 +326,7 @@ function onClubChange() {
   form.eventId = 0
 }
 
-function onScenarioChange() {
+function onSenarioChange() {
   for (const p of form.players) {
     if (p.roleId && !roles.value.some(r => r.id === p.roleId && r.senarioId === form.senarioId)) {
       p.roleId = 0
@@ -397,13 +395,13 @@ async function submitForm() {
 }
 
 onMounted(async () => {
-  const [scenariosRes, eventsRes, rolesRes, clubsRes] = await Promise.all([
+  const [senariosRes, eventsRes, rolesRes, clubsRes] = await Promise.all([
     LookupApi.getScenarios(),
     LookupApi.getEvents(),
     LookupApi.getRoles(),
     LookupApi.getClubs()
   ])
-  scenarios.value = scenariosRes.data
+  senarios.value = senariosRes.data
   events.value = eventsRes.data
   roles.value = rolesRes.data
   clubs.value = clubsRes.data

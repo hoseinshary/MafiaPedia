@@ -13,11 +13,13 @@ public class PlayersController : ControllerBase
 {
     private readonly IPlayerService _playerService;
     private readonly IPlayerCommentService _playerCommentService;
+    private readonly IPlayReadService _playReadService;
 
-    public PlayersController(IPlayerService playerService, IPlayerCommentService playerCommentService)
+    public PlayersController(IPlayerService playerService, IPlayerCommentService playerCommentService, IPlayReadService playReadService)
     {
         _playerService = playerService;
         _playerCommentService = playerCommentService;
+        _playReadService = playReadService;
     }
 
     [HttpGet]
@@ -153,5 +155,20 @@ public class PlayersController : ControllerBase
 
         var results = await _playerService.SearchPlayersAsync(trimmed, limit);
         return Ok(results);
+    }
+
+    [HttpGet("head-to-head")]
+    [ProducesResponseType(typeof(HeadToHeadDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetHeadToHead([FromQuery] int player1Id, [FromQuery] int player2Id)
+    {
+        if (player1Id <= 0 || player2Id <= 0 || player1Id == player2Id)
+            return BadRequest(new { message = "Both player1Id and player2Id are required and must be different." });
+
+        var result = await _playReadService.GetHeadToHeadAsync(player1Id, player2Id);
+        if (result is null) return NotFound(new { message = "One or both players not found." });
+
+        return Ok(result);
     }
 }

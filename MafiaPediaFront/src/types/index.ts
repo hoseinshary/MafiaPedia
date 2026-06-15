@@ -1,3 +1,10 @@
+export interface OverallRankingFilterDto {
+  clubId?: number
+  eventId?: number
+  scenarioId?: number
+  minimumGames?: number
+}
+
 export interface OverallRankingEntry {
   playerId: number
   playerName: string
@@ -40,6 +47,18 @@ export interface RecentGame {
   link: string | null
 }
 
+export interface BestPartnerDto {
+  playerId: number
+  playerName: string
+  sharedGames: number
+  winRate: number
+}
+
+export interface WinRateTrendDto {
+  gameIndex: number
+  winRate: number
+}
+
 export interface PlayerProfile {
   id: number
   name: string
@@ -49,11 +68,27 @@ export interface PlayerProfile {
   mostPlayedRoles: RoleStat[]
   bestRoles: RoleStat[]
   recentGames: RecentGame[]
+  winStreak: number
+  bestRun: number
+  bestMafiaPartner: BestPartnerDto | null
+  bestCitizenPartner: BestPartnerDto | null
+  winRateTrend: WinRateTrendDto[]
 }
 
 export interface Club {
   id: number
   name: string
+}
+
+export interface PlayFilterParams {
+  clubId?: number
+  eventId?: number
+  senarioId?: number
+  playerId?: number
+  winnersideId?: number
+  search?: string
+  page?: number
+  pageSize?: number
 }
 
 export interface Event {
@@ -62,7 +97,7 @@ export interface Event {
   clubId: number
 }
 
-export interface Scenario {
+export interface Senario {
   id: number
   name: string
 }
@@ -118,7 +153,7 @@ export interface SideRankingParams {
   sideId: number
   clubId?: number
   eventId?: number
-  scenarioId?: number
+  senarioId?: number
   minimumGames?: number
 }
 
@@ -140,8 +175,23 @@ export interface PlayDto {
   roomName: string
   masterId: number
   masterName: string
+  clubId?: number
+  clubName?: string
   userId?: number
   players?: PlayPlayerInput[]
+}
+
+export interface PlayPlayerDetail extends PlayPlayerInput {
+  playerName: string
+  picture: string | null
+  roleName: string
+  winnersideId: number
+  winnersideName: string
+}
+
+export interface PlayDetailDto extends PlayDto {
+  clubName: string
+  players: PlayPlayerDetail[]
 }
 
 export interface PaginatedPlays {
@@ -168,7 +218,8 @@ export interface DropdownSide {
 }
 
 export interface DropdownData {
-  senarios: Scenario[]
+  clubs: Club[]
+  senarios: Senario[]
   masters: DropdownMaster[]
   events: Event[]
   rooms: DropdownRoom[]
@@ -235,4 +286,80 @@ export interface UpdateUserDto {
   role?: string
   isActive?: boolean
   password?: string
+}
+
+export interface PlayerSummaryDto {
+  id: number
+  name: string
+  picture?: string
+}
+
+export interface SideMatchupDto {
+  count: number
+  player1Wins: number
+  player2Wins: number
+  draws: number
+}
+
+export interface SameSideDto {
+  count: number
+  wins: number
+  losses: number
+}
+
+export interface SharedPlayDto {
+  playId: number
+  title: string
+  dateTime: string
+  player1Side: string
+  player2Side: string
+  winnerSide?: string
+  player1Won: boolean
+  player2Won: boolean
+}
+
+export interface HeadToHeadDto {
+  player1: PlayerSummaryDto
+  player2: PlayerSummaryDto
+  totalSharedPlays: number
+  player1WinRate: number
+  player2WinRate: number
+  oppositeSides: SideMatchupDto
+  sameSideMafia: SameSideDto
+  sameSideCitizen: SameSideDto
+  sharedPlays: SharedPlayDto[]
+}
+
+export interface PlayListDto {
+  id: number
+  title: string
+  dateTime: string
+  playersCount: number
+  link: string | null
+  senarioName: string
+  masterName: string
+  winnersideName: string
+  eventName: string
+  clubName: string | null
+}
+
+export interface StatisticsHomeDto {
+  totalGames: number
+  totalPlayers: number
+  totalSenarios: number
+  totalEvents: number
+  citizenTop3Player: SideRankingEntry[]
+  mafiaTop3Player: SideRankingEntry[]
+  allTop3Player: OverallRankingEntry[]
+  last5Plays: PlayListDto[]
+  donclubStat?:ClubStatDto
+  legendaryStat?:ClubStatDto
+}
+
+export interface ClubStatDto{
+  clubId : number
+  clubName:string
+  playerCount : number
+  playCount : number
+  mafiaWinRate : number
 }

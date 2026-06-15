@@ -29,6 +29,14 @@
             placeholder="••••••••"
           />
         </div>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            v-model="rememberMe"
+            type="checkbox"
+            class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-2 transition"
+          />
+          <span class="text-sm text-gray-300">مرا به خاطر بسپار</span>
+        </label>
         <button
           type="submit"
           :disabled="loading"
@@ -60,6 +68,7 @@ const authStore = useAuthStore()
 
 const username = ref('')
 const password = ref('')
+const rememberMe = ref(false)
 const error = ref('')
 const loading = ref(false)
 
@@ -71,7 +80,7 @@ async function handleLogin() {
   }
   loading.value = true
   try {
-    await authStore.login(username.value, password.value)
+    await authStore.login(username.value, password.value, rememberMe.value)
     const redirect = (route.query.redirect as string) || '/'
     await router.push(redirect)
   } catch (e: unknown) {

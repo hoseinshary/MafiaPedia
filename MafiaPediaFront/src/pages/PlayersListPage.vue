@@ -118,6 +118,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { PlayerApi } from '@/api'
 import { useAuthStore } from '@/stores/authStore'
 import type { PlayerListItem } from '@/types'
@@ -127,12 +128,14 @@ const authStore = useAuthStore()
 const isAdmin = authStore.isAdmin
 const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5272/api'
 
+const route = useRoute()
+
 const players = ref<PlayerListItem[]>([])
 const loading = ref(true)
 const page = ref(1)
 const pageSize = 20
 const totalPages = ref(1)
-const searchQuery = ref('')
+const searchQuery = ref((route.query.search as string) || '')
 
 const showDeleteModal = ref(false)
 const playerToDelete = ref<{ id: number; name: string } | null>(null)

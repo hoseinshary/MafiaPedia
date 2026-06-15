@@ -139,6 +139,60 @@ public class PlayerService : IPlayerService
             })
             .ToListAsync();
 
+        var allPlayplayers = await _context.Playplayers
+            .Where(pp => pp.PlayerId == playerId)
+            .Include(pp => pp.Play)
+            .Include(pp => pp.Role)
+                .ThenInclude(r => r.Side)
+            .OrderBy(pp => pp.Play.DateTime)
+            .ToListAsync();
+
+        var winStreak = 0;
+        var orderedDesc = allPlayplayers.OrderByDescending(pp => pp.Play.DateTime).ToList();
+        foreach (var pp in orderedDesc)
+        {
+            if (pp.Role?.SideId == pp.Play?.WinnersideId)
+                winStreak++;
+            else
+                break;
+        }
+
+        var bestRun = 0;
+        var currentRun = 0;
+        foreach (var pp in allPlayplayers)
+        {
+            if (pp.Role?.SideId == pp.Play?.WinnersideId)
+            {
+                currentRun++;
+                if (currentRun > bestRun) bestRun = currentRun;
+            }
+            else
+            {
+                currentRun = 0;
+            }
+        }
+
+        var trend = new List<WinRateTrendDto>();
+        for (var i = 9; i < allPlayplayers.Count; i++)
+        {
+            var windowStart = i - 9;
+            var windowCount = i - windowStart + 1;
+            var windowWins = 0;
+            for (var j = windowStart; j <= i; j++)
+            {
+                if (allPlayplayers[j].Role?.SideId == allPlayplayers[j].Play?.WinnersideId)
+                    windowWins++;
+            }
+            trend.Add(new WinRateTrendDto
+            {
+                GameIndex = i + 1,
+                WinRate = Math.Round(windowWins * 100.0 / windowCount, 2)
+            });
+        }
+
+        var mafiaPartner = await FindBestPartnerAsync(playerId, mafiaSideId);
+        var citizenPartner = await FindBestPartnerAsync(playerId, citizenSideId);
+
         return new PlayerProfileDto
         {
             Id = player.Id,
@@ -169,7 +223,47 @@ public class PlayerService : IPlayerService
                 Wins = r.Wins,
                 WinRate = Math.Round(r.Wins * 100.0 / r.Games, 2)
             }).ToList(),
-            RecentGames = recentGames
+            RecentGames = recentGames,
+            WinStreak = winStreak,
+            BestRun = bestRun,
+            BestMafiaPartner = mafiaPartner,
+            BestCitizenPartner = citizenPartner,
+            WinRateTrend = trend
+        };
+    }
+
+    private async Task<BestPartnerDto?> FindBestPartnerAsync(int playerId, int sideId)
+    {
+        var playIds = await _context.Playplayers
+            .Where(pp => pp.PlayerId == playerId && pp.Role.SideId == sideId)
+            .Select(pp => pp.PlayId)
+            .ToListAsync();
+
+        if (playIds.Count == 0) return null;
+
+        var partner = await _context.Playplayers
+            .Where(pp => playIds.Contains(pp.PlayId) && pp.PlayerId != playerId && pp.Role.SideId == sideId)
+            .GroupBy(pp => new { pp.PlayerId, pp.Player.Name })
+            .Select(g => new
+            {
+                g.Key.PlayerId,
+                g.Key.Name,
+                SharedGames = g.Count(),
+                Wins = g.Count(pp => pp.Role.SideId == pp.Play.WinnersideId)
+            })
+            .Where(x => x.SharedGames >= 3)
+            .OrderByDescending(x => x.Wins * 1.0 / x.SharedGames)
+            .ThenByDescending(x => x.SharedGames)
+            .FirstOrDefaultAsync();
+
+        if (partner is null) return null;
+
+        return new BestPartnerDto
+        {
+            PlayerId = partner.PlayerId,
+            PlayerName = partner.Name ?? "",
+            SharedGames = partner.SharedGames,
+            WinRate = Math.Round(partner.Wins * 100.0 / partner.SharedGames, 2)
         };
     }
 

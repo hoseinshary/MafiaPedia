@@ -23,6 +23,7 @@ builder.Services.AddScoped<IPlayReadService, PlayReadService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 builder.Services.AddDbContext<MafiaDbContext>(options =>
     options.UseMySql(
@@ -57,6 +58,9 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim(ClaimTypes.Role, "admin"));
 });
 
+builder.Services.AddEndpointsApiExplorer();
+
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -75,7 +79,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddCors(options =>
 {

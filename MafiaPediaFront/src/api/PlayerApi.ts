@@ -1,5 +1,5 @@
 import apiClient from './apiClient'
-import type { PlayerProfile, PlayerSearchResult, PaginatedPlayers, PlayerDetail } from '@/types'
+import type { PlayerProfile, PlayerSearchResult, PaginatedPlayers, PlayerDetail, HeadToHeadDto } from '@/types'
 
 export const PlayerApi = {
   getPlayerProfile(playerId: number) {
@@ -32,5 +32,11 @@ export const PlayerApi = {
 
   deletePlayer(id: number) {
     return apiClient.delete(`/players/${id}`)
+  },
+
+  getHeadToHead(player1Id: number, player2Id: number) {
+    return apiClient.get<HeadToHeadDto>('/players/head-to-head', {
+      params: { player1Id, player2Id },
+    })
   },
 }

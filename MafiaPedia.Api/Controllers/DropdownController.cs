@@ -17,9 +17,17 @@ public class DropdownController : ControllerBase
         _dropdownService = dropdownService;
     }
 
+    [HttpGet("dropdown")]
+    [ProducesResponseType(typeof(DropdownDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll()
+    {
+        var result = await _dropdownService.GetAllAsync();
+        return Ok(result);
+    }
+
     [HttpGet("clubs")]
-    [ProducesResponseType(typeof(IEnumerable<DropdownDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<DropdownDto>>> GetClubs()
+    [ProducesResponseType(typeof(IEnumerable<DropdownItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<DropdownItemDto>>> GetClubs()
     {
         return Ok(await _dropdownService.GetClubsAsync());
     }
@@ -32,8 +40,8 @@ public class DropdownController : ControllerBase
     }
 
     [HttpGet("scenarios")]
-    [ProducesResponseType(typeof(IEnumerable<DropdownDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<DropdownDto>>> GetScenarios()
+    [ProducesResponseType(typeof(IEnumerable<DropdownItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<DropdownItemDto>>> GetScenarios()
     {
         return Ok(await _dropdownService.GetScenariosAsync());
     }

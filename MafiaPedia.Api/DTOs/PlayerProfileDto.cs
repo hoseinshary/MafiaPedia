@@ -10,6 +10,11 @@ public class PlayerProfileDto
     public List<PlayerRoleSummaryDto> MostPlayedRoles { get; set; } = new();
     public List<PlayerRoleSummaryDto> BestRoles { get; set; } = new();
     public List<PlayerRecentGameDto> RecentGames { get; set; } = new();
+    public int WinStreak { get; set; }
+    public int BestRun { get; set; }
+    public BestPartnerDto? BestMafiaPartner { get; set; }
+    public BestPartnerDto? BestCitizenPartner { get; set; }
+    public List<WinRateTrendDto> WinRateTrend { get; set; } = new();
 }
 
 public class PlayerStatisticsDto
@@ -38,4 +43,18 @@ public class PlayerRecentGameDto
     public string? RoleName { get; set; }
     public string Result { get; set; } = string.Empty;
     public string? Link { get; set; }
+}
+
+public class BestPartnerDto
+{
+    public int PlayerId { get; set; }
+    public string PlayerName { get; set; } = "";
+    public int SharedGames { get; set; }
+    public double WinRate { get; set; }
+}
+
+public class WinRateTrendDto
+{
+    public int GameIndex { get; set; }
+    public double WinRate { get; set; }
 }
