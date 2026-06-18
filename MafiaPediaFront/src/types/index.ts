@@ -1,7 +1,7 @@
 export interface OverallRankingFilterDto {
   clubId?: number
   eventId?: number
-  scenarioId?: number
+  senarioId?: number
   minimumGames?: number
 }
 

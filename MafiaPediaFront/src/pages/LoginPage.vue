@@ -1,31 +1,31 @@
 <template>
-  <div dir="rtl" class="min-h-screen bg-gray-900 flex items-center justify-center px-4">
+  <div dir="rtl" class="min-h-screen bg-[#0d0d0f] flex items-center justify-center px-4">
     <div class="w-full max-w-sm">
       <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-white">ورود</h1>
-        <p class="text-gray-400 mt-2 text-sm">به حساب کاربری خود وارد شوید</p>
+        <h1 class="text-3xl font-bold text-[#e8e4d9]">ورود</h1>
+        <p class="text-[rgba(232,228,217,0.4)] mt-2 text-sm">به حساب کاربری خود وارد شوید</p>
       </div>
-      <form @submit.prevent="handleLogin" class="bg-gray-800 rounded-lg p-6 space-y-4">
-        <div v-if="error" class="bg-red-900/50 border border-red-700 text-red-300 text-sm rounded px-4 py-3">
+      <form @submit.prevent="handleLogin" class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6 space-y-4">
+        <div v-if="error" class="bg-[rgba(224,112,112,0.1)] border border-[rgba(224,112,112,0.2)] text-[#e07070] text-sm rounded px-4 py-3">
           {{ error }}
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-gray-300">نام کاربری</label>
+          <label class="text-sm text-[rgba(232,228,217,0.4)]">نام کاربری</label>
           <input
             v-model="username"
             type="text"
             dir="ltr"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+            class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
             placeholder="username"
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-gray-300">رمز عبور</label>
+          <label class="text-sm text-[rgba(232,228,217,0.4)]">رمز عبور</label>
           <input
             v-model="password"
             type="password"
             dir="ltr"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+            class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
             placeholder="••••••••"
           />
         </div>
@@ -33,24 +33,24 @@
           <input
             v-model="rememberMe"
             type="checkbox"
-            class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-2 transition"
+            class="w-4 h-4 rounded border-[rgba(255,255,255,0.15)] bg-[#0d0d0f] text-[#c9b07a] focus:ring-[#c9b07a] focus:ring-2 transition"
           />
-          <span class="text-sm text-gray-300">مرا به خاطر بسپار</span>
+          <span class="text-sm text-[rgba(232,228,217,0.4)]">مرا به خاطر بسپار</span>
         </label>
         <button
           type="submit"
           :disabled="loading"
-          class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded font-medium transition"
+          class="w-full py-2.5 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] rounded-[8px] font-medium transition"
         >
           <span v-if="loading" class="inline-flex items-center gap-2">
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
             در حال ورود...
           </span>
           <span v-else>ورود</span>
         </button>
-        <p class="text-center text-sm text-gray-400 mt-4">
+        <p class="text-center text-sm text-[rgba(232,228,217,0.4)] mt-4">
           حساب کاربری نداری؟
-          <router-link to="/register" class="text-blue-400 hover:text-blue-300 transition">ثبت‌نام کن</router-link>
+          <router-link to="/register" class="text-[#c9b07a] hover:text-[#b8a16e] transition">ثبت‌نام کن</router-link>
         </p>
       </form>
     </div>

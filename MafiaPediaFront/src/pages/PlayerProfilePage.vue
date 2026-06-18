@@ -1,30 +1,30 @@
 <template>
-  <div dir="rtl" class="w-full md:w-3/4 mx-auto">
+  <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
     <div v-if="error" class="text-center py-20 text-red-500 text-lg">
       {{ error }}
     </div>
 
     <template v-else-if="player">
       <section class="mb-8">
-        <div class="flex items-center gap-6 bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center gap-6 bg-[#141416] rounded-[12px] border border-[rgba(255,255,255,0.07)] p-6">
           <img
             v-if="player.picture"
             :src="`https://localhost:7097/${player.picture}`"
             :alt="player.name"
-            class="w-20 h-20 rounded-full object-cover shrink-0"
+            class="w-20 h-20 rounded-full object-cover shrink-0 border-2 border-[rgba(201,176,122,0.3)]"
           />
-          <div v-else class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-3xl text-gray-500 shrink-0">
+          <div v-else class="w-20 h-20 rounded-full bg-[#2a2820] flex items-center justify-center text-3xl text-[#c9b07a] shrink-0 border-[1.5px] border-[rgba(201,176,122,0.3)]">
             {{ player.name.charAt(0) }}
           </div>
           <div>
-            <h1 class="text-2xl font-bold">{{ player.name }}</h1>
-            <p v-if="player.birthday" class="text-gray-500 text-sm mt-1">{{ player.birthday }}</p>
+            <h1 class="text-xl font-bold text-[#e8e4d9]">{{ player.name }}</h1>
+            <p v-if="player.birthday" class="text-sm mt-1 text-[rgba(232,228,217,0.35)]">{{ player.birthday }}</p>
           </div>
         </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">آمار کلی</h2>
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">آمار کلی</h2>
         <div class="grid grid-cols-2 gap-4">
           <PlayerStatisticsCard label="تعداد کل بازی‌ها" :value="String(player.statistics.totalGames)" />
           <PlayerStatisticsCard label="آمار برد کل" :value="formatPercent(player.statistics.overallWinRate)" />
@@ -36,7 +36,7 @@
       </section>
 
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">رکوردها</h2>
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">رکوردها</h2>
         <div class="grid grid-cols-2 gap-4">
           <PlayerStatisticsCard label="🔥 Win Streak فعلی" :value="`${player.winStreak} بازی`" />
           <PlayerStatisticsCard label="🏆 بهترین رکورد برد پیاپی" :value="`${player.bestRun} بازی`" />
@@ -44,64 +44,70 @@
       </section>
 
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">بهترین هم‌تیمی‌ها</h2>
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">بهترین هم‌تیمی‌ها</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="bg-white rounded-lg border border-gray-200 p-4 text-center shadow-sm">
-            <p class="text-sm text-gray-500 mb-1">بهترین هم‌تیمی مافیایی</p>
+          <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-4 text-center">
+            <p class="text-sm text-[rgba(232,228,217,0.4)] mb-1">بهترین هم‌تیمی مافیایی</p>
             <template v-if="player.bestMafiaPartner">
               <router-link
                 :to="`/player/${player.bestMafiaPartner.playerId}`"
-                class="text-lg font-bold text-blue-600 hover:underline"
+                class="text-lg font-bold text-[#c9b07a] hover:underline"
               >
                 {{ player.bestMafiaPartner.playerName }}
               </router-link>
-              <p class="text-sm text-gray-500 mt-1">{{ player.bestMafiaPartner.sharedGames }} بازی مشترک</p>
-              <p class="text-sm text-gray-500">{{ (player.bestMafiaPartner.winRate ).toFixed(2) }}% برد</p>
+              <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ player.bestMafiaPartner.sharedGames }} بازی مشترک</p>
+              <p class="text-sm text-[rgba(232,228,217,0.4)]">{{ (player.bestMafiaPartner.winRate ).toFixed(2) }}% برد</p>
             </template>
-            <p v-else class="text-gray-400 mt-2">اطلاعات کافی نیست</p>
+            <p v-else class="text-[rgba(232,228,217,0.4)] mt-2">اطلاعات کافی نیست</p>
           </div>
-          <div class="bg-white rounded-lg border border-gray-200 p-4 text-center shadow-sm">
-            <p class="text-sm text-gray-500 mb-1">بهترین هم‌تیمی شهروندی</p>
+          <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-4 text-center">
+            <p class="text-sm text-[rgba(232,228,217,0.4)] mb-1">بهترین هم‌تیمی شهروندی</p>
             <template v-if="player.bestCitizenPartner">
               <router-link
                 :to="`/player/${player.bestCitizenPartner.playerId}`"
-                class="text-lg font-bold text-blue-600 hover:underline"
+                class="text-lg font-bold text-[#c9b07a] hover:underline"
               >
                 {{ player.bestCitizenPartner.playerName }}
               </router-link>
-              <p class="text-sm text-gray-500 mt-1">{{ player.bestCitizenPartner.sharedGames }} بازی مشترک</p>
-              <p class="text-sm text-gray-500">{{ (player.bestCitizenPartner.winRate ).toFixed(2) }}% برد</p>
+              <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ player.bestCitizenPartner.sharedGames }} بازی مشترک</p>
+              <p class="text-sm text-[rgba(232,228,217,0.4)]">{{ (player.bestCitizenPartner.winRate ).toFixed(2) }}% برد</p>
             </template>
-            <p v-else class="text-gray-400 mt-2">اطلاعات کافی نیست</p>
+            <p v-else class="text-[rgba(232,228,217,0.4)] mt-2">اطلاعات کافی نیست</p>
           </div>
         </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">روند برد</h2>
-        <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">روند برد</h2>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-4">
           <template v-if="player.winRateTrend.length >= 5">
             <div style="height: 250px">
               <Line :data="chartData" :options="chartOptions" />
             </div>
           </template>
-          <p v-else class="text-center text-gray-400 py-10">برای نمایش نمودار حداقل 10 بازی لازم است</p>
+          <p v-else class="text-center text-[rgba(232,228,217,0.4)] py-10">برای نمایش نمودار حداقل 10 بازی لازم است</p>
         </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">پر تکرارترین نقش‌ها</h2>
-        <RolesTable :roles="player.mostPlayedRoles.slice(0, 5)" />
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">پر تکرارترین نقش‌ها</h2>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+          <RolesTable :roles="player.mostPlayedRoles.slice(0, 5)" />
+        </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">بهترین نقش‌ها</h2>
-        <RolesTable :roles="player.bestRoles.slice(0, 5)" :showWins="true" :showWinRate="true" />
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">بهترین نقش‌ها</h2>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+          <RolesTable :roles="player.bestRoles.slice(0, 5)" :showWins="true" :showWinRate="true" />
+        </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">بازی‌های اخیر</h2>
-        <RecentGamesTable :games="player.recentGames" />
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">بازی‌های اخیر</h2>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+          <RecentGamesTable :games="player.recentGames" />
+        </div>
       </section>
 
       <section class="mb-8">
@@ -110,19 +116,19 @@
     </template>
 
     <div v-else class="space-y-6 animate-pulse">
-      <div class="flex items-center gap-6 bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <div class="w-20 h-20 rounded-full bg-gray-200" />
+      <div class="flex items-center gap-6 bg-[#141416] rounded-[12px] border border-[rgba(255,255,255,0.07)] p-6">
+        <div class="w-20 h-20 rounded-full bg-[#1e1e22]" />
         <div class="space-y-3 flex-1">
-          <div class="h-6 w-48 bg-gray-200 rounded" />
-          <div class="h-4 w-32 bg-gray-200 rounded" />
+          <div class="h-6 w-48 bg-[#1e1e22] rounded" />
+          <div class="h-4 w-32 bg-[#1e1e22] rounded" />
         </div>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div v-for="i in 6" :key="i" class="h-24 bg-gray-200 rounded-lg" />
+        <div v-for="i in 6" :key="i" class="h-24 bg-[#1e1e22] rounded-lg" />
       </div>
-      <div class="h-48 bg-gray-200 rounded-lg" />
-      <div class="h-48 bg-gray-200 rounded-lg" />
-      <div class="h-48 bg-gray-200 rounded-lg" />
+      <div class="h-48 bg-[#1e1e22] rounded-lg" />
+      <div class="h-48 bg-[#1e1e22] rounded-lg" />
+      <div class="h-48 bg-[#1e1e22] rounded-lg" />
     </div>
   </div>
 </template>
@@ -191,10 +197,10 @@ const chartOptions = {
   maintainAspectRatio: false,
   plugins: {
     tooltip: {
-      backgroundColor: '#1a1a2e',
-      titleColor: '#e0e0e0',
-      bodyColor: '#e0e0e0',
-      borderColor: '#16213e',
+      backgroundColor: '#141416',
+      titleColor: '#e8e4d9',
+      bodyColor: '#e8e4d9',
+      borderColor: 'rgba(255,255,255,0.1)',
       borderWidth: 1,
       padding: 10,
       callbacks: {
@@ -204,16 +210,16 @@ const chartOptions = {
   },
   scales: {
     x: {
-      title: { display: true, text: 'بازی', color: '#666' },
-      grid: { color: 'rgba(0,0,0,0.05)' },
-      ticks: { color: '#666' }
+      title: { display: true, text: 'بازی', color: 'rgba(232,228,217,0.3)' },
+      grid: { color: 'rgba(255,255,255,0.05)' },
+      ticks: { color: 'rgba(232,228,217,0.35)' }
     },
     y: {
       min: 0,
       max: 100,
-      title: { display: true, text: 'درصد برد', color: '#666' },
-      grid: { color: 'rgba(0,0,0,0.05)' },
-      ticks: { color: '#666', callback: (v: string | number) => `${v}%` }
+      title: { display: true, text: 'درصد برد', color: 'rgba(232,228,217,0.3)' },
+      grid: { color: 'rgba(255,255,255,0.05)' },
+      ticks: { color: 'rgba(232,228,217,0.35)', callback: (v: string | number) => `${v}%` }
     }
   }
 }

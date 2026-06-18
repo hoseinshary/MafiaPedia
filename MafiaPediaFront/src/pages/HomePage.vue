@@ -35,15 +35,15 @@
               <p class="mp-club-name">دن کلاب</p>
               <div class="mp-club-stats">
                 <div class="mp-club-stat">
-                  <span class="mp-club-stat-num mp-club-stat-num-don">{{ formatPersianNumber(stats.donclubStat.playerCount) }}</span>
+                  <span class="mp-club-stat-num mp-club-stat-num-don">{{ formatPersianNumber(stats.donclubStat?.playerCount ?? 0) }}</span>
                   <span class="mp-club-stat-label">بازیکن</span>
                 </div>
                 <div class="mp-club-stat">
-                  <span class="mp-club-stat-num mp-club-stat-num-don">{{ formatPersianNumber(stats.donclubStat.playCount) }}</span>
+                  <span class="mp-club-stat-num mp-club-stat-num-don">{{ formatPersianNumber(stats.donclubStat?.playCount ??0) }}</span>
                   <span class="mp-club-stat-label">بازی</span>
                 </div>
                 <div class="mp-club-stat">
-                  <span class="mp-club-stat-num mp-club-stat-num-don">%{{ formatPersianNumber(stats.donclubStat?.mafiaWinRate.toFixed(1)) }}</span>
+                  <span class="mp-club-stat-num mp-club-stat-num-don">    %{{ formatPersianNumber(Number((stats.donclubStat?.mafiaWinRate ?? 0).toFixed(1))) }}</span>
                   <span class="mp-club-stat-label">برد مافیا</span>
                 </div>
               </div>
@@ -61,17 +61,17 @@
               <p class="mp-club-name">لجندری</p>
               <div class="mp-club-stats">
                 <div class="mp-club-stat">
-                  <span class="mp-club-stat-num mp-club-stat-num-legendary">{{ formatPersianNumber(stats.legendaryStat.playerCount) }}</span>
+                  <span class="mp-club-stat-num mp-club-stat-num-legendary">{{ formatPersianNumber(stats.legendaryStat?.playerCount?? 0) }}</span>
                   <span class="mp-club-stat-label">بازیکن</span>
                 </div>
                 <div class="mp-club-stat">
-                  <span class="mp-club-stat-num mp-club-stat-num-legendary">{{ formatPersianNumber(stats.legendaryStat.playCount) }}</span>
+                  <span class="mp-club-stat-num mp-club-stat-num-legendary">{{ formatPersianNumber(stats.legendaryStat?.playCount?? 0) }}</span>
                   <span class="mp-club-stat-label">بازی</span>
                 </div>
                 <div class="mp-club-stat">
-                  <span class="mp-club-stat-num mp-club-stat-num-legendary">%{{ formatPersianNumber(stats.legendaryStat.mafiaWinRate.toFixed(1)) }}</span>
+                  <span class="mp-club-stat-num mp-club-stat-num-legendary">%{{ formatPersianNumber(Number((stats.legendaryStat?.mafiaWinRate ?? 0).toFixed(1))) }}</span>
                   <span class="mp-club-stat-label">برد مافیا</span>
-                </div>
+                </div>  
               </div>
               <router-link to="/ranking/overall?clubId=2" style="text-decoration:none;">
                 <button class="mp-club-btn mp-club-btn-legendary">مشاهده آمار ←</button>
@@ -139,8 +139,26 @@
                 {{ getInitials(player.playerName) }}
               </div>
               <p class="mp-player-name">{{ player.playerName }}</p>
-              <p class="mp-player-wr">win rate: <strong>{{ formatWinRatePct(player.winRate) }}</strong></p>
-              <p class="mp-player-games">{{ formatPersianNumber(player.games) }} بازی</p>
+              <div  class="flex full">
+                <span class="w1/3">
+                  <p class="mp-player-wr">win rate: <strong>{{ formatWinRatePct(player.winRate) }}</strong></p>
+                  <p class="mp-player-games">{{ formatPersianNumber(player.games) }} بازی</p>
+                </span>
+                <!-- &nbsp;
+                &nbsp;
+                &nbsp;
+                &nbsp;&nbsp;
+                <span v-if="activePodiumTab === 'overall'" class="w1/3   " >
+                  <p class="mp-player-wr"> مافیایی: <strong>{{ formatWinRatePct(player.winRate) }}</strong></p>
+                  <p class="mp-player-games">{{ formatPersianNumber(player.games) }} بازی</p>
+                </span>
+                &nbsp;
+                &nbsp;
+                  <span v-if="activePodiumTab === 'overall'" class="w1/3   " >
+                  <p class="mp-player-wr"> شهروندی: <strong>{{ formatWinRatePct(player.winRate) }}</strong></p>
+                  <p class="mp-player-games">{{ formatPersianNumber(player.games) }} بازی</p>
+                </span> -->
+              </div>
             </div>
           </template>
           <div v-else class="mp-podium-empty">

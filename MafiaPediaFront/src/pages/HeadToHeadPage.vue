@@ -1,23 +1,23 @@
 <template>
-  <div dir="rtl" class="w-full md:w-4/5 mx-auto">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6">مقایسه دو بازیکن</h1>
+  <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-[#e8e4d9]">مقایسه دو بازیکن</h1>
 
-    <div class="bg-gray-800 rounded-lg p-6 mb-8">
+    <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-4 mb-8">
       <div class="flex items-end gap-4 flex-wrap">
         <div class="flex-1 min-w-[200px]">
-          <label class="text-sm text-gray-400 mb-1 block">بازیکن اول</label>
+          <label class="text-sm text-[rgba(232,228,217,0.4)] mb-1 block">بازیکن اول</label>
           <PlayerSearchAutocomplete filter-mode @select="onSelectPlayer1" />
-          <p v-if="selectedPlayer1" class="text-sm text-blue-400 mt-1">{{ selectedPlayer1.name }}</p>
+          <p v-if="selectedPlayer1" class="text-sm text-[#c9b07a] mt-1">{{ selectedPlayer1.name }}</p>
         </div>
-        <div class="text-2xl text-gray-400 pb-2">⚔️</div>
+        <div class="text-2xl text-[rgba(232,228,217,0.35)] pb-2">⚔️</div>
         <div class="flex-1 min-w-[200px]">
-          <label class="text-sm text-gray-400 mb-1 block">بازیکن دوم</label>
+          <label class="text-sm text-[rgba(232,228,217,0.4)] mb-1 block">بازیکن دوم</label>
           <PlayerSearchAutocomplete filter-mode @select="onSelectPlayer2" />
-          <p v-if="selectedPlayer2" class="text-sm text-blue-400 mt-1">{{ selectedPlayer2.name }}</p>
+          <p v-if="selectedPlayer2" class="text-sm text-[#c9b07a] mt-1">{{ selectedPlayer2.name }}</p>
         </div>
         <button
           :disabled="!selectedPlayer1 || !selectedPlayer2 || loading"
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded font-medium transition"
+          class="px-6 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] rounded font-medium transition"
           @click="compare"
         >
           مقایسه
@@ -25,119 +25,119 @@
       </div>
     </div>
 
-    <div v-if="error" class="bg-red-900/50 border border-red-700 text-red-300 text-sm rounded px-4 py-3 mb-6">
+    <div v-if="error" class="bg-[rgba(224,112,112,0.1)] border border-[rgba(224,112,112,0.2)] text-[#e07070] text-sm rounded px-4 py-3 mb-6">
       {{ error }}
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
     </div>
 
     <template v-if="result && !loading">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-gray-800 rounded-lg p-6 text-center">
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6 text-center">
           <template v-if="result.player1.picture">
-            <img :src="getImageUrl(result.player1.picture)" :alt="result.player1.name" class="w-20 h-20 rounded-full object-cover mx-auto bg-gray-700" />
+            <img :src="getImageUrl(result.player1.picture)" :alt="result.player1.name" class="w-20 h-20 rounded-full object-cover mx-auto border-[1.5px] border-[rgba(201,176,122,0.3)]" />
           </template>
-          <div v-else class="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center mx-auto">
-            <span class="text-2xl text-white font-bold">{{ result.player1.name.charAt(0) }}</span>
+          <div v-else class="w-20 h-20 rounded-full bg-[#2a2820] flex items-center justify-center mx-auto border-[1.5px] border-[rgba(201,176,122,0.3)]">
+            <span class="text-2xl text-[#c9b07a] font-bold">{{ result.player1.name.charAt(0) }}</span>
           </div>
-          <router-link :to="`/player/${result.player1.id}`" class="text-blue-400 hover:text-blue-300 font-medium mt-3 block">
+          <router-link :to="`/player/${result.player1.id}`" class="text-[#c9b07a] hover:underline font-medium mt-3 block">
             {{ result.player1.name }}
           </router-link>
-          <p class="text-gray-400 text-sm mt-1">{{ formatPercent(result.player1WinRate) }}</p>
+          <p class="text-[rgba(232,228,217,0.4)] text-sm mt-1">{{ formatPercent(result.player1WinRate) }}</p>
         </div>
 
-        <div class="bg-gray-800 rounded-lg p-6 text-center flex flex-col items-center justify-center">
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6 text-center flex flex-col items-center justify-center">
           <span class="text-3xl">⚔️</span>
-          <span class="text-4xl font-bold text-white mt-2">{{ result.totalSharedPlays }}</span>
-          <span class="text-gray-400 text-sm">بازی مشترک</span>
+          <span class="text-4xl font-bold text-[#e8e4d9] mt-2">{{ result.totalSharedPlays }}</span>
+          <span class="text-[rgba(232,228,217,0.4)] text-sm">بازی مشترک</span>
         </div>
 
-        <div class="bg-gray-800 rounded-lg p-6 text-center">
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6 text-center">
           <template v-if="result.player2.picture">
-            <img :src="getImageUrl(result.player2.picture)" :alt="result.player2.name" class="w-20 h-20 rounded-full object-cover mx-auto bg-gray-700" />
+            <img :src="getImageUrl(result.player2.picture)" :alt="result.player2.name" class="w-20 h-20 rounded-full object-cover mx-auto border-[1.5px] border-[rgba(201,176,122,0.3)]" />
           </template>
-          <div v-else class="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center mx-auto">
-            <span class="text-2xl text-white font-bold">{{ result.player2.name.charAt(0) }}</span>
+          <div v-else class="w-20 h-20 rounded-full bg-[#2a2820] flex items-center justify-center mx-auto border-[1.5px] border-[rgba(201,176,122,0.3)]">
+            <span class="text-2xl text-[#c9b07a] font-bold">{{ result.player2.name.charAt(0) }}</span>
           </div>
-          <router-link :to="`/player/${result.player2.id}`" class="text-blue-400 hover:text-blue-300 font-medium mt-3 block">
+          <router-link :to="`/player/${result.player2.id}`" class="text-[#c9b07a] hover:underline font-medium mt-3 block">
             {{ result.player2.name }}
           </router-link>
-          <p class="text-gray-400 text-sm mt-1">{{ formatPercent(result.player2WinRate) }}</p>
+          <p class="text-[rgba(232,228,217,0.4)] text-sm mt-1">{{ formatPercent(result.player2WinRate) }}</p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-gray-800 rounded-lg p-6">
-          <h3 class="text-lg font-medium text-white mb-3">ساید مخالف هم</h3>
-          <p class="text-gray-400 text-sm mb-2">{{ result.oppositeSides.count }} بازی</p>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6">
+          <h3 class="text-lg font-medium text-[#e8e4d9] mb-3">ساید مخالف هم</h3>
+          <p class="text-[rgba(232,228,217,0.4)] text-sm mb-2">{{ result.oppositeSides.count }} بازی</p>
           <div class="space-y-1 text-sm">
-            <p><span class="text-green-400">{{ result.player1.name }}</span> <span class="text-gray-300">{{ result.oppositeSides.player1Wins }} برد</span></p>
-            <p><span class="text-red-400">{{ result.player2.name }}</span> <span class="text-gray-300">{{ result.oppositeSides.player2Wins }} برد</span></p>
-            <p v-if="result.oppositeSides.draws" class="text-gray-500">{{ result.oppositeSides.draws }} مساوی</p>
+            <p><span class="text-[#6fcf8a]">{{ result.player1.name }}</span> <span class="text-[rgba(232,228,217,0.6)]">{{ result.oppositeSides.player1Wins }} برد</span></p>
+            <p><span class="text-[#e07070]">{{ result.player2.name }}</span> <span class="text-[rgba(232,228,217,0.6)]">{{ result.oppositeSides.player2Wins }} برد</span></p>
+            <p v-if="result.oppositeSides.draws" class="text-[rgba(232,228,217,0.35)]">{{ result.oppositeSides.draws }} مساوی</p>
           </div>
         </div>
 
-        <div class="bg-gray-800 rounded-lg p-6">
-          <h3 class="text-lg font-medium text-white mb-3">هر دو مافیا</h3>
-          <p class="text-gray-400 text-sm mb-2">{{ result.sameSideMafia.count }} بازی</p>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6">
+          <h3 class="text-lg font-medium text-[#e8e4d9] mb-3">هر دو مافیا</h3>
+          <p class="text-[rgba(232,228,217,0.4)] text-sm mb-2">{{ result.sameSideMafia.count }} بازی</p>
           <div class="space-y-1 text-sm">
-            <p><span class="text-green-400">برد</span> <span class="text-gray-300">{{ result.sameSideMafia.wins }}</span></p>
-            <p><span class="text-red-400">باخت</span> <span class="text-gray-300">{{ result.sameSideMafia.losses }}</span></p>
+            <p><span class="text-[#6fcf8a]">برد</span> <span class="text-[rgba(232,228,217,0.6)]">{{ result.sameSideMafia.wins }}</span></p>
+            <p><span class="text-[#e07070]">باخت</span> <span class="text-[rgba(232,228,217,0.6)]">{{ result.sameSideMafia.losses }}</span></p>
           </div>
         </div>
 
-        <div class="bg-gray-800 rounded-lg p-6">
-          <h3 class="text-lg font-medium text-white mb-3">هر دو شهروند</h3>
-          <p class="text-gray-400 text-sm mb-2">{{ result.sameSideCitizen.count }} بازی</p>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6">
+          <h3 class="text-lg font-medium text-[#e8e4d9] mb-3">هر دو شهروند</h3>
+          <p class="text-[rgba(232,228,217,0.4)] text-sm mb-2">{{ result.sameSideCitizen.count }} بازی</p>
           <div class="space-y-1 text-sm">
-            <p><span class="text-green-400">برد</span> <span class="text-gray-300">{{ result.sameSideCitizen.wins }}</span></p>
-            <p><span class="text-red-400">باخت</span> <span class="text-gray-300">{{ result.sameSideCitizen.losses }}</span></p>
+            <p><span class="text-[#6fcf8a]">برد</span> <span class="text-[rgba(232,228,217,0.6)]">{{ result.sameSideCitizen.wins }}</span></p>
+            <p><span class="text-[#e07070]">باخت</span> <span class="text-[rgba(232,228,217,0.6)]">{{ result.sameSideCitizen.losses }}</span></p>
           </div>
         </div>
       </div>
 
-      <div class="bg-gray-800 rounded-lg overflow-hidden">
-        <div v-if="result.sharedPlays.length === 0" class="text-center py-12 text-gray-400">
+      <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+        <div v-if="result.sharedPlays.length === 0" class="text-center py-12 text-[rgba(232,228,217,0.4)]">
           بازی مشترکی یافت نشد
         </div>
         <div v-else class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
-              <tr class="border-b border-gray-700 bg-gray-900/50">
-                <th class="px-4 py-3 text-gray-400 text-center whitespace-nowrap">ردیف</th>
-                <th class="px-4 py-3 text-gray-400 text-right whitespace-nowrap">عنوان بازی</th>
-                <th class="px-4 py-3 text-gray-400 text-center whitespace-nowrap">تاریخ</th>
-                <th class="px-4 py-3 text-gray-400 text-center whitespace-nowrap">ساید {{ result.player1.name }}</th>
-                <th class="px-4 py-3 text-gray-400 text-center whitespace-nowrap">ساید {{ result.player2.name }}</th>
-                <th class="px-4 py-3 text-gray-400 text-center whitespace-nowrap">برنده</th>
+              <tr class="border-b border-[rgba(255,255,255,0.07)] bg-[#1a1a1e]">
+                <th class="px-4 py-3 text-[rgba(232,228,217,0.5)] text-center whitespace-nowrap">ردیف</th>
+                <th class="px-4 py-3 text-[rgba(232,228,217,0.5)] text-right whitespace-nowrap">عنوان بازی</th>
+                <th class="px-4 py-3 text-[rgba(232,228,217,0.5)] text-center whitespace-nowrap">تاریخ</th>
+                <th class="px-4 py-3 text-[rgba(232,228,217,0.5)] text-center whitespace-nowrap">ساید {{ result.player1.name }}</th>
+                <th class="px-4 py-3 text-[rgba(232,228,217,0.5)] text-center whitespace-nowrap">ساید {{ result.player2.name }}</th>
+                <th class="px-4 py-3 text-[rgba(232,228,217,0.5)] text-center whitespace-nowrap">برنده</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(play, index) in result.sharedPlays" :key="play.playId" class="border-b border-gray-700 hover:bg-gray-700/50 transition">
-                <td class="px-4 py-3 text-center text-gray-300">{{ index + 1 }}</td>
+              <tr v-for="(play, index) in result.sharedPlays" :key="play.playId" class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[#1a1a1e] transition">
+                <td class="px-4 py-3 text-center text-[#e8e4d9]">{{ index + 1 }}</td>
                 <td class="px-4 py-3">
-                  <router-link :to="`/plays/${play.playId}`" class="text-blue-400 hover:text-blue-300">
+                  <router-link :to="`/plays/${play.playId}`" class="text-[#c9b07a] hover:underline">
                     {{ play.title }}
                   </router-link>
                 </td>
-                <td class="px-4 py-3 text-center text-gray-300">{{ formatDate(play.dateTime) }}</td>
+                <td class="px-4 py-3 text-center text-[rgba(232,228,217,0.4)]">{{ formatDate(play.dateTime) }}</td>
                 <td class="px-4 py-3 text-center">
                   <span
                     class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
-                    :class="play.player1Side === 'Mafia' ? 'bg-red-900/60 text-red-300' : 'bg-blue-900/60 text-blue-300'"
+                    :class="play.player1Side === 'Mafia' ? 'bg-[rgba(180,50,50,0.2)] text-[#e07070]' : 'bg-[rgba(50,120,180,0.2)] text-[#70a8e0]'"
                   >
-                    <span v-if="play.player1Won" class="text-green-400 text-sm">✅</span>
+                    <span v-if="play.player1Won" class="text-[#6fcf8a] text-sm">✅</span>
                     {{ play.player1Side === 'Mafia' ? 'مافیا' : 'شهروند' }}
                   </span>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <span
                     class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
-                    :class="play.player2Side === 'Mafia' ? 'bg-red-900/60 text-red-300' : 'bg-blue-900/60 text-blue-300'"
+                    :class="play.player2Side === 'Mafia' ? 'bg-[rgba(180,50,50,0.2)] text-[#e07070]' : 'bg-[rgba(50,120,180,0.2)] text-[#70a8e0]'"
                   >
-                    <span v-if="play.player2Won" class="text-green-400 text-sm">✅</span>
+                    <span v-if="play.player2Won" class="text-[#6fcf8a] text-sm">✅</span>
                     {{ play.player2Side === 'Mafia' ? 'مافیا' : 'شهروند' }}
                   </span>
                 </td>
@@ -145,11 +145,11 @@
                   <span
                     v-if="play.winnerSide"
                     class="px-2 py-0.5 rounded text-xs font-medium"
-                    :class="play.winnerSide === 'Mafia' ? 'text-red-400' : 'text-blue-400'"
+                    :class="play.winnerSide === 'Mafia' ? 'text-[#e07070]' : 'text-[#70a8e0]'"
                   >
                     {{ play.winnerSide === 'Mafia' ? 'مافیا' : 'شهروند' }}
                   </span>
-                  <span v-else class="text-gray-500">-</span>
+                  <span v-else class="text-[rgba(232,228,217,0.35)]">-</span>
                 </td>
               </tr>
             </tbody>

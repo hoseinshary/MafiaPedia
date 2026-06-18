@@ -85,7 +85,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins("http://localhost:5173", "http://localhost:5272",
-    "https://localhost:7097")
+    "https://localhost:7097","http://hoseinshary.ir","https://hoseinshary.ir")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

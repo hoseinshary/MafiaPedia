@@ -1,23 +1,23 @@
 <template>
-  <div dir="rtl" class="w-full md:w-4/5 mx-auto">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6">بازی‌ها</h1>
+  <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-[#e8e4d9]">بازی‌ها</h1>
 
-    <div class="bg-gray-800 rounded-lg border border-gray-700 p-4 mb-6">
+    <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-4 mb-6">
       <div class="flex flex-wrap items-end gap-3">
         <div class="flex flex-col gap-1 min-w-0">
-          <label class="text-xs text-gray-400">جستجو</label>
+          <label class="text-xs text-[rgba(232,228,217,0.4)]">جستجو</label>
           <input
             v-model="searchQuery"
             type="text"
             placeholder="جستجوی بازی..."
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition w-44"
+            class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-1.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition w-44"
           />
         </div>
         <div class="flex flex-col gap-1 min-w-0">
-          <label class="text-xs text-gray-400">کلاب</label>
+          <label class="text-xs text-[rgba(232,228,217,0.4)]">کلاب</label>
           <select
             v-model.number="filters.clubId"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500 transition w-36"
+            class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-1.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition w-36"
             @change="onClubChange"
           >
             <option :value="0">همه کلاب‌ها</option>
@@ -25,53 +25,54 @@
           </select>
         </div>
         <div class="flex flex-col gap-1 min-w-0">
-          <label class="text-xs text-gray-400">رویداد</label>
+          <label class="text-xs text-[rgba(232,228,217,0.4)]">رویداد</label>
           <select
             v-model.number="filters.eventId"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500 transition w-36"
-            :disabled="!filters.clubId"
+            class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-1.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition w-36"
+            
           >
-            <option :value="0" >{{ filters.clubId ? 'همه رویدادها' : 'ابتدا کلاب' }}</option>
-            <option v-for="e in filteredEvents" :key="e.id" :value="e.id">{{ e.name }}</option>
+          <!-- :disabled="!filters.clubId" -->
+            <option :value="0" >{{  'همه رویدادها' }}</option>
+            <option v-for="e in allEvents" :key="e.id" :value="e.id">{{ e.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1 min-w-0">
-          <label class="text-xs text-gray-400">سناریو</label>
+          <label class="text-xs text-[rgba(232,228,217,0.4)]">سناریو</label>
           <select
             v-model.number="filters.senarioId"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500 transition w-36"
+            class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-1.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition w-36"
           >
             <option :value="0">همه سناریوها</option>
             <option v-for="s in senarios" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1 min-w-0">
-          <label class="text-xs text-gray-400">برنده</label>
+          <label class="text-xs text-[rgba(232,228,217,0.4)]">برنده</label>
           <select
             v-model.number="filters.winnersideId"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500 transition w-28"
+            class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-1.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition w-28"
           >
             <option :value="0">همه</option>
             <option v-for="s in sides" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1 min-w-0">
-          <label class="text-xs text-gray-400">بازیکن</label>
+          <label class="text-xs text-[rgba(232,228,217,0.4)]">بازیکن</label>
           <PlayerSearchAutocomplete
             filter-mode
             @select="onPlayerSelect"
           />
         </div>
         <div v-if="filters.playerId" class="flex items-center gap-1 pb-1">
-          <span class="text-xs text-blue-400">بازیکن: {{ selectedPlayerName }}</span>
-          <button class="text-gray-500 hover:text-red-400 transition" @click="clearPlayerFilter" title="حذف فیلتر بازیکن">
+          <span class="text-xs text-[#c9b07a]">بازیکن: {{ selectedPlayerName }}</span>
+          <button class="text-[rgba(232,228,217,0.4)] hover:text-[#e07070] transition" @click="clearPlayerFilter" title="حذف فیلتر بازیکن">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
             </svg>
           </button>
         </div>
         <button
-          class="px-3 py-1.5 rounded text-sm bg-gray-700 text-gray-300 hover:bg-gray-600 transition border border-gray-600"
+          class="px-3 py-1.5 rounded text-sm bg-[#141416] text-[rgba(232,228,217,0.4)] hover:bg-[#1a1a1e] transition border border-[rgba(255,255,255,0.07)]"
           @click="clearFilters"
         >
           پاک کردن فیلترها
@@ -80,17 +81,17 @@
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-4 border-gray-600 border-t-red-500 rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
     </div>
 
-    <div v-else-if="plays.length === 0" class="text-center py-20 text-gray-500 text-lg">
+    <div v-else-if="plays.length === 0" class="text-center py-20 text-[rgba(232,228,217,0.4)] text-lg">
       هیچ بازی‌ای یافت نشد.
     </div>
 
     <div v-else class="overflow-x-auto">
       <table class="w-full text-sm border-collapse">
         <thead>
-          <tr class="border-b border-gray-700 bg-gray-800 text-gray-300">
+          <tr class="border-b border-[rgba(255,255,255,0.07)] bg-[#1a1a1e] text-[rgba(232,228,217,0.5)]">
             <th class="px-4 py-3 text-right">ردیف</th>
             <th class="px-4 py-3 text-right">عنوان</th>
             <th class="px-4 py-3 text-right">تاریخ</th>
@@ -104,28 +105,28 @@
           <tr
             v-for="(play, index) in plays"
             :key="play.id"
-            class="border-b border-gray-700 hover:bg-gray-750 transition"
+            class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[#1a1a1e] transition"
           >
-            <td class="px-4 py-3 text-gray-500">{{ (page - 1) * pageSize + index + 1 }}</td>
+            <td class="px-4 py-3 text-[rgba(232,228,217,0.4)]">{{ (page - 1) * pageSize + index + 1 }}</td>
             <td class="px-4 py-3">
               <router-link
                 :to="`/plays/${play.id}`"
-                class="text-blue-400 hover:text-blue-300 transition font-medium"
+                class="text-[#c9b07a] hover:underline transition font-medium"
               >
                 {{ play.title }}
               </router-link>
             </td>
-            <td class="px-4 py-3 text-gray-500 whitespace-nowrap" >{{ formatDate(play.dateTime) }}</td>
-            <td class="px-4 py-3 text-gray-500">{{ play.senarioName }}</td>
-            <td class="px-4 py-3 text-gray-500">
-              <span v-if="play.clubName" class="text-gray-600">{{ play.clubName }}</span>
-              <span v-if="play.clubName && play.eventName" class="text-gray-600 mx-1">/</span>
-              <span v-if="play.eventName" class="text-gray-600">{{ play.eventName }}</span>
+            <td class="px-4 py-3 text-[rgba(232,228,217,0.4)] whitespace-nowrap" >{{ formatDate(play.dateTime) }}</td>
+            <td class="px-4 py-3 text-[rgba(232,228,217,0.4)]">{{ play.senarioName }}</td>
+            <td class="px-4 py-3 text-[rgba(232,228,217,0.4)]">
+              <span v-if="play.clubName" class="text-[rgba(232,228,217,0.35)]">{{ play.clubName }}</span>
+              <span v-if="play.clubName && play.eventName" class="text-[rgba(232,228,217,0.35)] mx-1">/</span>
+              <span v-if="play.eventName" class="text-[rgba(232,228,217,0.35)]">{{ play.eventName }}</span>
             </td>
             <td class="px-4 py-3">
               <span
                 class="inline-block px-2 py-0.5 rounded text-xs font-medium"
-                :class="play.winnersideName === 'شهروند' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                :class="play.winnersideName === 'شهروند' ? 'bg-[rgba(111,207,138,0.15)] text-[#6fcf8a]' : 'bg-[rgba(180,50,50,0.2)] text-[#e07070]'"
               >
                 {{ play.winnersideName }}
               </span>
@@ -136,32 +137,34 @@
                 :href="play.link"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center justify-center text-red-500 hover:text-red-400 transition"
+                class="inline-flex items-center justify-center text-[rgba(201,176,122,0.5)] hover:text-[#c9b07a] transition"
                 title="مشاهده در یوتیوب"
               >
-               
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
               </a>
-              <span v-else class="text-gray-600">—</span>
+              <span v-else class="text-[rgba(232,228,217,0.35)]">—</span>
             </td>
           </tr>
         </tbody>
       </table>
 
       <div class="flex items-center justify-between gap-4 mt-6 text-sm">
-        <span class="text-gray-400">
+        <span class="text-[rgba(232,228,217,0.4)]">
           صفحه {{ page }} از {{ totalPages }}
         </span>
         <div class="flex gap-2">
           <button
             :disabled="page <= 1"
-            class="px-4 py-2 rounded border border-gray-600 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-700 transition"
+            class="px-4 py-2 rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
             @click="page = Math.max(1, page - 1)"
           >
             قبلی
           </button>
           <button
             :disabled="page >= totalPages"
-            class="px-4 py-2 rounded border border-gray-600 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-700 transition"
+            class="px-4 py-2 rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
             @click="page = Math.min(totalPages, page + 1)"
           >
             بعدی
@@ -201,7 +204,9 @@ const filters = reactive({
 
 const filteredEvents = computed(() =>
 
-  allEvents.value.filter(e => e.clubId === filters.clubId)
+  
+  allEvents.value.filter(e => Number(e.clubId) === Number(filters.clubId))
+  
 )
 
 let debounceTimer: ReturnType<typeof setTimeout>
@@ -239,6 +244,8 @@ function triggerFetch() {
 }
 
 function onClubChange() {
+  
+
   filters.eventId = 0
   triggerFetch()
 }
@@ -279,6 +286,8 @@ watch(searchQuery, () => { triggerFetch() })
 watch(page, () => { fetchPlays() })
 
 watch([() => filters.senarioId, () => filters.winnersideId, () => filters.eventId], () => { triggerFetch() })
+
+
 
 onMounted(async () => {
   try {

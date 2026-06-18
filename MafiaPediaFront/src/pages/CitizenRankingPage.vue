@@ -1,13 +1,13 @@
 <template>
-  <div dir="rtl" class="w-full md:w-3/4 mx-auto">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6">رنکینگ بهترین بازیکنان شهروند</h1>
+  <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-[#e8e4d9]">رنکینگ بهترین بازیکنان شهروند</h1>
 
     <div class="flex flex-wrap gap-4 mb-6 items-end">
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-gray-600">کلاب</label>
+        <label class="text-sm text-[rgba(232,228,217,0.4)]">کلاب</label>
         <select
           v-model="filters.clubId"
-          class="border border-gray-300 rounded px-3 py-2 text-sm min-w-[140px]"
+          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm min-w-[140px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
           @change="fetchRanking()"
         >
           <option :value="undefined">همه</option>
@@ -16,10 +16,10 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-gray-600">ایونت</label>
+        <label class="text-sm text-[rgba(232,228,217,0.4)]">ایونت</label>
         <select
           v-model="filters.eventId"
-          class="border border-gray-300 rounded px-3 py-2 text-sm min-w-[140px]"
+          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm min-w-[140px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
           @change="fetchRanking()"
         >
           <option :value="undefined">همه</option>
@@ -28,10 +28,10 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-gray-600">سناریو</label>
+        <label class="text-sm text-[rgba(232,228,217,0.4)]">سناریو</label>
         <select
-          v-model="filters.scenarioId"
-          class="border border-gray-300 rounded px-3 py-2 text-sm min-w-[140px]"
+          v-model="filters.senarioId"
+          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm min-w-[140px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
           @change="fetchRanking()"
         >
           <option :value="undefined">همه</option>
@@ -40,29 +40,29 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-gray-600">مینیموم تعداد بازی</label>
+        <label class="text-sm text-[rgba(232,228,217,0.4)]">مینیموم تعداد بازی</label>
         <input
           v-model.number="filters.minimumGames"
           type="number"
           min="0"
-          class="border border-gray-300 rounded px-3 py-2 text-sm w-[120px]"
+          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm w-[120px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
           @change="fetchRanking()"
         />
       </div>
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
     </div>
 
-    <div v-else-if="data.length === 0" class="text-center py-20 text-gray-500 text-lg">
+    <div v-else-if="data.length === 0" class="text-center py-20 text-[rgba(232,228,217,0.4)] text-lg">
       No players found.
     </div>
 
     <div v-else class="overflow-x-auto">
       <table class="w-full text-sm border-collapse">
         <thead>
-          <tr class="border-b border-gray-300 bg-gray-100">
+          <tr class="border-b border-[rgba(255,255,255,0.07)] bg-[#1a1a1e] text-[rgba(232,228,217,0.5)]">
             <th
               v-for="col in columns"
               :key="col.key"
@@ -82,7 +82,7 @@
           <tr
             v-for="(row, index) in paginated"
             :key="row.playerId"
-            class="border-b border-gray-200 hover:bg-gray-50 transition"
+            class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[#1a1a1e] transition text-[#e8e4d9]"
           >
             <td class="px-4 py-3 text-center">
               <span v-if="showTrophies && (page - 1) * perPage + index < 3" class="ml-1">
@@ -93,7 +93,7 @@
             <td class="px-4 py-3">
               <router-link
                 :to="`/player/${row.playerId}`"
-                class="text-blue-600 hover:underline font-medium"
+                class="text-[#c9b07a] hover:underline font-medium"
               >
                 {{ row.playerName }}
               </router-link>
@@ -106,20 +106,20 @@
       </table>
 
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-        <span class="text-sm text-gray-500">
+        <span class="text-sm text-[rgba(232,228,217,0.4)]">
           Page {{ page }} of {{ totalPages }}
         </span>
         <div class="flex gap-2">
           <button
             :disabled="page <= 1"
-            class="px-4 py-2 text-sm rounded border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 transition"
+            class="px-4 py-2 text-sm rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
             @click="page = Math.max(1, page - 1)"
           >
             Previous
           </button>
           <button
             :disabled="page >= totalPages"
-            class="px-4 py-2 text-sm rounded border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 transition"
+            class="px-4 py-2 text-sm rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
             @click="page = Math.min(totalPages, page + 1)"
           >
             Next
@@ -133,7 +133,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch, onMounted } from 'vue'
 import { RankingApi, LookupApi } from '@/api'
-import type { SideRankingEntry, Club, Event, Scenario } from '@/types'
+import type { SideRankingEntry, Club, Event, Senario } from '@/types'
 
 type SortKey = keyof SideRankingEntry
 type SortDir = 'asc' | 'desc'
@@ -163,18 +163,18 @@ watch([sortKey, sortDir], () => { showTrophies.value = false })
 
 const clubs = ref<Club[]>([])
 const events = ref<Event[]>([])
-const scenarios = ref<Scenario[]>([])
+const scenarios = ref<Senario[]>([])
 
 const filters = reactive({
   clubId: undefined as number | undefined,
   eventId: undefined as number | undefined,
-  scenarioId: undefined as number | undefined,
+  senarioId: undefined as number | undefined,
   minimumGames: undefined as number | undefined,
 })
 
 watch(() => filters.clubId, () => { showTrophies.value = false })
 watch(() => filters.eventId, () => { showTrophies.value = false })
-watch(() => filters.scenarioId, () => { showTrophies.value = false })
+watch(() => filters.senarioId, () => { showTrophies.value = false })
 watch(() => filters.minimumGames, () => { showTrophies.value = false })
 
 const filteredEvents = computed(() =>
@@ -225,7 +225,7 @@ async function fetchRanking() {
       sideId: 2,
       clubId: filters.clubId,
       eventId: filters.eventId,
-      scenarioId: filters.scenarioId,
+      senarioId: filters.senarioId,
       minimumGames: filters.minimumGames,
     })
     data.value = res.data

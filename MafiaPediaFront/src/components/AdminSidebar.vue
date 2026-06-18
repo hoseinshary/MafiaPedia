@@ -1,6 +1,6 @@
 <template>
-  <aside class="hidden md:block fixed right-0 top-16 w-48 h-[calc(100vh-4rem)] bg-gray-900 border-r border-gray-700 z-40 overflow-y-auto">
-    <div class="px-4 py-4 border-b border-gray-700">
+  <aside class="hidden md:block fixed right-0 top-16 w-48 h-[calc(100vh-4rem)] bg-[var(--color-card)] border-r border-[var(--color-border)] dark:bg-gray-900 dark:border-gray-700 z-40 overflow-y-auto">
+    <div class="px-4 py-4 border-b border-[var(--color-border)] dark:border-gray-700">
       <h3 class="text-sm font-semibold text-gray-400 tracking-wide">پنل مدیریت</h3>
     </div>
     <nav class="mt-2 space-y-1 px-2">
@@ -9,7 +9,7 @@
         :key="link.to"
         :to="link.to"
         class="flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition"
-        :class="isActive(link.to) ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'"
+        :class="isActive(link.to) ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800'"
       >
         <span v-html="link.icon" class="w-5 h-5 shrink-0" />
         {{ link.label }}

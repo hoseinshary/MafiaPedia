@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
+import { useToast } from '@/composables/useToast'
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5272/api',
@@ -106,6 +107,17 @@ apiClient.interceptors.response.use(
       } finally {
         isRefreshing = false
       }
+    }
+    const { toastError, toastWarning } = useToast()
+
+    if (!error.response) {
+      toastError('اتصال به سرور برقرار نیست')
+    } else if (error.response.status === 403) {
+      toastError('شما دسترسی به این بخش را ندارید')
+    } else if (error.response.status === 409) {
+      toastWarning(error.response?.data?.message ?? 'تعارض در عملیات')
+    } else if (error.response.status === 500) {
+      toastError('خطای سرور — لطفاً دوباره تلاش کنید')
     }
     return Promise.reject(error)
   }

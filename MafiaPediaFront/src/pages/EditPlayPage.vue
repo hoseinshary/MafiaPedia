@@ -180,13 +180,13 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { LookupApi, PlayerApi, PlaysApi } from '@/api'
-import type { Scenario, Event as EventItem, Role, Club, PlayerSearchResult } from '@/types'
+import type { Senario, Event as EventItem, Role, Club, PlayerSearchResult } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const playId = Number(route.params.id)
 
-const scenarios = ref<Scenario[]>([])
+const scenarios = ref<Senario[]>([])
 const clubs = ref<Club[]>([])
 const events = ref<EventItem[]>([])
 const roles = ref<Role[]>([])

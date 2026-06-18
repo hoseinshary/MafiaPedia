@@ -10,7 +10,7 @@
       @keydown.prevent.down="onArrowDown"
       @keydown.prevent.enter="onEnter"
       @keydown.prevent.escape="onEscape"
-      class="bg-gray-800 text-white rounded px-3 py-1 text-sm w-60 placeholder-gray-400 outline-none focus:ring-1 focus:ring-gray-500"
+      class="bg-gray-700 text-white rounded px-3 py-1 text-sm w-60 placeholder-gray-400 outline-none focus:ring-1 focus:ring-gray-500"
     />
     <div
       v-if="loading"

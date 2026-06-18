@@ -1,13 +1,13 @@
 <template>
-  <div dir="rtl" class="w-full md:w-3/4 mx-auto">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6">آمار</h1>
+  <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-[#e8e4d9]">آمار</h1>
 
     <div class="flex flex-wrap gap-4 mb-6 items-end">
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-gray-600">کلاب</label>
+        <label class="text-sm text-[rgba(232,228,217,0.4)]">کلاب</label>
         <select
           v-model="filters.clubId"
-          class="border border-gray-300 rounded px-3 py-2 text-sm min-w-[140px]"
+          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm min-w-[140px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
         >
           <option :value="undefined">همه</option>
           <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.name }}</option>
@@ -15,10 +15,10 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-gray-600">ایونت</label>
+        <label class="text-sm text-[rgba(232,228,217,0.4)]">ایونت</label>
         <select
           v-model="filters.eventId"
-          class="border border-gray-300 rounded px-3 py-2 text-sm min-w-[140px]"
+          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm min-w-[140px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
         >
           <option :value="undefined">همه</option>
           <option v-for="e in filteredEvents" :key="e.id" :value="e.id">{{ e.name }}</option>
@@ -26,10 +26,10 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-gray-600">سناریو</label>
+        <label class="text-sm text-[rgba(232,228,217,0.4)]">سناریو</label>
         <select
           v-model="filters.scenarioId"
-          class="border border-gray-300 rounded px-3 py-2 text-sm min-w-[140px]"
+          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm min-w-[140px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
         >
           <option :value="undefined">همه</option>
           <option v-for="s in scenarios" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -37,7 +37,7 @@
       </div>
 
       <button
-        class="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-100 transition"
+        class="px-4 py-2 text-sm rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] hover:bg-[#1a1a1e] transition"
         @click="clearFilters"
       >
         پاک کردن فیلترها
@@ -45,50 +45,54 @@
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
     </div>
 
     <template v-else-if="data">
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">آمار کلی</h2>
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">آمار کلی</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="bg-white rounded-lg border border-gray-200 p-6 text-center shadow-sm">
-            <p class="text-sm text-gray-500 mb-1">کل بازی‌ها</p>
-            <p class="text-3xl font-bold text-gray-900">{{ data.totalGames }}</p>
+          <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6 text-center">
+            <p class="text-sm text-[rgba(232,228,217,0.4)] mb-1">کل بازی‌ها</p>
+            <p class="text-3xl font-bold text-[#e8e4d9]">{{ data.totalGames }}</p>
           </div>
-          <div class="bg-white rounded-lg border border-gray-200 p-6 text-center shadow-sm">
-            <p class="text-sm text-gray-500 mb-1">کل بازیکنان</p>
-            <p class="text-3xl font-bold text-gray-900">{{ data.totalPlayers }}</p>
+          <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6 text-center">
+            <p class="text-sm text-[rgba(232,228,217,0.4)] mb-1">کل بازیکنان</p>
+            <p class="text-3xl font-bold text-[#e8e4d9]">{{ data.totalPlayers }}</p>
           </div>
         </div>
       </section>
 
-    
-
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">نرخ برد بر اساس کلاب</h2>
-        <WinRateTable :rows="data.winRateByClub" />
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">نرخ برد بر اساس کلاب</h2>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+          <WinRateTable :rows="data.winRateByClub" />
+        </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">نرخ برد بر اساس رویداد</h2>
-        <WinRateTable :rows="data.winRateByEvent" />
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">نرخ برد بر اساس رویداد</h2>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+          <WinRateTable :rows="data.winRateByEvent" />
+        </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">نرخ برد بر اساس سناریو</h2>
-        <WinRateTable :rows="data.winRateByScenario" />
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">نرخ برد بر اساس سناریو</h2>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+          <WinRateTable :rows="data.winRateByScenario" />
+        </div>
       </section>
 
-        <section class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">روند زمانی برد</h2>
-        <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+      <section class="mb-8">
+        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">روند زمانی برد</h2>
+        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-4">
           <template v-if="data.winRateTrend.length > 0">
             <div style="height: 280px">
               <Line :data="trendChartData" :options="trendChartOptions" />
             </div>
           </template>
-          <p v-else class="text-center text-gray-400 py-10">داده‌ای برای نمایش وجود ندارد</p>
+          <p v-else class="text-center text-[rgba(232,228,217,0.4)] py-10">داده‌ای برای نمایش وجود ندارد</p>
         </div>
       </section>
     </template>
@@ -210,14 +214,14 @@ const trendChartOptions = {
     legend: {
       position: 'top' as const,
       labels: {
-        color: '#666',
+        color: 'rgba(232,228,217,0.5)',
       },
     },
     tooltip: {
-      backgroundColor: '#1a1a2e',
-      titleColor: '#e0e0e0',
-      bodyColor: '#e0e0e0',
-      borderColor: '#16213e',
+      backgroundColor: '#141416',
+      titleColor: '#e8e4d9',
+      bodyColor: '#e8e4d9',
+      borderColor: 'rgba(255,255,255,0.1)',
       borderWidth: 1,
       padding: 10,
       callbacks: {
@@ -228,16 +232,16 @@ const trendChartOptions = {
   },
   scales: {
     x: {
-      title: { display: true, text: 'ماه', color: '#666' },
-      grid: { color: 'rgba(0,0,0,0.05)' },
-      ticks: { color: '#666' },
+      title: { display: true, text: 'ماه', color: 'rgba(232,228,217,0.3)' },
+      grid: { color: 'rgba(255,255,255,0.05)' },
+      ticks: { color: 'rgba(232,228,217,0.35)' },
     },
     y: {
       min: 0,
       max: 100,
-      title: { display: true, text: 'درصد برد', color: '#666' },
-      grid: { color: 'rgba(0,0,0,0.05)' },
-      ticks: { color: '#666', callback: (v: string | number) => `${v}%` },
+      title: { display: true, text: 'درصد برد', color: 'rgba(232,228,217,0.3)' },
+      grid: { color: 'rgba(255,255,255,0.05)' },
+      ticks: { color: 'rgba(232,228,217,0.35)', callback: (v: string | number) => `${v}%` },
     },
   },
 }
