@@ -1,16 +1,19 @@
-# README.md — MafiaPedia
+# CLAUDE.md — MafiaPedia
 
 > این فایل را اول بخوان. برای جزئیات بیشتر فایل‌های زیر را ببین:
-> - `DATABASE.md` — ساختار کامل دیتابیس
-> - `API.md` — همه endpoints
+> - `DATABASE.md` — ساختار کامل دیتابیس (فاز ۱ + فاز ۲)
+> - `API.md` — همه endpoints فاز ۱
 > - `FRONTEND.md` — router، components، stores
+> - `ROADMAP.md` — نقشه راه و تصمیمات معماری
 
 ---
 
 ## پروژه
 
-**MafiaPedia** — پلتفرم آمار و رتبه‌بندی بازیکنان حرفه‌ای مافیا در ایران.
-بازی‌ها روی YouTube پخش می‌شوند، داده‌ها دستی وارد می‌شوند.
+**MafiaPedia** — پلتفرم دوفازه برای اکوسیستم بازی مافیا در ایران:
+- **فاز ۱ (کامل):** آمار و رتبه‌بندی بازیکنان حرفه‌ای — داده‌ها دستی وارد می‌شوند
+- **فاز ۲ (در حال توسعه):** سیستم مدیریت کافه مافیا (B2B SaaS)
+
 زبان UI: فارسی (RTL) — تم: Dark cinematic
 
 ---
@@ -19,10 +22,10 @@
 
 ```
 MafiaPedia/
-├── MafiaPedia.Api/        ← ASP.NET Core 8 + EF Core + MySQL
+├── MafiaPedia.Api/        ← ASP.NET Core 9 + EF Core + MySQL
 │   ├── Controllers/
 │   ├── Services/Iservices/
-│   ├── Entities/          ← DB-first scaffold
+│   ├── Entities/          ← DB-first scaffold (شامل entities فاز ۲)
 │   ├── DTOs/
 │   ├── Data/MafiaDbContext.cs
 │   └── Program.cs
@@ -33,9 +36,10 @@ MafiaPedia/
 │       ├── pages/
 │       ├── stores/
 │       └── router/
-├── README.md
+├── CLAUDE.md
 ├── API.md
 ├── DATABASE.md
+├── FRONTEND.md
 └── ROADMAP.md
 ```
 
@@ -72,7 +76,7 @@ app.MapControllers();
 ```
 
 **CORS origins:** `localhost:5173`, `localhost:5272`, `localhost:7097`
-**عکس بازیکنان:** `wwwroot/uploads/players/` → DB: `/uploads/players/{filename}`
+**عکس بازیکنان فاز ۱:** `wwwroot/uploads/players/` → DB: `/uploads/players/{filename}`
 
 ---
 
@@ -92,28 +96,39 @@ VITE_API_BASE_URL=http://localhost:5272/api
 
 ---
 
-## Services
+## Services — فاز ۱ (کامل)
 
 | Interface | مسئولیت |
 |---|---|
 | `IAuthService` | register, login, refresh, OTP |
 | `IPlayerService` | CRUD بازیکن + پروفایل + جستجو |
-| `ICommentService` | کامنت + like (جدید) |
+| `ICommentService` | کامنت + like |
 | `IPlayWriteService` | ثبت، ویرایش، حذف بازی |
 | `IPlayReadService` | خواندن بازی‌ها |
 | `IRankingService` | محاسبه رتبه‌بندی |
 | `IDropdownService` | داده‌های dropdown |
 | `IUserService` | CRUD کاربران (admin) |
 
+## Services — فاز ۲ (در حال توسعه)
+
+| Interface | مسئولیت |
+|---|---|
+| `IClubPlayerService` | CRUD مشتریان کافه + جستجو + عضویت در کلاب |
+| `IClubUserService` | مدیریت نقش‌های per-club (owner/cashier/master/supervisor) |
+| `IClubPlayService` | ثبت بازی کافه + فلوی پخش نقش + مدیریت status |
+| `IMasterListService` | لیست‌های شخصی گرداننده |
+| `IClubReportService` | گزارش‌های آماری کافه |
+
 ---
 
 ## قوانین — تغییر نده
 
 - **DB-first** — Entities را دستی تغییر نده، فقط scaffold کن
-- **SideId هاردکد** — 1=Mafia, 2=Citizen در RankingService
+- **SideId هاردکد** — 1=Mafia, 2=Citizen در RankingService (فاز ۱)
 - **SecretKey** — باید انگلیسی بماند
 - **Content-Type** — در apiClient.ts set نشود (axios خودش handle می‌کند)
 - **Middleware order** — ترتیب بالا ثابت است
+- **جداسازی فاز ۱ و ۲** — هرگز play/playplayer/player را با clubplay/clubplayplayer/clubplayer مخلوط نکن
 
 ## الگوهای پروژه
 
@@ -122,16 +137,33 @@ VITE_API_BASE_URL=http://localhost:5272/api
 - DTOs برای ورودی/خروجی (نه Entity مستقیم)
 - multipart/form-data → `[Consumes("multipart/form-data")]` + `[FromForm]`
 - Admin endpoints → `[Authorize(Policy = "AdminOnly")]`
+- Club-scoped endpoints → بررسی `clubuser` برای تأیید دسترسی user به آن club
 - Reply کامنت فقط یک سطح عمق
 - حذف Play → Playplayers هم حذف می‌شوند
 - حذف Player با Playplayer → 409
 - حذف User با Comment → 409
 - Admin نمی‌تواند خودش را حذف کند
 
+## نکات مهم فاز ۲
+
+- **clubuser constraint باگ:** `userId UNIQUE` و `clubId UNIQUE` جداگانه‌اند (اشتباه) —
+  فعلاً هر user فقط در یک club نقش دارد. این در آینده اصلاح می‌شود.
+- **clubplay.status چرخه:** `pending → notwinside → notrank → done`
+- **پخش نقش:** سرور نقش‌ها را رندوم assign می‌کند (نه فرانت) — برای fairness
+- **masterlist.masteId:** تایپو در نام ستون — دستی تغییر نده، همینطور scaffold شده
+
 ---
 
 ## وضعیت فعلی
 
-**✅ آماده:** Auth کامل، Player CRUD، Play CRUD، Comment+Like، Ranking، User CRUD، Dropdown، Admin Panel پایه
+**✅ فاز ۱ کامل:** Auth، Player CRUD، Play CRUD، Comment+Like، Ranking، User CRUD، Dropdown، Admin Panel
 
-**🚧 مانده:** SMS واقعی OTP، Initials avatar، صفحه 404، Pagination رتبه‌بندی
+**🚧 فاز ۱ مانده:** SMS واقعی OTP، Initials avatar، صفحه 404، Pagination رتبه‌بندی
+
+**🔄 فاز ۲ در حال توسعه:**
+- ✅ Database scaffold شده (entities جدید موجود)
+- ⬜ Club/Room/Master management
+- ⬜ ClubPlayer (customer) CRUD
+- ⬜ ClubUser access control
+- ⬜ ClubPlay + role distribution flow
+- ⬜ Reports & statistics

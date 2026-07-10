@@ -56,6 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
   const role = computed(() => accessToken.value ? extractRole(accessToken.value) : '')
   const isAuthenticated = computed(() => !!accessToken.value)
   const isAdmin = computed(() => role.value === 'admin')
+  const isMaster = computed(() => role.value === 'master')
 
   const userId = computed(() => accessToken.value ? extractUserId(accessToken.value) : null)
 
@@ -126,6 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
     displayName,
     isAuthenticated,
     isAdmin,
+    isMaster,
     userId,
     login,
     register,

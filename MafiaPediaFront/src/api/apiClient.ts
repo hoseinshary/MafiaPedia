@@ -1,6 +1,25 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { useToast } from '@/composables/useToast'
 
+function getStoredToken(key: string): string | null {
+  return localStorage.getItem(key) ?? sessionStorage.getItem(key)
+}
+
+function setStoredToken(key: string, value: string): void {
+  if (localStorage.getItem(key) !== null) {
+    localStorage.setItem(key, value)
+  } else if (sessionStorage.getItem(key) !== null) {
+    sessionStorage.setItem(key, value)
+  } else {
+    sessionStorage.setItem(key, value)
+  }
+}
+
+function clearStoredToken(key: string): void {
+  localStorage.removeItem(key)
+  sessionStorage.removeItem(key)
+}
+
 const apiClient: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5272/api',
   timeout: 10000,
@@ -22,7 +41,7 @@ function isTokenExpiringSoon(token: string): boolean {
 }
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('accessToken')
+  const token = getStoredToken('accessToken')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -48,19 +67,19 @@ function processQueue(error: unknown, token: string | null = null) {
 
 apiClient.interceptors.response.use(
   async (response: AxiosResponse) => {
-    const token = localStorage.getItem('accessToken')
+    const token = getStoredToken('accessToken')
     if (token && isTokenExpiringSoon(token) && !isRefreshing) {
       try {
         isRefreshing = true
-        const refreshToken = localStorage.getItem('refreshToken')
+        const refreshToken = getStoredToken('refreshToken')
         if (refreshToken) {
           const res = await axios.post(
             `${apiClient.defaults.baseURL}/auth/refresh`,
             { refreshToken }
           )
           const { accessToken: newAccess, refreshToken: newRefresh } = res.data
-          localStorage.setItem('accessToken', newAccess)
-          localStorage.setItem('refreshToken', newRefresh)
+          setStoredToken('accessToken', newAccess)
+          setStoredToken('refreshToken', newRefresh)
         }
       } catch {
         // ignore – 401 interceptor handles it later
@@ -84,24 +103,24 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true
       isRefreshing = true
       try {
-        const refreshToken = localStorage.getItem('refreshToken')
+        const refreshToken = getStoredToken('refreshToken')
         if (!refreshToken) throw new Error('No refresh token')
         const res = await axios.post(
           `${apiClient.defaults.baseURL}/auth/refresh`,
           { refreshToken }
         )
         const { accessToken: newAccess, refreshToken: newRefresh } = res.data
-        localStorage.setItem('accessToken', newAccess)
-        localStorage.setItem('refreshToken', newRefresh)
+        setStoredToken('accessToken', newAccess)
+        setStoredToken('refreshToken', newRefresh)
         processQueue(null, newAccess)
         originalRequest.headers.Authorization = `Bearer ${newAccess}`
         return apiClient(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError, null)
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-        localStorage.removeItem('role')
-        localStorage.removeItem('displayName')
+        clearStoredToken('accessToken')
+        clearStoredToken('refreshToken')
+        clearStoredToken('role')
+        clearStoredToken('displayName')
         window.location.href = '/login'
         return Promise.reject(refreshError)
       } finally {

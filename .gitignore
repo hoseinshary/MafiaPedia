@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 packages/
+graphify-out/
+.github/
 
 # Environment variables
 .env

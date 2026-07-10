@@ -81,6 +81,10 @@ async function handleLogin() {
   loading.value = true
   try {
     await authStore.login(username.value, password.value, rememberMe.value)
+    if (authStore.isMaster) {
+      await router.push('/master')
+      return
+    }
     const redirect = (route.query.redirect as string) || '/'
     await router.push(redirect)
   } catch (e: unknown) {

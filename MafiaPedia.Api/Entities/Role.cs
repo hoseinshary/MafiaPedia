@@ -13,6 +13,10 @@ public partial class Role
 
     public int SideId { get; set; }
 
+    public string? Photo { get; set; }
+
+    public virtual ICollection<Clubplayplayer> Clubplayplayers { get; set; } = new List<Clubplayplayer>();
+
     public virtual ICollection<Playplayer> Playplayers { get; set; } = new List<Playplayer>();
 
     public virtual Senario Senario { get; set; } = null!;

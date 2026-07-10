@@ -176,7 +176,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, reactive } from 'vue'
+import { ref, watch, onMounted, reactive } from 'vue'
 import { PlaysApi, LookupApi } from '@/api'
 import type { PlayDto, Club, Event as EventItem, Senario, DropdownSide, PlayerSearchResult } from '@/types'
 import PlayerSearchAutocomplete from '@/components/PlayerSearchAutocomplete.vue'
@@ -202,12 +202,12 @@ const filters = reactive({
   playerId: 0,
 })
 
-const filteredEvents = computed(() =>
+// const filteredEvents = computed(() =>
 
   
-  allEvents.value.filter(e => Number(e.clubId) === Number(filters.clubId))
+//   allEvents.value.filter(e => Number(e.clubId) === Number(filters.clubId))
   
-)
+// )
 
 let debounceTimer: ReturnType<typeof setTimeout>
 

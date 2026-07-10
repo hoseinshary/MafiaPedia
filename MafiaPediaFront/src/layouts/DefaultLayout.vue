@@ -3,6 +3,8 @@
     <header :style="{ background: 'var(--color-bg)', borderBottom: '0.5px solid var(--color-border)', position: 'sticky', top: 0, zIndex: 50 }">
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between" dir="rtl">
         <div class="flex items-center gap-6">
+                    <NavDrawer v-if="authStore.isAdmin" :links="adminLinks" title="مدیریت" />
+          <NavDrawer v-if="authStore.isMaster" :links="masterLinks" title="پنل گرداننده" />
           <router-link to="/" :style="{ fontSize: '18px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-gold)', textDecoration: 'none' }">
             Mafia<span :style="{ color: 'var(--color-text)' }">Pedia</span>
           </router-link>
@@ -18,7 +20,9 @@
             <router-link to="/plays-public" class="nav-link">بازی‌ها</router-link>
             <router-link to="/statistics" class="nav-link">آمار</router-link>
             <router-link to="/head-to-head" class="nav-link" style="font-size:13px;color:rgba(232,228,217,0.8);">Head To Head</router-link>
+
           </nav>
+
         </div>
         <div class="flex items-center gap-4">
           <div class="hidden md:block">
@@ -65,9 +69,7 @@
       </div>
     </header>
 
-    <AdminSidebar v-if="authStore.isAdmin" />
-
-    <main class="flex-1 max-w-6xl mx-auto px-6 py-6" style="width:100%;" :class="authStore.isAdmin ? 'mr-48' : ''">
+    <main class="flex-1 max-w-6xl mx-auto px-6 py-6" style="width:100%;">
       <router-view />
     </main>
 
@@ -83,7 +85,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useThemeStore } from '@/stores/themeStore'
 import PlayerSearchAutocomplete from '@/components/PlayerSearchAutocomplete.vue'
-import AdminSidebar from '@/components/AdminSidebar.vue'
+import NavDrawer from '@/components/shared/NavDrawer.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -95,6 +97,22 @@ const isRankingActive = computed(() => route.path.startsWith('/ranking/'))
 
 const mobileSearchOpen = ref(false)
 const currentYear = new Date().getFullYear()
+
+const adminLinks = [
+  { label: 'مدیریت کافه‌ها', to: '/admin/clubs' },
+  { label: 'مدیریت کاربران', to: '/admin/users' },
+  { label: 'مدیریت بازی‌ها', to: '/plays' },
+  { label: 'مدیریت بازیکنان', to: '/players/list' },
+  { label: 'ثبت بازیکن جدید', to: '/admin/players/create' },
+  { label: 'ثبت بازی جدید', to: '/plays/create' },
+]
+
+const masterLinks = [
+  { label: 'داشبورد', to: '/master' },
+  { label: 'ثبت بازی جدید', to: '/master/plays/create' },
+  { label: 'لیست بازی‌ها', to: '/master/plays' },
+  { label: 'حالت تمرین', to: '/master/plays/practice' },
+]
 
 function handleLogout() {
   authStore.logout()

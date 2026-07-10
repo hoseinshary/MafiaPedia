@@ -57,7 +57,7 @@
             <td v-if="isAdmin" class="px-4 py-3">
               <div class="flex items-center gap-2">
                 <router-link
-                  :to="`/players/${player.id}/edit`"
+                  :to="`/admin/players/${player.id}/edit`"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#c9b07a] text-[#0d0d0f] hover:bg-[#b8a16e] transition"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">

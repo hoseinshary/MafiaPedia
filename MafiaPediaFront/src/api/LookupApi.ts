@@ -1,9 +1,9 @@
 import apiClient from './apiClient'
-import type { Club, Event, Senario, Role, DropdownData } from '@/types'
+import type { Club, Event, Senario, Role, DropdownData, RoleSetEntryDto } from '@/types'
 
 export const LookupApi = {
   getClubs() {
-    return apiClient.get<Club[]>('/clubs')
+    return apiClient.get<Club[]>('/dropdown/clubs')
   },
 
   getEvents() {
@@ -20,5 +20,9 @@ export const LookupApi = {
 
   getDropdown() {
     return apiClient.get<DropdownData>('/dropdown')
+  },
+
+  getRoleSet(senarioId: number, playerCount: number) {
+    return apiClient.get<RoleSetEntryDto[]>(`/senarios/${senarioId}/role-set`, { params: { playerCount } })
   },
 }

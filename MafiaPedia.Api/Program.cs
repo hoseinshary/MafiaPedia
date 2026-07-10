@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using MafiaPedia.Api.Data;
-using MafiaPedia.Api.Services;
-using MafiaPedia.Api.Services.Iservices;
+using MafiaPedia.Api.Services.Phase1;
+using MafiaPedia.Api.Services.Phase2;
+using MafiaPedia.Api.IServices.Phase1;
+using MafiaPedia.Api.IServices.Phase2;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 
@@ -24,6 +26,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IClubManagementService, ClubManagementService>();
+builder.Services.AddScoped<IClubPlayerService, ClubPlayerService>();
+builder.Services.AddScoped<IClubPlayService, ClubPlayService>();
+builder.Services.AddScoped<IMasterAuthService, MasterAuthService>();
+builder.Services.AddScoped<IEventService, EventService>();
 
 builder.Services.AddDbContext<MafiaDbContext>(options =>
     options.UseMySql(
@@ -56,6 +63,11 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy =>
         policy.RequireClaim(ClaimTypes.Role, "admin"));
+    options.AddPolicy("MasterOnly", policy =>
+        policy.RequireRole("master"));
+    options.AddPolicy("AdminOrMaster", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("admin") || context.User.IsInRole("master")));
 });
 
 builder.Services.AddEndpointsApiExplorer();

@@ -9,9 +9,15 @@ public partial class Event
 
     public string? Name { get; set; }
 
-    public int? ClubId { get; set; }
+    public int ClubId { get; set; }
 
-    public virtual Club? Club { get; set; }
+    public bool IsDefault { get; set; }
+
+    public int? DefaultClubId { get; set; }
+
+    public virtual Club Club { get; set; } = null!;
+
+    public virtual ICollection<Clubplay> Clubplays { get; set; } = new List<Clubplay>();
 
     public virtual ICollection<Play> Plays { get; set; } = new List<Play>();
 }

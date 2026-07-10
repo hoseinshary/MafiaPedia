@@ -136,7 +136,14 @@
                 class="mp-avatar"
                 :style="idx === 1 ? { borderColor: 'rgba(180,180,180,0.2)', color: '#b0b0b0' } : idx === 2 ? { borderColor: 'rgba(160,100,50,0.2)', color: '#c07840' } : {}"
               >
-                {{ getInitials(player.playerName) }}
+                <img
+                  v-if="player.picture && !imgErrors[player.playerId]"
+                  :src="getPictureUrl(player.picture)"
+                  class="w-full h-full rounded-full object-cover"
+                  :alt="player.playerName"
+                  @error="onImgError(player.playerId)"
+                />
+                <span v-else>{{ getInitials(player.playerName) }}</span>
               </div>
               <p class="mp-player-name">{{ player.playerName }}</p>
               <div  class="flex full">
@@ -230,6 +237,12 @@ import { getStatisticsHome } from '@/api'
 import type { StatisticsHomeDto } from '@/types'
 import donImage from '@/assets/images/slider/don.jpeg'
 import legendaryImage from '@/assets/images/slider/legendary.jpeg'
+import { getPictureUrl } from '@/utils/picture'
+
+const imgErrors = ref<Record<number, boolean>>({})
+function onImgError(playerId: number) {
+  imgErrors.value[playerId] = true
+}
 
 const router = useRouter()
 
@@ -264,6 +277,7 @@ interface PodiumPlayer {
   playerName: string
   winRate: number
   games: number
+  picture?: string | null
 }
 
 const currentPodium = computed<PodiumPlayer[]>(() => {
@@ -274,6 +288,7 @@ const currentPodium = computed<PodiumPlayer[]>(() => {
       playerName: p.playerName,
       winRate: p.overallWinRate,
       games: p.totalGames,
+      picture: p.picture,
     }))
   } else if (tab === 'mafia') {
     return (stats.value.mafiaTop3Player || []).map(p => ({
@@ -281,6 +296,7 @@ const currentPodium = computed<PodiumPlayer[]>(() => {
       playerName: p.playerName ?? '',
       winRate: p.winRate,
       games: p.games,
+      picture: p.picture,
     }))
   } else {
     return (stats.value.citizenTop3Player || []).map(p => ({
@@ -288,6 +304,7 @@ const currentPodium = computed<PodiumPlayer[]>(() => {
       playerName: p.playerName ?? '',
       winRate: p.winRate,
       games: p.games,
+      picture: p.picture,
     }))
   }
 })
@@ -315,6 +332,7 @@ function formatWinRatePct(value: number): string {
 function isMafiaWin(winnersideName: string): boolean {
   return winnersideName?.includes('ماف') ?? true
 }
+
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return ''

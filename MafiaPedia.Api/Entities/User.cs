@@ -33,9 +33,17 @@ public partial class User
 
     public DateTime? LastLoginAt { get; set; }
 
+    public virtual Clubplayer? Clubplayer { get; set; }
+
+    public virtual ICollection<Clubplay> Clubplays { get; set; } = new List<Clubplay>();
+
+    public virtual ICollection<Clubuser> Clubusers { get; set; } = new List<Clubuser>();
+
     public virtual ICollection<Commentlike> Commentlikes { get; set; } = new List<Commentlike>();
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+    public virtual Master? Master { get; set; }
 
     public virtual Player? Player { get; set; }
 

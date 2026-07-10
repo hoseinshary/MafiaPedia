@@ -9,7 +9,7 @@
         <div class="flex items-center gap-6 bg-[#141416] rounded-[12px] border border-[rgba(255,255,255,0.07)] p-6">
           <img
             v-if="player.picture"
-            :src="`https://localhost:7097/${player.picture}`"
+            :src="`http://localhost:5272/${player.picture}`"
             :alt="player.name"
             class="w-20 h-20 rounded-full object-cover shrink-0 border-2 border-[rgba(201,176,122,0.3)]"
           />

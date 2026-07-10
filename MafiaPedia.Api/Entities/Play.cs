@@ -31,6 +31,8 @@ public partial class Play
 
     public string? Link { get; set; }
 
+    public string? Picture { get; set; }
+
     public virtual Event Event { get; set; } = null!;
 
     public virtual Master Master { get; set; } = null!;

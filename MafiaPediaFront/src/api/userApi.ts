@@ -2,6 +2,12 @@ import apiClient from './apiClient'
 import type { UserDto, PaginatedUsers, CreateUserDto, UpdateUserDto } from '@/types'
 
 export const UserApi = {
+  searchUsers(query: string) {
+    return apiClient.get<PaginatedUsers>('/users', {
+      params: { page: 1, pageSize: 10, search: query },
+    })
+  },
+
   getUsers(page: number, pageSize: number, search?: string) {
     return apiClient.get<PaginatedUsers>('/users', {
       params: { page, pageSize, search: search || undefined },

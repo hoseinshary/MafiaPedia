@@ -2,7 +2,7 @@
   <div class="relative" ref="containerRef">
     <input
       type="text"
-      placeholder="Search players..."
+      placeholder="جستجو بازیکنان ..."
       v-model="query"
       @input="onInput"
       @focus="onFocus"

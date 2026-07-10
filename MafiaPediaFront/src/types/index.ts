@@ -12,6 +12,7 @@ export interface OverallRankingEntry {
   overallWinRate: number
   citizenWinRate: number
   mafiaWinRate: number
+  picture?: string | null
 }
 
 export interface SideRankingEntry {
@@ -20,6 +21,7 @@ export interface SideRankingEntry {
   games: number
   wins: number
   winRate: number
+  picture?: string | null
 }
 
 export interface PlayerStatistics {
@@ -100,6 +102,13 @@ export interface Event {
 export interface Senario {
   id: number
   name: string
+}
+
+export interface RoleSetEntryDto {
+  roleId: number
+  roleName: string
+  rolePhoto: string | null
+  sideId: number
 }
 
 export interface Role {
