@@ -1,3 +1,8 @@
+export interface ReplaceParticipantDto {
+  newClubPlayerId: number
+  isGuest: boolean
+}
+
 export interface MasterContextDto {
   masterId: number
   masterName: string
@@ -21,6 +26,7 @@ export interface CreateClubPlayDto {
   playType: 'normal' | 'rank' | 'superrank' | 'etc'
   eventId?: number | null
   shuffleRoles?: boolean
+  masterId?: number
   participants: ParticipantInputDto[]
 }
 
@@ -67,12 +73,21 @@ export interface ClubPlayListItemDto {
   guestCount: number
   status: string
   playType: string
+  masterName?: string | null
 }
 
 export interface MasterStatsDto {
   totalPlays: number
   totalEntries: number
   totalGuestEntries: number
+}
+
+export interface MasterPerformanceDto {
+  masterId: number
+  masterName: string
+  playCount: number
+  entryCount: number
+  guestEntryCount: number
 }
 
 export interface EventDto {

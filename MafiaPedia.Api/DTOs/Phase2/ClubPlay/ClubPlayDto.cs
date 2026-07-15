@@ -13,7 +13,8 @@ public record CreateClubPlayDto(
     string PlayType,
     int? EventId,
     List<ParticipantInputDto> Participants,
-    bool ShuffleRoles = true
+    bool ShuffleRoles = true,
+    int? MasterId = null
 );
 
 public record ClubPlayParticipantDto(
@@ -29,15 +30,20 @@ public record ClubPlayDetailDto(
     List<ClubPlayParticipantDto> Participants
 );
 
+public record ReplaceParticipantDto(int NewClubPlayerId, bool IsGuest);
+
 public record ParticipantRankDto(int ClubPlayerId, int Rank);
 
 public record ClubPlayListItemDto(
     int Id, string? Title, DateTime DateTime, DateOnly BusinessDate,
     string RoomName, string SenarioName, int PlayersCount, int GuestCount,
-    string Status, string PlayType
+    string Status, string PlayType,
+    string? MasterName = null
 );
 
 public record MasterStatsDto(int TotalPlays, int TotalEntries, int TotalGuestEntries);
+
+public record MasterPerformanceDto(int MasterId, string MasterName, int PlayCount, int EntryCount, int GuestEntryCount);
 
 public record SubmitWinnersideRequestDto(int WinnersideId);
 
@@ -50,6 +56,5 @@ public record UpdateClubPlayDto(
     string? Link,
     string PlayType,
     int EventId,
-    bool ShuffleRoles,
     List<ParticipantInputDto> Participants
 );

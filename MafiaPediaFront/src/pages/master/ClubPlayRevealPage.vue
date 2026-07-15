@@ -57,8 +57,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ClubPlayApi, MasterApi } from '@/api'
+import { ClubPlayApi } from '@/api'
 import { useToast } from '@/composables/useToast'
+import { useAuthStore } from '@/stores/authStore'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import RoleRevealStepper from '@/components/clubplay/RoleRevealStepper.vue'
 import type { ClubPlayDetailDto, ClubPlayParticipantDto } from '@/types/clubPlay'
@@ -67,6 +68,7 @@ import type { RevealItem } from '@/components/clubplay/RoleRevealStepper.vue'
 const router = useRouter()
 const route = useRoute()
 const { toastError } = useToast()
+const authStore = useAuthStore()
 
 const play = ref<ClubPlayDetailDto | null>(null)
 const participants = ref<ClubPlayParticipantDto[]>([])
@@ -85,6 +87,12 @@ const stepperItems = computed<RevealItem[]>(() =>
   }))
 )
 
+function resolveClubId(): number | null {
+  if (route.params.clubId) return Number(route.params.clubId)
+  if (authStore.activeClubId) return authStore.activeClubId
+  return null
+}
+
 onMounted(async () => {
   const rawState = history.state?.playDetail
   if (rawState) {
@@ -92,9 +100,11 @@ onMounted(async () => {
     participants.value = (rawState as ClubPlayDetailDto).participants
     return
   }
-  if (route.params.playId && route.params.clubId) {
+  const clubId = resolveClubId()
+  const playId = route.params.playId ? Number(route.params.playId) : null
+  if (clubId && playId) {
     try {
-      const res = await ClubPlayApi.getClubPlayDetail(Number(route.params.clubId), Number(route.params.playId))
+      const res = await ClubPlayApi.getClubPlayDetail(clubId, playId)
       play.value = res.data
       participants.value = res.data.participants
     } catch {
@@ -107,7 +117,7 @@ onMounted(async () => {
 
 async function doReshuffle() {
   if (!play.value) return
-  const clubId = Number(route.params.clubId)
+  const clubId = resolveClubId()
   const playId = play.value.id
   if (!clubId || !playId) return
 
@@ -132,11 +142,7 @@ async function doConfirmReveal() {
   if (!play.value) return
   confirming.value = true
   try {
-    let clubId = Number(route.params.clubId)
-    if (!clubId) {
-      const ctxRes = await MasterApi.getMasterContext()
-      clubId = ctxRes.data.clubId
-    }
+    const clubId = resolveClubId()
     if (!clubId) throw new Error('no club id')
     await ClubPlayApi.confirmReveal(clubId, play.value.id)
     router.push({ name: 'MasterPlayDetail', params: { id: play.value.id } })
@@ -149,8 +155,9 @@ async function doConfirmReveal() {
 }
 
 function goBack() {
-  if (route.params.clubId) {
-    router.push({ name: 'ClubDetail', params: { id: route.params.clubId } })
+  const clubId = resolveClubId()
+  if (clubId) {
+    router.push({ name: 'ClubDetail', params: { id: clubId } })
   } else {
     router.push({ name: 'Home' })
   }

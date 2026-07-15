@@ -5,6 +5,9 @@
         <div class="flex items-center gap-6">
                     <NavDrawer v-if="authStore.isAdmin" :links="adminLinks" title="مدیریت" />
           <NavDrawer v-if="authStore.isMaster" :links="masterLinks" title="پنل گرداننده" />
+          <NavDrawer v-if="authStore.isOwner" :links="ownerLinks" title="پنل مدیر کافه" />
+          <NavDrawer v-if="authStore.isSupervisor" :links="supervisorLinks" title="پنل سوپروایزر" />
+          <NavDrawer v-if="authStore.isCashier" :links="cashierLinks" title="پنل صندوق‌دار" />
           <router-link to="/" :style="{ fontSize: '18px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-gold)', textDecoration: 'none' }">
             Mafia<span :style="{ color: 'var(--color-text)' }">Pedia</span>
           </router-link>
@@ -48,12 +51,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
             </svg>
           </button>
-          <template v-if="authStore.isAuthenticated">
-            <span class="text-sm hidden md:inline" style="color:rgba(232,228,217,0.7);">{{ authStore.displayName }}</span>
-            <button @click="handleLogout" class="text-sm" style="color:#e07070;background:none;border:none;cursor:pointer;font-family:inherit;">
-              خروج
-            </button>
-          </template>
+          <UserMenu v-if="authStore.isAuthenticated" @logout="handleLogout" />
           <template v-else>
             <router-link to="/login" style="text-decoration:none;">
               <button class="btn-ghost">ورود</button>
@@ -86,6 +84,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useThemeStore } from '@/stores/themeStore'
 import PlayerSearchAutocomplete from '@/components/PlayerSearchAutocomplete.vue'
 import NavDrawer from '@/components/shared/NavDrawer.vue'
+import UserMenu from '@/components/shared/UserMenu.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -112,6 +111,22 @@ const masterLinks = [
   { label: 'ثبت بازی جدید', to: '/master/plays/create' },
   { label: 'لیست بازی‌ها', to: '/master/plays' },
   { label: 'حالت تمرین', to: '/master/plays/practice' },
+]
+
+const ownerLinks = [
+  { label: 'داشبورد', to: '/owner' },
+  { label: 'ثبت بازی جدید', to: '/master/plays/create' },
+  { label: 'اعضا و نقش‌ها', to: '/owner/members' },
+]
+
+const supervisorLinks = [
+  { label: 'داشبورد', to: '/supervisor' },
+  { label: 'ثبت بازی جدید', to: '/master/plays/create' },
+]
+
+const cashierLinks = [
+  { label: 'داشبورد', to: '/cashier' },
+  { label: 'ثبت بازی جدید', to: '/master/plays/create' },
 ]
 
 function handleLogout() {

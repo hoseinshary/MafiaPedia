@@ -66,6 +66,19 @@
         </div>
       </section>
 
+      <!-- Members Section -->
+      <section class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-[#e8e4d9]">اعضا و نقش‌ها</h2>
+          <router-link
+            :to="`/admin/clubs/${club?.id}/members`"
+            class="px-3 py-1.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-xs rounded font-medium transition"
+          >
+            مدیریت اعضا
+          </router-link>
+        </div>
+      </section>
+
       <!-- Masters Section -->
       <section class="mb-8">
         <div class="flex items-center justify-between mb-4">

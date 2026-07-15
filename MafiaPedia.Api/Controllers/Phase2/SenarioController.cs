@@ -17,7 +17,7 @@ public class SenarioController : ControllerBase
     }
 
     [HttpGet("api/senarios/{senarioId:int}/role-set")]
-    [Authorize(Policy = "AdminOrMaster")]
+    [Authorize(Policy = "AdminOrClub")]
     public async Task<IActionResult> GetRoleSet(int senarioId, [FromQuery] int playerCount)
     {
         var result = await _dropdownService.GetRoleSetAsync(senarioId, playerCount);

@@ -1,5 +1,7 @@
 import apiClient from './apiClient'
-import type { ClubPlayDetailDto, ClubPlayListItemDto, CreateClubPlayDto, EventDto, MasterStatsDto } from '@/types/clubPlay'
+import type { ClubPlayDetailDto, ClubPlayListItemDto, CreateClubPlayDto, EventDto, MasterStatsDto, MasterPerformanceDto, ClubPlayParticipantDto, ReplaceParticipantDto } from '@/types/clubPlay'
+
+export type { ClubPlayParticipantDto }
 
 export const ClubPlayApi = {
   createClubPlay(clubId: number, dto: CreateClubPlayDto) {
@@ -10,8 +12,10 @@ export const ClubPlayApi = {
     return apiClient.get<ClubPlayDetailDto>(`/clubs/${clubId}/clubplays/${playId}`)
   },
 
-  getPlayCountByDate(clubId: number, date: string) {
-    return apiClient.get<{ count: number }>(`/clubs/${clubId}/clubplays/count-by-date`, { params: { date } })
+  getPlayCountByDate(clubId: number, date: string, masterId?: number) {
+    const params: Record<string, string | number> = { date }
+    if (masterId !== undefined) params.masterId = masterId
+    return apiClient.get<{ count: number }>(`/clubs/${clubId}/clubplays/count-by-date`, { params })
   },
 
   getClubEvents(clubId: number) {
@@ -41,6 +45,12 @@ export const ClubPlayApi = {
     return apiClient.get<ClubPlayListItemDto[]>(`/clubs/${clubId}/clubplays/by-date`, { params })
   },
 
+  getClubPlaysByBusinessDate(clubId: number, date: string) {
+    return apiClient.get<ClubPlayListItemDto[]>(`/clubs/${clubId}/clubplays/club-by-date`, {
+      params: { date },
+    })
+  },
+
   getOpenPlays(clubId: number) {
     return apiClient.get<ClubPlayListItemDto[]>(`/clubs/${clubId}/clubplays/open`)
   },
@@ -53,8 +63,22 @@ export const ClubPlayApi = {
     return apiClient.get<MasterStatsDto>(`/clubs/${clubId}/clubplays/my-stats`, { params: { period } })
   },
 
+  getClubStats(clubId: number, period: 'week' | 'month') {
+    return apiClient.get<MasterStatsDto>(`/clubs/${clubId}/clubplays/club-stats`, { params: { period } })
+  },
+  getMasterPerformance(clubId: number, period: 'week' | 'month') {
+    return apiClient.get<MasterPerformanceDto[]>(`/clubs/${clubId}/clubplays/master-performance`, { params: { period } })
+  },
+
   // Editing
   updateClubPlay(clubId: number, playId: number, dto: CreateClubPlayDto) {
     return apiClient.put<ClubPlayDetailDto>(`/clubs/${clubId}/clubplays/${playId}`, dto)
+  },
+
+  replaceParticipant(clubId: number, playId: number, currentClubPlayerId: number, payload: ReplaceParticipantDto) {
+    return apiClient.put<ClubPlayParticipantDto>(
+      `/clubs/${clubId}/clubplays/${playId}/participants/${currentClubPlayerId}`,
+      payload
+    )
   },
 }

@@ -12,18 +12,18 @@ public class ClubPlayerController : ClubControllerBase
     private readonly IClubPlayerService _service;
     private readonly IWebHostEnvironment _env;
 
-    public ClubPlayerController(IClubPlayerService service, IWebHostEnvironment env, IMasterAuthService masterAuthService)
-        : base(masterAuthService)
+    public ClubPlayerController(IClubPlayerService service, IWebHostEnvironment env, IMasterAuthService masterAuthService, IClubUserService clubUserService)
+        : base(masterAuthService, clubUserService)
     {
         _service = service;
         _env = env;
     }
 
-    [Authorize(Policy = "AdminOrMaster")]
+    [Authorize(Policy = "AdminOrClub")]
     [HttpGet("api/clubs/{clubId:int}/customers")]
     public async Task<IActionResult> GetClubPlayers(int clubId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null)
     {
-        var forbid = await VerifyMasterClubAccess(clubId);
+        var forbid = await VerifyClubAccess(clubId, "master", "owner", "supervisor", "cashier");
         if (forbid is not null) return forbid;
 
         var (items, total) = await _service.GetClubPlayersAsync(clubId, page, pageSize, search);
@@ -37,11 +37,11 @@ public class ClubPlayerController : ClubControllerBase
         });
     }
 
-    [Authorize(Policy = "AdminOrMaster")]
+    [Authorize(Policy = "AdminOrClub")]
     [HttpGet("api/clubs/{clubId:int}/customers/{customerId:int}")]
     public async Task<IActionResult> GetClubPlayerDetail(int clubId, int customerId)
     {
-        var forbid = await VerifyMasterClubAccess(clubId);
+        var forbid = await VerifyClubAccess(clubId, "master", "owner", "supervisor", "cashier");
         if (forbid is not null) return forbid;
 
         var result = await _service.GetClubPlayerDetailAsync(clubId, customerId);
@@ -51,12 +51,12 @@ public class ClubPlayerController : ClubControllerBase
         return Ok(result);
     }
 
-    [Authorize(Policy = "AdminOrMaster")]
+    [Authorize(Policy = "AdminOrClub")]
     [HttpPost("api/clubs/{clubId:int}/customers")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> CreateOrJoin(int clubId, [FromForm] CreateOrJoinClubPlayerDto dto, IFormFile? picture)
     {
-        var forbid = await VerifyMasterClubAccess(clubId);
+        var forbid = await VerifyClubAccess(clubId, "master", "owner", "supervisor", "cashier");
         if (forbid is not null) return forbid;
 
         try
@@ -115,18 +115,18 @@ public class ClubPlayerController : ClubControllerBase
         }
     }
 
-    [Authorize(Policy = "AdminOrMaster")]
+    [Authorize(Policy = "AdminOrClub")]
     [HttpGet("api/clubs/{clubId:int}/customers/search-all")]
     public async Task<IActionResult> SearchAll(int clubId, [FromQuery] string query)
     {
-        var forbid = await VerifyMasterClubAccess(clubId);
+        var forbid = await VerifyClubAccess(clubId, "master", "owner", "supervisor", "cashier");
         if (forbid is not null) return forbid;
 
         var result = await _service.SearchAllAsync(clubId, query);
         return Ok(result);
     }
 
-    [Authorize(Policy = "AdminOrMaster")]
+    [Authorize(Policy = "AdminOrClub")]
     [HttpGet("api/customers/search-by-mobile")]
     public async Task<IActionResult> SearchByMobile([FromQuery] string mobile)
     {

@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IRankingService, RankingService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerCommentService, PlayerCommentService>();
@@ -31,6 +32,7 @@ builder.Services.AddScoped<IClubPlayerService, ClubPlayerService>();
 builder.Services.AddScoped<IClubPlayService, ClubPlayService>();
 builder.Services.AddScoped<IMasterAuthService, MasterAuthService>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IClubUserService, ClubUserService>();
 
 builder.Services.AddDbContext<MafiaDbContext>(options =>
     options.UseMySql(
@@ -61,13 +63,13 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy =>
-        policy.RequireClaim(ClaimTypes.Role, "admin"));
-    options.AddPolicy("MasterOnly", policy =>
-        policy.RequireRole("master"));
-    options.AddPolicy("AdminOrMaster", policy =>
+options.AddPolicy("AdminOnly", policy =>
+    policy.RequireClaim(ClaimTypes.Role, "admin"));
+    options.AddPolicy("ClubOnly", policy =>
+        policy.RequireRole("club"));
+    options.AddPolicy("AdminOrClub", policy =>
         policy.RequireAssertion(context =>
-            context.User.IsInRole("admin") || context.User.IsInRole("master")));
+            context.User.IsInRole("admin") || context.User.IsInRole("club")));
 });
 
 builder.Services.AddEndpointsApiExplorer();

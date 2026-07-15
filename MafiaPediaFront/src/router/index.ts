@@ -127,40 +127,86 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
+        path: 'admin/clubs/:id/members',
+        name: 'AdminClubMembers',
+        component: () => import('@/pages/admin/AdminClubMembersPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
+        path: 'select-club',
+        name: 'SelectClub',
+        component: () => import('@/pages/SelectClubPage.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
         path: 'master/plays/create',
         name: 'MasterCreatePlay',
         component: () => import('@/pages/master/CreateClubPlayPage.vue'),
-        meta: { requiresAuth: true, requiresMaster: true },
+        meta: { requiresAuth: true, requiresClubRoles: ['master', 'owner', 'supervisor', 'cashier'] },
       },
       {
         path: 'master/plays/reveal/:clubId?/:playId?',
         name: 'MasterPlayReveal',
         component: () => import('@/pages/master/ClubPlayRevealPage.vue'),
-        meta: { requiresAuth: true, requiresMaster: true },
+        meta: { requiresAuth: true, requiresClubRoles: ['master', 'owner', 'supervisor', 'cashier'] },
       },
       {
         path: 'master/plays/practice',
         name: 'MasterPlayPractice',
         component: () => import('@/pages/master/PracticeRevealPage.vue'),
-        meta: { requiresAuth: true, requiresMasterOrAdmin: true },
+        meta: { requiresAuth: true, requiresClubRoles: ['master'] },
       },
       {
         path: 'master',
         name: 'MasterDashboard',
         component: () => import('@/pages/master/MasterDashboardPage.vue'),
-        meta: { requiresAuth: true, requiresMaster: true },
+        meta: { requiresAuth: true, requiresClubRoles: ['master'] },
       },
       {
         path: 'master/plays',
         name: 'MasterPlaysList',
         component: () => import('@/pages/master/MasterPlaysListPage.vue'),
-        meta: { requiresAuth: true, requiresMaster: true },
+        meta: { requiresAuth: true, requiresClubRoles: ['master'] },
       },
       {
         path: 'master/plays/:id',
         name: 'MasterPlayDetail',
         component: () => import('@/pages/master/MasterPlayDetailPage.vue'),
-        meta: { requiresAuth: true, requiresMaster: true },
+        meta: { requiresAuth: true, requiresClubRoles: ['master', 'owner', 'supervisor', 'cashier'] },
+      },
+      {
+        path: 'owner',
+        name: 'OwnerDashboard',
+        component: () => import('@/pages/owner/OwnerDashboardPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner'] },
+      },
+      {
+        path: 'owner/members',
+        name: 'OwnerMembers',
+        component: () => import('@/pages/owner/OwnerMembersPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner'] },
+      },
+      {
+        path: 'supervisor',
+        name: 'SupervisorDashboard',
+        component: () => import('@/pages/supervisor/SupervisorDashboardPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['supervisor'] },
+      },
+      {
+        path: 'cashier',
+        name: 'CashierDashboard',
+        component: () => import('@/pages/cashier/CashierDashboardPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['cashier'] },
+      },
+      {
+        path: 'account/profile',
+        component: () => import('@/pages/AccountProfilePage.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'account/password',
+        component: () => import('@/pages/AccountPasswordPage.vue'),
+        meta: { requiresAuth: true },
       },
     ],
   },
@@ -176,32 +222,29 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
-  if (to.meta.requiresAuth) {
-    if (!authStore.isAuthenticated) {
-      next({ name: 'Login', query: { redirect: to.fullPath } })
-      return
-    }
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next({ name: 'Login', query: { redirect: to.fullPath } })
+    return
   }
-  if (to.meta.requiresAdmin) {
-    if (!authStore.isAdmin) {
-      next({ name: 'Home' })
-      return
-    }
+
+  if (authStore.isAuthenticated && !authStore.clubContextsLoaded) {
+    await authStore.loadClubContexts()
   }
-  if (to.meta.requiresMaster) {
-    if (!authStore.isMaster) {
-      next({ name: 'Home' })
-      return
-    }
+
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    next({ name: 'Home' })
+    return
   }
-  if (to.meta.requiresMasterOrAdmin) {
-    if (!authStore.isMaster && !authStore.isAdmin) {
-      next({ name: 'Home' })
-      return
-    }
+
+  const requiredClubRoles = to.meta.requiresClubRoles as string[] | undefined
+  if (requiredClubRoles && !requiredClubRoles.includes(authStore.activeClubRole)) {
+    next({ name: 'Home' })
+    return
   }
+
   next()
 })
 

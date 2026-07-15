@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { AuthApi } from '@/api/AuthApi'
+import type { ClubUserContextDto } from '@/types/club'
+import { ClubUserApi } from '@/api/ClubUserApi'
 
 function parseJwt(token: string) {
   const base64Url = token.split('.')[1]
@@ -56,9 +58,26 @@ export const useAuthStore = defineStore('auth', () => {
   const role = computed(() => accessToken.value ? extractRole(accessToken.value) : '')
   const isAuthenticated = computed(() => !!accessToken.value)
   const isAdmin = computed(() => role.value === 'admin')
-  const isMaster = computed(() => role.value === 'master')
+  const isClub = computed(() => role.value === 'club')
 
   const userId = computed(() => accessToken.value ? extractUserId(accessToken.value) : null)
+
+  const clubContexts = ref<ClubUserContextDto[]>([])
+  const clubContextsLoaded = ref(false)
+
+  const activeClubId = ref<number | null>(
+    localStorage.getItem('activeClubId') ? Number(localStorage.getItem('activeClubId')) : null
+  )
+
+  const activeClubContext = computed(() =>
+    clubContexts.value.find(c => c.clubId === activeClubId.value) ?? null
+  )
+
+  const activeClubRole = computed(() => activeClubContext.value?.clubuserRole ?? '')
+  const isMaster = computed(() => activeClubRole.value === 'master')
+  const isOwner = computed(() => activeClubRole.value === 'owner')
+  const isSupervisor = computed(() => activeClubRole.value === 'supervisor')
+  const isCashier = computed(() => activeClubRole.value === 'cashier')
 
   function getStorage() {
     return useLocalStorage ? localStorage : sessionStorage
@@ -108,13 +127,43 @@ export const useAuthStore = defineStore('auth', () => {
     return data.accessToken
   }
 
+  async function loadClubContexts() {
+    if (!isClub.value) {
+      clubContextsLoaded.value = true
+      return
+    }
+    try {
+      const res = await ClubUserApi.getMyClubs()
+      clubContexts.value = res.data
+      if (res.data.length === 1) {
+        setActiveClub(res.data[0].clubId)
+      } else if (res.data.length > 1 && !res.data.some(c => c.clubId === activeClubId.value)) {
+        activeClubId.value = null
+        localStorage.removeItem('activeClubId')
+      }
+    } catch {
+      clubContexts.value = []
+    } finally {
+      clubContextsLoaded.value = true
+    }
+  }
+
+  function setActiveClub(clubId: number) {
+    activeClubId.value = clubId
+    localStorage.setItem('activeClubId', String(clubId))
+  }
+
   function logout() {
     accessToken.value = ''
     refreshToken.value = ''
     displayName.value = ''
+    clubContexts.value = []
+    activeClubId.value = null
+    clubContextsLoaded.value = false
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('displayName')
+    localStorage.removeItem('activeClubId')
     sessionStorage.removeItem('accessToken')
     sessionStorage.removeItem('refreshToken')
     sessionStorage.removeItem('displayName')
@@ -127,11 +176,22 @@ export const useAuthStore = defineStore('auth', () => {
     displayName,
     isAuthenticated,
     isAdmin,
-    isMaster,
+    isClub,
     userId,
+    clubContexts,
+    clubContextsLoaded,
+    activeClubId,
+    activeClubContext,
+    activeClubRole,
+    isMaster,
+    isOwner,
+    isSupervisor,
+    isCashier,
     login,
     register,
     logout,
     refreshAccessToken,
+    loadClubContexts,
+    setActiveClub,
   }
 })

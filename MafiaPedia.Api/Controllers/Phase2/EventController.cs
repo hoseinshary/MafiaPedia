@@ -12,17 +12,17 @@ public class EventController : ClubControllerBase
 {
     private readonly IEventService _eventService;
 
-    public EventController(IEventService eventService, IMasterAuthService masterAuthService)
-        : base(masterAuthService)
+    public EventController(IEventService eventService, IMasterAuthService masterAuthService, IClubUserService clubUserService)
+        : base(masterAuthService, clubUserService)
     {
         _eventService = eventService;
     }
 
     [HttpGet]
-    [Authorize(Policy = "AdminOrMaster")]
+    [Authorize(Policy = "AdminOrClub")]
     public async Task<IActionResult> GetClubEvents(int clubId)
     {
-        var forbid = await VerifyMasterClubAccess(clubId);
+        var forbid = await VerifyClubAccess(clubId, "master", "owner", "supervisor", "cashier");
         if (forbid is not null) return forbid;
 
         try

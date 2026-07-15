@@ -34,7 +34,7 @@
         </div>
         <div class="flex items-center gap-3">
           <button
-            v-if="play.status !== 'done'"
+            v-if="play.status !== 'done' || isStaff"
             @click="startEdit"
             class="px-4 py-1.5 border border-[rgba(201,176,122,0.3)] text-[#c9b07a] hover:bg-[rgba(201,176,122,0.08)] text-xs rounded font-medium transition"
           >
@@ -95,12 +95,22 @@
     <!-- Action areas -->
     <div v-if="play.status === 'pending'" class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 text-center">
       <div class="text-sm text-[rgba(232,228,217,0.5)] mb-4">این بازی هنوز در حال پخش نقش است</div>
-      <router-link
-        :to="{ name: 'MasterPlayReveal', params: { clubId: ctx?.clubId, playId: play.id } }"
-        class="inline-block px-6 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-bold transition"
-      >
-        رفتن به صفحه پخش نقش
-      </router-link>
+      <div class="flex items-center justify-center gap-3">
+        <button
+          @click="doReshuffle"
+          :disabled="reshuffleLoading"
+          class="px-5 py-2 border border-[rgba(201,176,122,0.3)] hover:bg-[rgba(201,176,122,0.08)] text-[#c9b07a] text-sm rounded font-medium transition inline-flex items-center gap-2"
+        >
+          <div v-if="reshuffleLoading" class="w-4 h-4 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+          پخش دوباره نقش‌ها
+        </button>
+        <router-link
+          :to="{ name: 'MasterPlayReveal', params: { clubId: ctx?.clubId ?? clubId, playId: play.id } }"
+          class="inline-block px-5 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-bold transition"
+        >
+          رفتن به صفحه پخش نقش
+        </router-link>
+      </div>
     </div>
 
     <div v-else-if="play.status === 'notwinside'" class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 mb-8">
@@ -199,14 +209,27 @@
   <div v-else class="flex justify-center py-20">
     <div class="w-8 h-8 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
   </div>
+
+  <!-- Confirm scenario-change modal -->
+  <ConfirmModal
+    :isOpen="confirmEditOpen"
+    title="تأیید ویرایش"
+    :message="confirmEditMessage"
+    confirmText="ادامه"
+    cancelText="انصراف"
+    @confirm="doConfirmedUpdate"
+    @cancel="confirmEditOpen = false; pendingDto = null"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { MasterApi, ClubPlayApi, ClubApi, LookupApi } from '@/api'
+import { useAuthStore } from '@/stores/authStore'
 import { useToast } from '@/composables/useToast'
 import ClubPlayForm from '@/components/master/ClubPlayForm.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 import type { MasterContextDto, ClubPlayDetailDto, EventDto, CreateClubPlayDto } from '@/types/clubPlay'
 import type { RoomDto } from '@/types/club'
 import type { Senario, DropdownSide } from '@/types'
@@ -214,8 +237,10 @@ import type { Senario, DropdownSide } from '@/types'
 const router = useRouter()
 const route = useRoute()
 const { toastError, toastSuccess } = useToast()
+const authStore = useAuthStore()
 
 const ctx = ref<MasterContextDto | null>(null)
+const clubId = ref<number | null>(null)
 const play = ref<ClubPlayDetailDto | null>(null)
 const sides = ref<DropdownSide[]>([])
 const selectedWinnerside = ref<number | null>(null)
@@ -225,13 +250,22 @@ const rankInputs = reactive<Record<number, number>>({})
 const ranksLoading = ref(false)
 const ranksError = ref('')
 
+const reshuffleLoading = ref(false)
+
 // Edit mode state
 const editing = ref(false)
 const editSubmitting = ref(false)
 const formReady = ref(false)
+const confirmEditOpen = ref(false)
+const confirmEditMessage = ref('')
+const pendingDto = ref<CreateClubPlayDto | null>(null)
 const rooms = ref<RoomDto[]>([])
 const scenarios = ref<Senario[]>([])
 const events = ref<EventDto[]>([])
+
+const isStaff = computed(() =>
+  ['owner', 'supervisor', 'cashier'].includes(authStore.activeClubRole)
+)
 
 const winnersideName = computed(() => {
   if (!play.value?.winnersideId) return null
@@ -275,13 +309,14 @@ function statusLabel(status: string) {
 }
 
 async function startEdit() {
-  if (!ctx.value) return
+  const cId = clubId.value
+  if (!cId) return
   editing.value = true
   try {
     const [clubRes, scenariosRes, eventsRes] = await Promise.all([
-      ClubApi.getClubDetail(ctx.value.clubId),
+      ClubApi.getClubDetail(cId),
       LookupApi.getScenarios(),
-      ClubPlayApi.getClubEvents(ctx.value.clubId),
+      ClubPlayApi.getClubEvents(cId),
     ])
     rooms.value = clubRes.data.rooms.filter((r: any) => r.isActive !== false)
     scenarios.value = scenariosRes.data
@@ -299,29 +334,48 @@ function cancelEdit() {
 }
 
 async function onEditSubmit(dto: CreateClubPlayDto) {
-  if (!ctx.value || !play.value) return
+  const cId = clubId.value
+  if (!cId || !play.value) return
+
+  const senarioChanged = dto.senarioId !== play.value.senarioId
+  const countChanged = dto.playersCount !== play.value.playersCount
+
+  if (senarioChanged || countChanged) {
+    confirmEditMessage.value = 'تغییر سناریو یا شرکت‌کنندگان باعث باز پخش نقش فعلی بازی می‌شود'
+    pendingDto.value = dto
+    confirmEditOpen.value = true
+    return
+  }
+
+  await doActualUpdate(dto, cId)
+}
+
+async function doConfirmedUpdate() {
+  if (!pendingDto.value || !clubId.value || !play.value) return
+  confirmEditOpen.value = false
+  const dto = pendingDto.value
+  const cId = clubId.value
+  pendingDto.value = null
+  await doActualUpdate(dto, cId)
+}
+
+async function doActualUpdate(dto: CreateClubPlayDto, cId: number) {
+  if (!play.value) return
+  const oldStatus = play.value.status
   editSubmitting.value = true
   try {
-    const res = await ClubPlayApi.updateClubPlay(ctx.value.clubId, play.value.id, dto)
-    const wasProgressed = play.value.status !== 'pending'
+    const res = await ClubPlayApi.updateClubPlay(cId, play.value.id, dto)
     play.value = res.data
     toastSuccess('بازی با موفقیت ویرایش شد')
+    editing.value = false
+    formReady.value = false
 
-    if (wasProgressed) {
-      editing.value = false
-      formReady.value = false
+    if (oldStatus !== 'pending' && play.value.status === 'pending') {
       router.push({
         name: 'MasterPlayReveal',
-        params: { clubId: ctx.value.clubId, playId: play.value.id },
+        params: { clubId: cId, playId: play.value.id },
         state: { playDetail: JSON.parse(JSON.stringify(res.data)) },
       })
-    } else {
-      // Status didn't change (was pending and now also pending/normal-done)
-      editing.value = false
-      formReady.value = false
-      // Re-fetch to refresh detail view
-      const refreshed = await ClubPlayApi.getClubPlayDetail(ctx.value.clubId, play.value.id)
-      play.value = refreshed.data
     }
   } catch (e: unknown) {
     const err = e as { response?: { data?: { message?: string } } }
@@ -332,11 +386,12 @@ async function onEditSubmit(dto: CreateClubPlayDto) {
 }
 
 async function doSubmitWinnerside() {
-  if (!play.value || !selectedWinnerside.value || !ctx.value) return
+  const cId = clubId.value
+  if (!play.value || !selectedWinnerside.value || !cId) return
   winnersideLoading.value = true
   winnersideError.value = ''
   try {
-    const res = await ClubPlayApi.submitWinnerside(ctx.value.clubId, play.value.id, selectedWinnerside.value)
+    const res = await ClubPlayApi.submitWinnerside(cId, play.value.id, selectedWinnerside.value)
     play.value = res.data
     toastSuccess('نتیجه با موفقیت ثبت شد')
   } catch (e: unknown) {
@@ -349,7 +404,8 @@ async function doSubmitWinnerside() {
 }
 
 async function doSubmitRanks() {
-  if (!play.value || !ctx.value) return
+  const cId = clubId.value
+  if (!play.value || !cId) return
   ranksLoading.value = true
   ranksError.value = ''
   try {
@@ -357,7 +413,7 @@ async function doSubmitRanks() {
       clubPlayerId: p.clubPlayerId,
       rank: rankInputs[p.clubPlayerId] || 0,
     }))
-    const res = await ClubPlayApi.submitRanks(ctx.value.clubId, play.value.id, ranks)
+    const res = await ClubPlayApi.submitRanks(cId, play.value.id, ranks)
     play.value = res.data
     toastSuccess('رتبه‌ها با موفقیت ثبت شد')
   } catch (e: unknown) {
@@ -369,23 +425,61 @@ async function doSubmitRanks() {
   }
 }
 
+async function doReshuffle() {
+  const cId = clubId.value
+  if (!cId || !play.value) return
+  reshuffleLoading.value = true
+  try {
+    const res = await ClubPlayApi.reshuffleRoles(cId, play.value.id)
+    play.value = res.data
+    toastSuccess('نقش‌ها دوباره پخش شدند')
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } } }
+    toastError(err?.response?.data?.message || 'خطا در پخش دوباره نقش‌ها')
+  } finally {
+    reshuffleLoading.value = false
+  }
+}
+
 onMounted(async () => {
   try {
-    const ctxRes = await MasterApi.getMasterContext()
-    ctx.value = ctxRes.data
-
     const playId = Number(route.params.id)
     if (!playId) {
       router.push({ name: 'MasterDashboard' })
       return
     }
 
+    let cId: number
+    let masterCtx: MasterContextDto | null = null
+
+    if (isStaff.value) {
+      cId = authStore.activeClubId!
+      masterCtx = null
+    } else {
+      const ctxRes = await MasterApi.getMasterContext()
+      masterCtx = ctxRes.data
+      cId = ctxRes.data.clubId
+    }
+
+    clubId.value = cId
+
     const [playRes, sidesRes] = await Promise.all([
-      ClubPlayApi.getClubPlayDetail(ctxRes.data.clubId, playId),
+      ClubPlayApi.getClubPlayDetail(cId, playId),
       LookupApi.getDropdown(),
     ])
     play.value = playRes.data
     sides.value = sidesRes.data.sides
+
+    if (masterCtx) {
+      ctx.value = masterCtx
+    } else {
+      ctx.value = {
+        masterId: playRes.data.masterId,
+        masterName: playRes.data.masterName,
+        clubId: cId,
+        clubName: '',
+      }
+    }
   } catch {
     router.push({ name: 'MasterDashboard' })
   }

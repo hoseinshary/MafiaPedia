@@ -12,8 +12,8 @@ public class ClubManagementController : ClubControllerBase
 {
     private readonly IClubManagementService _service;
 
-    public ClubManagementController(IClubManagementService service, IMasterAuthService masterAuthService)
-        : base(masterAuthService)
+    public ClubManagementController(IClubManagementService service, IMasterAuthService masterAuthService, IClubUserService clubUserService)
+        : base(masterAuthService, clubUserService)
     {
         _service = service;
     }
@@ -26,11 +26,11 @@ public class ClubManagementController : ClubControllerBase
         return Ok(clubs);
     }
 
-    [Authorize(Policy = "AdminOrMaster")]
+    [Authorize(Policy = "AdminOrClub")]
     [HttpGet("{clubId:int}")]
     public async Task<IActionResult> GetClubDetail(int clubId)
     {
-        var forbid = await VerifyMasterClubAccess(clubId);
+        var forbid = await VerifyClubAccess(clubId, "master", "owner", "supervisor", "cashier");
         if (forbid is not null) return forbid;
 
         var club = await _service.GetClubDetailAsync(clubId);

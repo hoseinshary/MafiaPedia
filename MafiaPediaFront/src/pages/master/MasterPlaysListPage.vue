@@ -49,6 +49,7 @@
               <th class="px-4 py-3 text-right">ساعت</th>
               <th class="px-4 py-3 text-right">سالن</th>
               <th class="px-4 py-3 text-right">سناریو</th>
+              <th class="px-4 py-3 text-right">نوع بازی</th>
               <th class="px-4 py-3 text-right">تعداد</th>
               <th class="px-4 py-3 text-right">وضعیت</th>
             </tr>
@@ -60,6 +61,7 @@
               <td class="px-4 py-3 text-[rgba(232,228,217,0.5)]">{{ formatTime(play.dateTime) }}</td>
               <td class="px-4 py-3 text-[rgba(232,228,217,0.5)]">{{ play.roomName }}</td>
               <td class="px-4 py-3 text-[rgba(232,228,217,0.5)]">{{ play.senarioName }}</td>
+              <td class="px-4 py-3"><span class="status-badge" :class="playTypeClass(play.playType)">{{ playTypeLabel(play.playType) }}</span></td>
               <td class="px-4 py-3 text-[rgba(232,228,217,0.5)]">{{ play.playersCount }}</td>
               <td class="px-4 py-3"><span class="status-badge" :class="statusClass(play.status)">{{ statusLabel(play.status) }}</span></td>
             </tr>
@@ -129,6 +131,20 @@ function statusLabel(status: string) {
   return map[status] || status
 }
 
+function playTypeLabel(pt: string) {
+  const map: Record<string, string> = {
+    normal: 'عادی',
+    rank: 'رنک',
+    superrank: 'سوپر رنک',
+    etc: 'سایر',
+  }
+  return map[pt] || pt
+}
+
+function playTypeClass(pt: string) {
+  return 'playtype-' + pt
+}
+
 function goToPlay(id: number) {
   router.push({ name: 'MasterPlayDetail', params: { id } })
 }
@@ -186,5 +202,21 @@ onMounted(async () => {
 .status-done {
   background: rgba(74, 222, 128, 0.12);
   color: #4ade80;
+}
+.playtype-normal {
+  background: rgba(128, 128, 128, 0.15);
+  color: #a0a0a0;
+}
+.playtype-rank {
+  background: rgba(201, 176, 122, 0.15);
+  color: #c9b07a;
+}
+.playtype-superrank {
+  background: rgba(255, 165, 0, 0.15);
+  color: #ffa500;
+}
+.playtype-etc {
+  background: rgba(100, 180, 255, 0.12);
+  color: #64b4ff;
 }
 </style>

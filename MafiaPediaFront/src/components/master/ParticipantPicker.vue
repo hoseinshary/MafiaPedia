@@ -1,14 +1,23 @@
 <template>
   <div>
     <div class="relative" ref="containerRef">
-      <input
-        type="text"
-        v-model="query"
-        :placeholder="`جستجوی بازیکن با نام یا موبایل... (${selected.length} نفر)`"
-        class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition ltr text-left"
-        @input="onInput"
-        @focus="onFocus"
-      />
+      <div class="flex items-center gap-2">
+        <input
+          type="text"
+          v-model="query"
+          :placeholder="replaceTargetId != null ? 'جستجوی بازیکن جایگزین...' : `جستجوی بازیکن با نام یا موبایل... (${selected.length} نفر)`"
+          class="flex-1 bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition ltr text-left"
+          @input="onInput"
+          @focus="onFocus"
+        />
+        <button
+          v-if="replaceTargetId != null"
+          @click="cancelReplace"
+          class="text-xs text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] whitespace-nowrap border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 transition"
+        >
+          انصراف
+        </button>
+      </div>
       <div
         v-if="loading"
         class="absolute left-0 right-0 top-full mt-1 bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded shadow-lg z-50 flex items-center justify-center py-4"
@@ -25,9 +34,9 @@
           <div
             v-for="player in inClub"
             :key="'in-'+player.id"
-            @click="addParticipant(player)"
+            @click="replaceTargetId != null ? doReplace(player) : addParticipant(player)"
             class="flex items-center gap-3 px-3 py-2 cursor-pointer transition hover:bg-[rgba(255,255,255,0.03)]"
-            :class="{ 'opacity-40': isSelected(player.id) }"
+            :class="{ 'opacity-40': isSelected(player.id) && replaceTargetId == null }"
           >
             <img :src="player.picture || defaultAvatar" alt="" class="w-8 h-8 rounded-full object-cover bg-gray-600" />
             <div class="flex-1 min-w-0">
@@ -43,9 +52,9 @@
           <div
             v-for="player in limitedGlobalOthers"
             :key="'global-'+player.id"
-            @click="addGlobalAndSelect(player)"
+            @click="replaceTargetId != null ? replaceWithGlobal(player) : addGlobalAndSelect(player)"
             class="flex items-center gap-3 px-3 py-2 cursor-pointer transition hover:bg-[rgba(255,255,255,0.03)] border-r-2 border-r-[rgba(201,176,122,0.3)]"
-            :class="{ 'opacity-40': isSelected(player.id) }"
+            :class="{ 'opacity-40': isSelected(player.id) && replaceTargetId == null }"
           >
             <img :src="player.picture || defaultAvatar" alt="" class="w-8 h-8 rounded-full object-cover bg-gray-600" />
             <div class="flex-1 min-w-0">
@@ -99,7 +108,13 @@
             <input type="checkbox" :checked="p.isGuest" @change="toggleGuest(p.player.id)" class="accent-[#c9b07a]" />
             مهمان
           </label>
-          &nbsp;&nbsp;&nbsp;
+          <button
+            v-if="allowInPlaceReplace && playId"
+            @click="startReplace(p.player.id)"
+            class="text-[rgba(201,176,122,0.5)] hover:text-[#c9b07a] text-sm transition"
+            :title="'تعویض بازیکن'"
+          >&#9998;</button>
+          <span v-if="allowInPlaceReplace && playId" class="text-[rgba(255,255,255,0.1)] mx-1">|</span>
           <button @click="removeParticipant(p.player.id)" class="text-[#e07070] hover:text-[#d06060] text-sm">&times;</button>
         </div>
       </div>
@@ -109,12 +124,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ClubPlayerApi } from '@/api'
+import { ClubPlayerApi, ClubPlayApi } from '@/api'
+import { useToast } from '@/composables/useToast'
 import type { ClubPlayerDto } from '@/types/clubPlayer'
 
 const props = defineProps<{
   clubId: number
   initialSelected?: PickerParticipant[]
+  allowInPlaceReplace?: boolean
+  playId?: number
 }>()
 
 export interface PickerParticipant {
@@ -136,6 +154,10 @@ const showDropdown = ref(false)
 const newName = ref('')
 const newMobile = ref('')
 const creating = ref(false)
+const replaceTargetId = ref<number | null>(null)
+const replacing = ref(false)
+
+const { toastSuccess, toastError } = useToast()
 
 const defaultAvatar = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="%236b7280"><rect width="100" height="100" rx="50"/><text x="50" y="58" text-anchor="middle" font-size="40" fill="%23d1d5db" font-family="Arial">?</text></svg>')
 
@@ -181,6 +203,7 @@ function onFocus() {
 
 function addParticipant(player: ClubPlayerDto) {
   if (isSelected(player.id)) return
+  if (replaceTargetId.value != null) return // handled by doReplace
   selected.value.push({ player, isGuest: false })
   query.value = ''
   inClub.value = []
@@ -191,6 +214,7 @@ function addParticipant(player: ClubPlayerDto) {
 
 async function addGlobalAndSelect(player: ClubPlayerDto) {
   if (isSelected(player.id)) return
+  if (replaceTargetId.value != null) return // handled by replaceWithGlobal
   try {
     const fd = new FormData()
     fd.append('name', player.name)
@@ -215,14 +239,32 @@ async function createAndSelect() {
     fd.append('name', newName.value.trim())
     fd.append('mobile', newMobile.value.trim())
     const res = await ClubPlayerApi.createOrJoin(props.clubId, fd)
-    selected.value.push({ player: res.data.clubPlayer, isGuest: false })
+    const newPlayer = res.data.clubPlayer
+
+    if (replaceTargetId.value != null && props.playId) {
+      // Replace mode
+      const currentEntry = selected.value.find(p => p.player.id === replaceTargetId.value)
+      await ClubPlayApi.replaceParticipant(props.clubId, props.playId, replaceTargetId.value, {
+        newClubPlayerId: newPlayer.id,
+        isGuest: currentEntry?.isGuest ?? false,
+      })
+      const idx = selected.value.findIndex(p => p.player.id === replaceTargetId.value)
+      if (idx !== -1) {
+        selected.value[idx] = { player: newPlayer, isGuest: currentEntry?.isGuest ?? false }
+        emit('change', [...selected.value])
+      }
+      toastSuccess('بازیکن با موفقیت تعویض شد. نقش‌ها تغییری نکرد.')
+      cancelReplace()
+    } else {
+      selected.value.push({ player: newPlayer, isGuest: false })
+      emit('change', selected.value)
+    }
     newName.value = ''
     newMobile.value = ''
     query.value = ''
     inClub.value = []
     globalOthers.value = []
     showDropdown.value = false
-    emit('change', selected.value)
   } catch {
     // ignore
   } finally {
@@ -240,6 +282,76 @@ function toggleGuest(id: number) {
   if (entry) {
     entry.isGuest = !entry.isGuest
     emit('change', selected.value)
+  }
+}
+
+function startReplace(playerId: number) {
+  replaceTargetId.value = playerId
+  query.value = ''
+  inClub.value = []
+  globalOthers.value = []
+  showDropdown.value = false
+  setTimeout(() => containerRef.value?.querySelector('input')?.focus(), 50)
+}
+
+function cancelReplace() {
+  replaceTargetId.value = null
+  query.value = ''
+  inClub.value = []
+  globalOthers.value = []
+  showDropdown.value = false
+}
+
+async function doReplace(newPlayer: ClubPlayerDto) {
+  if (replaceTargetId.value == null || !props.playId) return
+  replacing.value = true
+  try {
+    const currentEntry = selected.value.find(p => p.player.id === replaceTargetId.value)
+    await ClubPlayApi.replaceParticipant(props.clubId, props.playId, replaceTargetId.value, {
+      newClubPlayerId: newPlayer.id,
+      isGuest: currentEntry?.isGuest ?? false,
+    })
+    const idx = selected.value.findIndex(p => p.player.id === replaceTargetId.value)
+    if (idx !== -1) {
+      selected.value[idx] = { player: newPlayer, isGuest: currentEntry?.isGuest ?? false }
+      emit('change', [...selected.value])
+    }
+    toastSuccess('بازیکن با موفقیت تعویض شد. نقش‌ها تغییری نکرد.')
+    cancelReplace()
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } } }
+    toastError(err?.response?.data?.message || 'خطا در تعویض بازیکن')
+  } finally {
+    replacing.value = false
+  }
+}
+
+async function replaceWithGlobal(player: ClubPlayerDto) {
+  if (replaceTargetId.value == null || !props.playId) return
+  replacing.value = true
+  try {
+    const fd = new FormData()
+    fd.append('name', player.name)
+    fd.append('mobile', player.mobile)
+    await ClubPlayerApi.createOrJoin(props.clubId, fd)
+
+    const currentEntry = selected.value.find(p => p.player.id === replaceTargetId.value)
+    await ClubPlayApi.replaceParticipant(props.clubId, props.playId, replaceTargetId.value, {
+      newClubPlayerId: player.id,
+      isGuest: currentEntry?.isGuest ?? false,
+    })
+    const idx = selected.value.findIndex(p => p.player.id === replaceTargetId.value)
+    if (idx !== -1) {
+      selected.value[idx] = { player, isGuest: currentEntry?.isGuest ?? false }
+      emit('change', [...selected.value])
+    }
+    toastSuccess('بازیکن با موفقیت تعویض شد. نقش‌ها تغییری نکرد.')
+    cancelReplace()
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } } }
+    toastError(err?.response?.data?.message || 'خطا در تعویض بازیکن')
+  } finally {
+    replacing.value = false
   }
 }
 

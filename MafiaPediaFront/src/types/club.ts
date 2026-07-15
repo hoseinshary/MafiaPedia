@@ -92,3 +92,39 @@ export interface ClubListItem {
   roomCount?: number
   masterCount?: number
 }
+
+export interface ClubUserDto {
+  id: number
+  userId: number
+  userDisplayName: string | null
+  userMobile: string | null
+  clubuserRole: 'owner' | 'supervisor' | 'cashier' | 'master'
+  clubId: number
+  masterId: number | null
+  masterName: string | null
+}
+
+export interface NewClubUserAccountDto {
+  username: string
+  password: string
+  mobile: string
+  displayName: string | null
+}
+
+export interface CreateClubUserDto {
+  clubuserRole: 'owner' | 'supervisor' | 'cashier'
+  existingUserId?: number | null
+  newUser?: NewClubUserAccountDto | null
+}
+
+export interface UpdateClubUserRoleDto {
+  clubuserRole: 'owner' | 'supervisor' | 'cashier' | 'master'
+}
+
+export interface ClubUserContextDto {
+  clubId: number
+  clubName: string
+  clubuserRole: string
+}
+
+

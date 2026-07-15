@@ -81,10 +81,24 @@ async function handleLogin() {
   loading.value = true
   try {
     await authStore.login(username.value, password.value, rememberMe.value)
-    if (authStore.isMaster) {
-      await router.push('/master')
+    await authStore.loadClubContexts()
+
+    if (authStore.clubContexts.length > 1 && !authStore.activeClubContext) {
+      await router.push('/select-club')
       return
     }
+
+    const roleRoutes: Record<string, string> = {
+      master: '/master',
+      owner: '/owner',
+      supervisor: '/supervisor',
+      cashier: '/cashier',
+    }
+    if (authStore.activeClubRole && roleRoutes[authStore.activeClubRole]) {
+      await router.push(roleRoutes[authStore.activeClubRole])
+      return
+    }
+
     const redirect = (route.query.redirect as string) || '/'
     await router.push(redirect)
   } catch (e: unknown) {

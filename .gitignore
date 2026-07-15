@@ -73,6 +73,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.jpeg
+*.zip
 
 # NuGet
 packages/

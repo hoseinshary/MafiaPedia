@@ -191,7 +191,7 @@ public class ClubManagementService : IClubManagementService
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewUser.Password),
                 Mobile = dto.NewUser.Mobile,
                 DisplayName = dto.NewUser.DisplayName,
-                Role = "master",
+                Role = "club",
                 IsActive = true
             };
             _context.Users.Add(newUser);
@@ -214,9 +214,9 @@ public class ClubManagementService : IClubManagementService
                 throw new InvalidOperationException("این کاربر قبلاً به عنوان گرداننده در این باشگاه ثبت شده است");
 
             await UpsertClubUserAsync(userId.Value, clubId, "master");
-            if (user.Role != "master")
+            if (user.Role != "club")
             {
-                user.Role = "master";
+                user.Role = "club";
             }
         }
 
@@ -292,9 +292,9 @@ public class ClubManagementService : IClubManagementService
             master.UserId = dto.ExistingUserId;
 
             await UpsertClubUserAsync(dto.ExistingUserId.Value, master.ClubId, "master");
-            if (user.Role != "master")
+            if (user.Role != "club")
             {
-                user.Role = "master";
+                user.Role = "club";
             }
         }
 
@@ -411,6 +411,8 @@ public class ClubManagementService : IClubManagementService
         return relativePath;
     }
 
+    private static readonly string[] ManagementRoles = { "owner", "supervisor", "cashier" };
+
     private async Task UpsertClubUserAsync(int userId, int clubId, string role)
     {
         var clubUser = await _context.Clubusers
@@ -425,6 +427,12 @@ public class ClubManagementService : IClubManagementService
                 ClubuserRole = role
             };
             _context.Clubusers.Add(clubUser);
+        }
+        else if (role == "master" && ManagementRoles.Contains(clubUser.ClubuserRole))
+        {
+            // این کاربر از قبل نقش مدیریتی (owner/supervisor/cashier) دارد.
+            // ساخت یا لینک‌کردن پروفایل گرداننده نباید این نقش را بازنویسی کند —
+            // پروفایل Master و نقش clubuser مستقل از هم هستند.
         }
         else
         {

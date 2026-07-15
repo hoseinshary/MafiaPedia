@@ -23,9 +23,9 @@
     <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 mb-8">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
-          <button @click="navigateDate(-1)" class="text-xs text-[rgba(232,228,217,0.3)] hover:text-[#c9b07a] transition px-2 py-1 border border-[rgba(255,255,255,0.07)] rounded">◀ روز قبل</button>
-          <h2 class="text-sm font-bold text-[#e8e4d9]">بازی‌های {{ formatHeadingDate(viewedDate) }} <span class="text-[rgba(232,228,217,0.4)] font-normal">— {{ totalEntries }} نفر-بازی</span></h2>
-          <button @click="navigateDate(1)" :disabled="isToday" class="text-xs text-[rgba(232,228,217,0.3)] hover:text-[#c9b07a] disabled:opacity-30 disabled:cursor-not-allowed transition px-2 py-1 border border-[rgba(255,255,255,0.07)] rounded">روز بعد ▶</button>
+          <button @click="navigateDate(-1)" class="text-xs text-[rgba(232,228,217,0.3)] hover:text-[#c9b07a] transition px-2 py-1 border border-[rgba(255,255,255,0.07)] rounded">▶ روز قبل</button>
+          <h2 class="text-sm font-bold text-[#e8e4d9]">بازی‌های {{ formatHeadingDate(viewedDate) }} <span class="text-[rgba(232,228,217,0.8)] font-normal">— {{ totalEntries }} نفر-بازی</span></h2>
+          <button @click="navigateDate(1)" :disabled="isToday" class="text-xs text-[rgba(232,228,217,0.3)] hover:text-[#c9b07a] disabled:opacity-30 disabled:cursor-not-allowed transition px-2 py-1 border border-[rgba(255,255,255,0.07)] rounded">روز بعد ◀</button>
         </div>
       </div>
       <div v-if="todaysLoading" class="flex justify-center py-8">
@@ -42,6 +42,7 @@
               <th class="px-3 py-2 text-right">ساعت</th>
               <th class="px-3 py-2 text-right">سالن</th>
               <th class="px-3 py-2 text-right">سناریو</th>
+              <th class="px-3 py-2 text-right">نوع بازی</th>
               <th class="px-3 py-2 text-right">تعداد</th>
               <th class="px-3 py-2 text-right">وضعیت</th>
             </tr>
@@ -52,6 +53,7 @@
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ formatTime(play.dateTime) }}</td>
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.roomName }}</td>
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.senarioName }}</td>
+              <td class="px-3 py-2.5"><span class="status-badge" :class="playTypeClass(play.playType)">{{ playTypeLabel(play.playType) }}</span></td>
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.playersCount }}</td>
               <td class="px-3 py-2.5"><span class="status-badge" :class="statusClass(play.status)">{{ statusLabel(play.status) }}</span></td>
             </tr>
@@ -123,6 +125,7 @@
               <th class="px-3 py-2 text-right">تاریخ</th>
               <th class="px-3 py-2 text-right">سالن</th>
               <th class="px-3 py-2 text-right">سناریو</th>
+              <th class="px-3 py-2 text-right">نوع بازی</th>
               <th class="px-3 py-2 text-right">وضعیت</th>
             </tr>
           </thead>
@@ -132,6 +135,7 @@
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ formatDate(play.dateTime) }}</td>
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.roomName }}</td>
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.senarioName }}</td>
+              <td class="px-3 py-2.5"><span class="status-badge" :class="playTypeClass(play.playType)">{{ playTypeLabel(play.playType) }}</span></td>
               <td class="px-3 py-2.5"><span class="status-badge" :class="statusClass(play.status)">{{ statusLabel(play.status) }}</span></td>
             </tr>
           </tbody>
@@ -159,6 +163,7 @@
               <th class="px-3 py-2 text-right">تاریخ</th>
               <th class="px-3 py-2 text-right">سالن</th>
               <th class="px-3 py-2 text-right">سناریو</th>
+              <th class="px-3 py-2 text-right">نوع بازی</th>
               <th class="px-3 py-2 text-right">تعداد</th>
               <th class="px-3 py-2 text-right">وضعیت</th>
             </tr>
@@ -169,6 +174,7 @@
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ formatDate(play.dateTime) }}</td>
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.roomName }}</td>
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.senarioName }}</td>
+              <td class="px-3 py-2.5"><span class="status-badge" :class="playTypeClass(play.playType)">{{ playTypeLabel(play.playType) }}</span></td>
               <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.playersCount }}</td>
               <td class="px-3 py-2.5"><span class="status-badge" :class="statusClass(play.status)">{{ statusLabel(play.status) }}</span></td>
             </tr>
@@ -256,6 +262,20 @@ function statusLabel(status: string) {
   return map[status] || status
 }
 
+function playTypeLabel(pt: string) {
+  const map: Record<string, string> = {
+    normal: 'عادی',
+    rank: 'رنک',
+    superrank: 'سوپر رنک',
+    etc: 'سایر',
+  }
+  return map[pt] || pt
+}
+
+function playTypeClass(pt: string) {
+  return 'playtype-' + pt
+}
+
 function goToPlay(id: number) {
   router.push({ name: 'MasterPlayDetail', params: { id } })
 }
@@ -328,5 +348,21 @@ onMounted(async () => {
 .status-done {
   background: rgba(74, 222, 128, 0.12);
   color: #4ade80;
+}
+.playtype-normal {
+  background: rgba(128, 128, 128, 0.15);
+  color: #a0a0a0;
+}
+.playtype-rank {
+  background: rgba(201, 176, 122, 0.15);
+  color: #c9b07a;
+}
+.playtype-superrank {
+  background: rgba(255, 165, 0, 0.15);
+  color: #ffa500;
+}
+.playtype-etc {
+  background: rgba(100, 180, 255, 0.12);
+  color: #64b4ff;
 }
 </style>

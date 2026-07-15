@@ -1,9 +1,19 @@
 <template>
   <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 space-y-5">
+    <div v-if="mode === 'edit' && initialStatusProgressed" class="bg-[rgba(255,165,0,0.08)] border border-[rgba(255,165,0,0.2)] rounded-lg px-4 py-3 text-sm text-[#ffa500]">
+      تغییر سناریو یا شرکت‌کنندگان باعث باز پخش نقش فعلی بازی می‌شود
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div v-if="masters && masters.length > 0 && !masterCtx">
+        <label class="text-sm text-[rgba(232,228,217,0.4)]">گرداننده <span class="text-[#e07070]">*</span></label>
+        <select v-model="selectedMasterId" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" @change="onMasterChange">
+          <option :value="null" disabled>انتخاب گرداننده</option>
+          <option v-for="m in masters" :key="m.id" :value="m.id">{{ m.name }}</option>
+        </select>
+      </div>
       <div>
         <label class="text-sm text-[rgba(232,228,217,0.4)]">عنوان</label>
-        <input v-model="form.title" type="text" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" placeholder="اختیاری" @input="onTitleInput" />
+        <input v-model="form.title" type="text" placeholder="اختیاری" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" @input="onTitleInput" />
       </div>
       <div>
         <label class="text-sm text-[rgba(232,228,217,0.4)]">فصل / Event</label>
@@ -75,7 +85,13 @@
           <span v-if="guestCount > 0" class="text-[rgba(232,228,217,0.4)]">({{ guestCount }} نفر مهمان)</span>
         </span>
       </label>
-      <ParticipantPicker :clubId="masterCtx.clubId" :initialSelected="initialParticipants" @change="onParticipantsChange" />
+      <ParticipantPicker
+        :clubId="effectiveClubId"
+        :initialSelected="initialParticipants"
+        :allowInPlaceReplace="mode === 'edit'"
+        :playId="playIdForReplace"
+        @change="onParticipantsChange"
+      />
     </div>
 
     <p v-if="error" class="text-sm text-[#e07070]">{{ error }}</p>
@@ -91,17 +107,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ClubPlayApi } from '@/api'
 import { toPersianOrdinal } from '@/utils/persianOrdinal'
 import type { MasterContextDto, ClubPlayDetailDto, EventDto, CreateClubPlayDto } from '@/types/clubPlay'
-import type { RoomDto } from '@/types/club'
+import type { RoomDto, MasterDto } from '@/types/club'
 import type { Senario } from '@/types'
 import ParticipantPicker, { type PickerParticipant } from '@/components/master/ParticipantPicker.vue'
 
 const props = defineProps<{
   mode: 'create' | 'edit'
-  masterCtx: MasterContextDto
+  masterCtx?: MasterContextDto | null
+  masters?: MasterDto[]
   rooms: RoomDto[]
   scenarios: Senario[]
   events: EventDto[]
@@ -115,6 +132,7 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
+const selectedMasterId = ref<number | null>(null)
 const participants = ref<PickerParticipant[]>([])
 const error = ref('')
 const titleUserEdited = ref(props.mode === 'edit')
@@ -148,11 +166,34 @@ const form = reactive({
   shuffleRoles: true,
 })
 
+const effectiveClubId = computed(() =>
+  props.masterCtx ? props.masterCtx.clubId : (props.masters?.[0]?.clubId ?? 0)
+)
+
+watch(
+  () => props.events,
+  (newEvents) => {
+    if (props.mode !== 'create') return
+    if (form.eventId) return
+    const defaultEvent = newEvents.find(e => e.isDefault)
+    if (defaultEvent) {
+      form.eventId = defaultEvent.id
+    }
+  },
+  { immediate: true }
+)
+
+const initialStatusProgressed = computed(() =>
+  props.mode === 'edit' && props.initial != null && props.initial.status !== 'pending'
+)
+const playIdForReplace = computed(() => props.mode === 'edit' ? props.initial?.id : undefined)
 const participantCount = computed(() => participants.value.length)
 const guestCount = computed(() => participants.value.filter(p => p.isGuest).length)
 
 const canSubmit = computed(() => {
-  return form.dateTime
+  const masterOk = props.masterCtx || selectedMasterId.value !== null
+  return masterOk
+    && form.dateTime
     && form.roomId !== ''
     && form.senarioId !== ''
     && form.eventId !== ''
@@ -160,12 +201,18 @@ const canSubmit = computed(() => {
     && participantCount.value === form.playersCount
 })
 
+function resolveMasterName(): string {
+  if (props.masterCtx) return props.masterCtx.masterName
+  const master = props.masters?.find(m => m.id === selectedMasterId.value)
+  return master?.name ?? ''
+}
+
 function onTitleInput() {
   if (props.mode === 'create') titleUserEdited.value = true
 }
 
 function computeGeneratedTitle(): string {
-  return `بازی ${toPersianOrdinal(playCountToday.value + 1)} ${props.masterCtx.masterName}`
+  return `بازی ${toPersianOrdinal(playCountToday.value + 1)} ${resolveMasterName()}`
 }
 
 function onDateTimeChange() {
@@ -174,16 +221,29 @@ function onDateTimeChange() {
   titleDebounce = setTimeout(fetchPlayCount, 300)
 }
 
+function onMasterChange() {
+  if (props.mode === 'edit') return
+  clearTimeout(titleDebounce)
+  titleDebounce = setTimeout(fetchPlayCount, 300)
+}
+
 async function fetchPlayCount() {
   if (props.mode === 'edit' || !form.dateTime) return
+  const masterId = resolveMasterId()
+  if (!masterId) return
   try {
     const dateOnly = form.dateTime.slice(0, 10)
-    const res = await ClubPlayApi.getPlayCountByDate(props.masterCtx.clubId, dateOnly)
+    const res = await ClubPlayApi.getPlayCountByDate(effectiveClubId.value, dateOnly, masterId)
     playCountToday.value = res.data.count
     if (!titleUserEdited.value) {
       form.title = computeGeneratedTitle()
     }
   } catch { /* ignore */ }
+}
+
+function resolveMasterId(): number | undefined {
+  if (props.masterCtx) return props.masterCtx.masterId
+  return selectedMasterId.value ?? undefined
 }
 
 function onParticipantsChange(selected: PickerParticipant[]) {
@@ -201,13 +261,22 @@ function handleSubmit() {
     playersCount: form.playersCount,
     playType: form.playType as any,
     eventId: form.eventId || undefined,
-    shuffleRoles: form.shuffleRoles,
+    ...(props.mode === 'create' ? { shuffleRoles: form.shuffleRoles } : {}),
     participants: participants.value.map(p => ({ clubPlayerId: p.player.id, isGuest: p.isGuest })),
     desc: form.desc || undefined,
     link: form.link || undefined,
   }
+  if (!props.masterCtx) {
+    dto.masterId = selectedMasterId.value!
+  }
   emit('submit', dto)
 }
+
+onMounted(() => {
+  if (props.mode === 'create' && form.dateTime) {
+    fetchPlayCount()
+  }
+})
 </script>
 
 <style scoped>
