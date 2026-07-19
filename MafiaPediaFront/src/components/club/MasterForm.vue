@@ -5,7 +5,7 @@
         v-model="name"
         type="text"
         placeholder="نام گرداننده"
-        class="flex-1 min-w-[120px] bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+        class="flex-1 min-w-[120px] bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
         @keydown.enter.prevent="submit"
       />
       <input
@@ -14,7 +14,7 @@
         step="0.1"
         min="0"
         placeholder="دستمزد هر بازی"
-        class="w-28 bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+        class="w-28 bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
       />
       <label class="cursor-pointer">
         <input
@@ -23,14 +23,14 @@
           class="hidden"
           @change="onPhotoChange"
         />
-        <span class="text-xs text-[rgba(201,176,122,0.6)] hover:text-[#c9b07a] transition">
+        <span class="text-xs text-gold-text/60 hover:text-gold-text transition">
           {{ photoFile ? 'عکس選択 شد' : 'عکس' }}
         </span>
       </label>
       <button
         @click="submit"
         :disabled="!name.trim() || loading"
-        class="px-4 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition whitespace-nowrap inline-flex items-center gap-2"
+        class="px-4 py-2 bg-gold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition whitespace-nowrap inline-flex items-center gap-2"
       >
         <div v-if="loading" class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
         {{ master ? 'ویرایش' : 'افزودن گرداننده' }}
@@ -38,7 +38,7 @@
       <button
         v-if="master"
         @click="$emit('cancelled')"
-        class="px-3 py-2 text-sm text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] transition"
+        class="px-3 py-2 text-sm text-muted hover:text-fg transition"
       >
         انصراف
       </button>
@@ -49,27 +49,27 @@
         <button
           @click="userTab = 'none'"
           class="px-3 py-1.5 text-xs rounded font-medium transition"
-          :class="userTab === 'none' ? 'bg-[#c9b07a] text-[#0d0d0f]' : 'bg-[rgba(255,255,255,0.05)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9]'"
+          :class="userTab === 'none' ? 'bg-gold text-[#0d0d0f]' : 'bg-surface-hover text-muted hover:text-fg'"
         >
           بدون اکانت
         </button>
         <button
           @click="userTab = 'existing'"
           class="px-3 py-1.5 text-xs rounded font-medium transition"
-          :class="userTab === 'existing' ? 'bg-[#c9b07a] text-[#0d0d0f]' : 'bg-[rgba(255,255,255,0.05)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9]'"
+          :class="userTab === 'existing' ? 'bg-gold text-[#0d0d0f]' : 'bg-surface-hover text-muted hover:text-fg'"
         >
           یوزر موجود
         </button>
         <button
           @click="userTab = 'new'"
           class="px-3 py-1.5 text-xs rounded font-medium transition"
-          :class="userTab === 'new' ? 'bg-[#c9b07a] text-[#0d0d0f]' : 'bg-[rgba(255,255,255,0.05)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9]'"
+          :class="userTab === 'new' ? 'bg-gold text-[#0d0d0f]' : 'bg-surface-hover text-muted hover:text-fg'"
         >
           یوزر جدید
         </button>
       </div>
 
-      <div v-if="userTab === 'none'" class="text-xs text-[rgba(232,228,217,0.3)] px-1">
+      <div v-if="userTab === 'none'" class="text-xs text-muted px-1">
         این گرداننده به هیچ کاربری لینک نیست
       </div>
 
@@ -78,28 +78,28 @@
           v-model="userQuery"
           type="text"
           placeholder="جستجوی کاربر..."
-          class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+          class="w-full bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
           @input="onUserSearch"
           @focus="onUserFocus"
         />
         <div
           v-if="userResults.length > 0"
-          class="absolute left-0 right-0 top-full mt-1 bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded shadow-lg z-50 overflow-hidden"
+          class="absolute left-0 right-0 top-full mt-1 bg-surface border border-border rounded shadow-lg z-50 overflow-hidden"
         >
           <div
             v-for="u in userResults"
             :key="u.id"
             @click="selectUser(u)"
-            class="px-3 py-2 text-sm text-[#e8e4d9] hover:bg-[rgba(255,255,255,0.05)] cursor-pointer transition"
+            class="px-3 py-2 text-sm text-fg hover:bg-surface-hover cursor-pointer transition"
           >
             {{ u.displayName || u.username }} — {{ u.mobile }}
           </div>
         </div>
         <div v-if="selectedUser" class="mt-1 flex items-center gap-2">
-          <span class="text-xs text-[rgba(232,228,217,0.5)]">
+          <span class="text-xs text-muted">
             {{ selectedUser.displayName || selectedUser.username }}
           </span>
-          <button @click="clearUser" class="text-xs text-[#e07070] hover:underline">حذف</button>
+          <button @click="clearUser" class="text-xs text-danger hover:underline">حذف</button>
         </div>
       </div>
 
@@ -107,24 +107,24 @@
         <div v-if="!newUserData" class="flex items-center gap-2">
           <button
             @click="showNewUserModal = true"
-            class="px-3 py-1.5 bg-[rgba(201,176,122,0.15)] hover:bg-[rgba(201,176,122,0.25)] text-[#c9b07a] text-xs rounded font-medium transition"
+            class="px-3 py-1.5 bg-gold/15 hover:bg-gold/25 text-gold-text text-xs rounded font-medium transition"
           >
             ساخت یوزر جدید
           </button>
         </div>
         <div v-else class="flex items-center gap-2">
-          <span class="text-xs text-[rgba(232,228,217,0.5)]">
+          <span class="text-xs text-muted">
             یوزر جدید: {{ newUserData.username }}
           </span>
           <button
             @click="editNewUser"
-            class="text-xs text-[#c9b07a] hover:underline"
+            class="text-xs text-gold-text hover:underline"
           >
             ویرایش
           </button>
           <button
             @click="clearNewUser"
-            class="text-xs text-[#e07070] hover:underline"
+            class="text-xs text-danger hover:underline"
           >
             حذف
           </button>
@@ -137,10 +137,10 @@
         v-model="bio"
         placeholder="بیوگرافی"
         rows="2"
-        class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition resize-none"
+        class="w-full bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition resize-none"
       />
     </div>
-    <p v-if="error" class="text-xs text-[#e07070] mt-1">{{ error }}</p>
+    <p v-if="error" class="text-xs text-danger mt-1">{{ error }}</p>
 
     <NewMasterUserModal
       :is-open="showNewUserModal"

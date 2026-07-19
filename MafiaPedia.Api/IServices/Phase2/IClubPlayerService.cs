@@ -12,9 +12,9 @@ public interface IClubPlayerService
 
     Task<ClubPlayerJoinResultDto> CreateOrJoinAsync(int clubId, CreateOrJoinClubPlayerDto dto, string? picturePath);
 
-    Task<ClubPlayerDto?> UpdateClubPlayerAsync(int customerId, UpdateClubPlayerDto dto, string? newPicturePath);
+    Task<ClubPlayerDto> UpdateClubPlayerAsync(int customerId, UpdateClubPlayerDto dto, string? newPicturePath);
 
-    Task<bool> RemoveFromClubAsync(int clubId, int customerId);
+    Task RemoveFromClubAsync(int clubId, int customerId);
 
     Task<CustomerSearchResultDto> SearchAllAsync(int clubId, string query);
 }

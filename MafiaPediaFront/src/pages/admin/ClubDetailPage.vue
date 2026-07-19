@@ -1,13 +1,13 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
     <div v-if="loading" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-gold border-t-transparent rounded-full animate-spin" />
     </div>
 
     <template v-else-if="club">
       <div class="flex items-start justify-between mb-6">
         <div class="flex items-start gap-4">
-          <router-link to="/admin/clubs" class="text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] transition mt-1">
+          <router-link to="/admin/clubs" class="text-muted hover:text-fg transition mt-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
             </svg>
@@ -15,34 +15,34 @@
           <div>
             <div class="flex items-center gap-3">
               <img v-if="club.logo" :src="getImageUrl(club.logo)" class="w-12 h-12 rounded object-cover" />
-              <h1 class="text-2xl md:text-3xl font-bold text-[#e8e4d9]">{{ club.name }}</h1>
-              <button @click="openClubEditModal" class="text-[rgba(232,228,217,0.3)] hover:text-[#c9b07a] transition">
+              <h1 class="text-2xl md:text-3xl font-bold text-fg">{{ club.name }}</h1>
+              <button @click="openClubEditModal" class="text-muted hover:text-gold-text transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                 </svg>
               </button>
             </div>
-            <div v-if="club.address || club.phone || club.city" class="flex flex-wrap gap-3 mt-2 text-xs text-[rgba(232,228,217,0.4)]">
+            <div v-if="club.address || club.phone || club.city" class="flex flex-wrap gap-3 mt-2 text-xs text-muted">
               <span v-if="club.city">{{ club.city }}</span>
               <span v-if="club.address">{{ club.address }}</span>
               <span v-if="club.phone" dir="ltr">{{ club.phone }}</span>
             </div>
-            <p v-if="club.description" class="mt-2 text-sm text-[rgba(232,228,217,0.5)]">{{ club.description }}</p>
+            <p v-if="club.description" class="mt-2 text-sm text-muted">{{ club.description }}</p>
           </div>
         </div>
       </div>
 
-      <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-[rgba(111,207,138,0.1)] border-[rgba(111,207,138,0.2)] text-[#6fcf8a]' : 'bg-[rgba(224,112,112,0.1)] border-[rgba(224,112,112,0.2)] text-[#e07070]'">
+      <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-success/20 border-success text-success' : 'bg-danger/20 border-danger text-danger'">
         {{ notification.message }}
       </div>
 
       <!-- Rooms Section -->
       <section class="mb-8">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-[#e8e4d9]">اتاق‌ها</h2>
+          <h2 class="text-lg font-bold text-fg">اتاق‌ها</h2>
           <button
             @click="openRoomModal(null)"
-            class="px-3 py-1.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-xs rounded font-medium transition"
+            class="px-3 py-1.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-xs rounded font-medium transition"
           >
             افزودن اتاق
           </button>
@@ -51,28 +51,28 @@
           <div
             v-for="r in club.rooms"
             :key="r.id"
-            class="flex items-center justify-between bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5"
+            class="flex items-center justify-between bg-surface-hover border border-border rounded px-4 py-2.5"
           >
             <div class="flex items-center gap-2">
-              <span class="text-sm text-[#e8e4d9]">{{ r.name }}</span>
-              <span v-if="!r.isActive" class="text-xs text-[#e07070]">(غیرفعال)</span>
+              <span class="text-sm text-fg">{{ r.name }}</span>
+              <span v-if="!r.isActive" class="text-xs text-danger">(غیرفعال)</span>
             </div>
             <div class="flex items-center gap-2">
-              <button @click="openRoomModal(r)" class="text-xs text-[rgba(232,228,217,0.4)] hover:text-[#c9b07a] transition">ویرایش</button>
-              <button @click="confirmDeleteRoom(r)" class="text-xs text-[#e07070] hover:underline">حذف</button>
+              <button @click="openRoomModal(r)" class="text-xs text-muted hover:text-gold-text transition">ویرایش</button>
+              <button @click="confirmDeleteRoom(r)" class="text-xs text-danger hover:underline">حذف</button>
             </div>
           </div>
-          <p v-if="club.rooms.length === 0" class="text-sm text-[rgba(232,228,217,0.3)] text-center py-4">هیچ اتاقی ثبت نشده</p>
+          <p v-if="club.rooms.length === 0" class="text-sm text-muted text-center py-4">هیچ اتاقی ثبت نشده</p>
         </div>
       </section>
 
       <!-- Members Section -->
       <section class="mb-8">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-[#e8e4d9]">اعضا و نقش‌ها</h2>
+          <h2 class="text-lg font-bold text-fg">اعضا و نقش‌ها</h2>
           <router-link
             :to="`/admin/clubs/${club?.id}/members`"
-            class="px-3 py-1.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-xs rounded font-medium transition"
+            class="px-3 py-1.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-xs rounded font-medium transition"
           >
             مدیریت اعضا
           </router-link>
@@ -82,10 +82,10 @@
       <!-- Masters Section -->
       <section class="mb-8">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-[#e8e4d9]">گردانندگان</h2>
+          <h2 class="text-lg font-bold text-fg">گردانندگان</h2>
           <button
             @click="openMasterModal(null)"
-            class="px-3 py-1.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-xs rounded font-medium transition"
+            class="px-3 py-1.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-xs rounded font-medium transition"
           >
             افزودن گرداننده
           </button>
@@ -94,41 +94,41 @@
           <div
             v-for="m in club.masters"
             :key="m.id"
-            class="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5"
+            class="bg-surface-hover border border-border rounded px-4 py-2.5"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3 flex-1">
                 <img v-if="m.photo" :src="getImageUrl(m.photo)" class="w-8 h-8 rounded-full object-cover" />
                 <div>
                   <div class="flex items-center gap-2">
-                    <span class="text-sm text-[#e8e4d9]">{{ m.name }}</span>
-                    <span v-if="m.ratePerGame != null" class="text-xs text-[rgba(232,228,217,0.3)]">{{ m.ratePerGame.toLocaleString() }} تومان</span>
-                    <span v-if="!m.userId" class="text-xs text-[rgba(232,228,217,0.25)]">(بدون اکانت)</span>
+                    <span class="text-sm text-fg">{{ m.name }}</span>
+                    <span v-if="m.ratePerGame != null" class="text-xs text-muted">{{ m.ratePerGame.toLocaleString() }} تومان</span>
+                    <span v-if="!m.userId" class="text-xs text-muted">(بدون اکانت)</span>
                   </div>
-                  <div class="flex items-center gap-2 text-xs text-[rgba(232,228,217,0.4)]">
+                  <div class="flex items-center gap-2 text-xs text-muted">
                     <span v-if="m.userDisplayName">{{ m.userDisplayName }}</span>
                     <span v-if="m.userMobile" dir="ltr">{{ m.userMobile }}</span>
                   </div>
-                  <p v-if="m.bio" class="text-xs text-[rgba(232,228,217,0.3)] mt-0.5">{{ m.bio }}</p>
+                  <p v-if="m.bio" class="text-xs text-muted mt-0.5">{{ m.bio }}</p>
                 </div>
               </div>
               <div class="flex items-center gap-2 shrink-0">
-                <button @click="openMasterModal(m)" class="text-xs text-[rgba(232,228,217,0.4)] hover:text-[#c9b07a] transition">ویرایش</button>
-                <button @click="confirmDeleteMaster(m)" class="text-xs text-[#e07070] hover:underline">حذف</button>
+                <button @click="openMasterModal(m)" class="text-xs text-muted hover:text-gold-text transition">ویرایش</button>
+                <button @click="confirmDeleteMaster(m)" class="text-xs text-danger hover:underline">حذف</button>
               </div>
             </div>
           </div>
-          <p v-if="club.masters.length === 0" class="text-sm text-[rgba(232,228,217,0.3)] text-center py-4">هیچ گرداننده‌ای ثبت نشده</p>
+          <p v-if="club.masters.length === 0" class="text-sm text-muted text-center py-4">هیچ گرداننده‌ای ثبت نشده</p>
         </div>
       </section>
 
       <!-- Customers Section -->
       <section class="mb-8">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-[#e8e4d9]">مشتریان</h2>
+          <h2 class="text-lg font-bold text-fg">مشتریان</h2>
           <button
             @click="openCustomerModal(null)"
-            class="px-3 py-1.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-xs rounded font-medium transition"
+            class="px-3 py-1.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-xs rounded font-medium transition"
           >
             افزودن مشتری
           </button>
@@ -139,22 +139,22 @@
             v-model="customersSearch"
             type="text"
             placeholder="جستجوی نام یا موبایل..."
-            class="w-full md:w-1/2 bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+            class="w-full md:w-1/2 bg-surface border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
           />
         </div>
 
         <div v-if="customersLoading" class="flex justify-center py-10">
-          <div class="w-8 h-8 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+          <div class="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
         </div>
 
-        <div v-else-if="customers.length === 0" class="text-sm text-[rgba(232,228,217,0.3)] text-center py-10">
+        <div v-else-if="customers.length === 0" class="text-sm text-muted text-center py-10">
           هیچ مشتری‌ای ثبت نشده
         </div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
-              <tr class="border-b border-[rgba(255,255,255,0.07)] bg-[#1a1a1e] text-[rgba(232,228,217,0.5)]">
+              <tr class="border-b border-border bg-surface-hover text-muted">
                 <th class="px-4 py-3 text-right">عکس</th>
                 <th class="px-4 py-3 text-right">نام</th>
                 <th class="px-4 py-3 text-right">موبایل</th>
@@ -166,7 +166,7 @@
               <tr
                 v-for="c in customers"
                 :key="c.id"
-                class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[#1a1a1e] transition text-[#e8e4d9]"
+                class="border-b border-border hover:bg-surface-hover transition text-fg"
               >
                 <td class="px-4 py-3">
                   <img
@@ -176,19 +176,19 @@
                   />
                   <div
                     v-else
-                    class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold select-none"
+                    class="w-9 h-9 rounded-full flex items-center justify-center text-fg text-sm font-bold select-none"
                     :style="{ backgroundColor: avatarColor(c.name) }"
                   >
                     {{ c.name.charAt(0) }}
                   </div>
                 </td>
                 <td class="px-4 py-3 font-medium">{{ c.name }}</td>
-                <td class="px-4 py-3 ltr text-left text-[rgba(232,228,217,0.6)]">{{ c.mobile }}</td>
-                <td class="px-4 py-3 text-[rgba(232,228,217,0.4)]">{{ c.code || '—' }}</td>
+                <td class="px-4 py-3 ltr text-left text-muted">{{ c.mobile }}</td>
+                <td class="px-4 py-3 text-muted">{{ c.code || '—' }}</td>
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2">
-                    <button @click="openCustomerModal(c)" class="text-xs text-[rgba(232,228,217,0.4)] hover:text-[#c9b07a] transition">ویرایش</button>
-                    <button @click="confirmDeleteCustomer(c)" class="text-xs text-[#e07070] hover:underline">حذف</button>
+                    <button @click="openCustomerModal(c)" class="text-xs text-muted hover:text-gold-text transition">ویرایش</button>
+                    <button @click="confirmDeleteCustomer(c)" class="text-xs text-danger hover:underline">حذف</button>
                   </div>
                 </td>
               </tr>
@@ -196,20 +196,20 @@
           </table>
 
           <div class="flex items-center justify-between gap-4 mt-4 text-sm">
-            <span class="text-[rgba(232,228,217,0.4)]">
+            <span class="text-muted">
               صفحه {{ customersPage }} از {{ customersTotalPages }}
             </span>
             <div class="flex gap-2">
               <button
                 :disabled="customersPage <= 1"
-                class="px-4 py-2 rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
+                class="px-4 py-2 rounded border border-border text-muted disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-hover transition"
                 @click="customersPage = Math.max(1, customersPage - 1)"
               >
                 قبلی
               </button>
               <button
                 :disabled="customersPage >= customersTotalPages"
-                class="px-4 py-2 rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
+                class="px-4 py-2 rounded border border-border text-muted disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-hover transition"
                 @click="customersPage = Math.min(customersTotalPages, customersPage + 1)"
               >
                 بعدی
@@ -219,76 +219,97 @@
         </div>
       </section>
 
+      <!-- Audit Section -->
+      <section class="mb-8">
+        <div class="bg-surface border border-border rounded-xl p-6">
+          <h2 class="text-sm font-bold text-gold-text mb-2">بازیابی</h2>
+          <p class="text-xs text-muted mb-4">مشاهده لیست بازی‌های حذف‌شده این کافه</p>
+          <router-link :to="`/admin/clubs/${club?.id}/deleted-plays`" class="inline-block px-4 py-2 border border-[rgba(201,176,122,0.3)] text-gold-text hover:bg-gold/10 text-sm rounded font-medium transition">
+            بازی‌های حذف‌شده
+          </router-link>
+        </div>
+      </section>
+
       <!-- Club Edit Modal -->
       <Modal :is-open="showClubEditModal" title="ویرایش کافه" max-width="md" @close="closeClubEditModal">
         <div class="flex flex-col gap-3">
           <div>
-            <label class="text-sm text-[rgba(232,228,217,0.4)]">نام کافه <span class="text-[#e07070]">*</span></label>
+            <label class="text-sm text-muted">نام کافه <span class="text-danger">*</span></label>
             <input
               v-model="clubEditForm.name"
               type="text"
-              class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+              class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
             />
           </div>
           <div>
-            <label class="text-sm text-[rgba(232,228,217,0.4)]">شهر</label>
+            <label class="text-sm text-muted">شهر</label>
             <input
               v-model="clubEditForm.city"
               type="text"
-              class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+              class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
             />
           </div>
           <div>
-            <label class="text-sm text-[rgba(232,228,217,0.4)]">آدرس</label>
+            <label class="text-sm text-muted">آدرس</label>
             <input
               v-model="clubEditForm.address"
               type="text"
-              class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+              class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
             />
           </div>
           <div>
-            <label class="text-sm text-[rgba(232,228,217,0.4)]">تلفن</label>
+            <label class="text-sm text-muted">تلفن</label>
             <input
               v-model="clubEditForm.phone"
               type="text"
-              class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+              class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
             />
           </div>
           <div>
-            <label class="text-sm text-[rgba(232,228,217,0.4)]">توضیحات</label>
+            <label class="text-sm text-muted">توضیحات</label>
             <textarea
               v-model="clubEditForm.description"
               rows="3"
-              class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition resize-none"
+              class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition resize-none"
             />
           </div>
           <div>
-            <label class="text-sm text-[rgba(232,228,217,0.4)]">لوگو</label>
+            <label class="text-sm text-muted">درصد مالیات بر ارزش افزوده</label>
+            <input
+              v-model.number="clubEditForm.vatPercent"
+              type="number"
+              min="0" max="100" step="0.01"
+              class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition ltr"
+            />
+            <p class="text-xs text-muted mt-1">اگر خالی بماند، مالیات محاسبه نمی‌شود.</p>
+          </div>
+          <div>
+            <label class="text-sm text-muted">لوگو</label>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              class="w-full text-sm text-[rgba(232,228,217,0.4)] file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-[rgba(201,176,122,0.15)] file:text-[#c9b07a] hover:file:bg-[rgba(201,176,122,0.25)] transition cursor-pointer"
+              class="w-full text-sm text-muted file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-gold/15 file:text-gold-text hover:file:bg-gold/25 transition cursor-pointer"
               @change="onClubLogoChange"
             />
             <img
               v-if="clubEditLogoPreview"
               :src="clubEditLogoPreview"
-              class="mt-2 w-20 h-20 rounded object-cover border border-[rgba(255,255,255,0.07)]"
+              class="mt-2 w-20 h-20 rounded object-cover border border-border"
             />
           </div>
-          <p v-if="clubEditError" class="text-xs text-[#e07070]">{{ clubEditError }}</p>
+          <p v-if="clubEditError" class="text-xs text-danger">{{ clubEditError }}</p>
         </div>
         <template #footer>
           <button
             @click="closeClubEditModal"
-            class="px-4 py-2 border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] text-sm rounded font-medium transition"
+            class="px-4 py-2 border border-border text-muted hover:text-fg text-sm rounded font-medium transition"
           >
             انصراف
           </button>
           <button
             @click="saveClub"
             :disabled="!clubEditForm.name.trim() || savingClub"
-            class="px-4 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition inline-flex items-center gap-2"
+            class="px-4 py-2 bg-gold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition inline-flex items-center gap-2"
           >
             <div v-if="savingClub" class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
             ذخیره
@@ -374,7 +395,7 @@
       />
     </template>
 
-    <div v-else class="text-center py-20 text-[rgba(232,228,217,0.4)] text-lg">
+    <div v-else class="text-center py-20 text-muted text-lg">
       کافه یافت نشد.
     </div>
   </div>
@@ -424,7 +445,7 @@ const notification = ref<{ type: 'success' | 'error'; message: string } | null>(
 
 // Club edit modal
 const showClubEditModal = ref(false)
-const clubEditForm = reactive({ name: '', address: '', phone: '', city: '', description: '' })
+const clubEditForm = reactive({ name: '', address: '', phone: '', city: '', description: '', vatPercent: null as number | null })
 const clubEditLogo = ref<File | null>(null)
 const clubEditLogoPreview = ref('')
 const savingClub = ref(false)
@@ -571,6 +592,7 @@ function openClubEditModal() {
   clubEditForm.phone = club.value.phone || ''
   clubEditForm.city = club.value.city || ''
   clubEditForm.description = club.value.description || ''
+  clubEditForm.vatPercent = club.value.vatPercent
   clubEditLogo.value = null
   clubEditLogoPreview.value = ''
   clubEditError.value = ''
@@ -607,6 +629,7 @@ async function saveClub() {
         phone: clubEditForm.phone || null,
         city: clubEditForm.city || null,
         description: clubEditForm.description || null,
+        vatPercent: clubEditForm.vatPercent,
       },
       clubEditLogo.value ?? undefined
     )
@@ -615,6 +638,7 @@ async function saveClub() {
     club.value.phone = res.data.phone
     club.value.city = res.data.city
     club.value.description = res.data.description
+    club.value.vatPercent = res.data.vatPercent
     if (res.data.logo) club.value.logo = res.data.logo
     closeClubEditModal()
     toastSuccess('کافه با موفقیت ویرایش شد')

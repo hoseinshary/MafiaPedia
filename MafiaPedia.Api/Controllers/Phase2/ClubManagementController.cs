@@ -52,10 +52,13 @@ public class ClubManagementController : ClubControllerBase
     }
 
     [HttpPut("{clubId:int}")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = "AdminOrClub")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UpdateClub(int clubId, [FromForm] UpdateClubDto dto, IFormFile? logo)
     {
+        var forbid = await VerifyClubAccess(clubId, "owner");
+        if (forbid is not null) return forbid;
+
         if (logo != null)
             await _service.SaveLogoAsync(clubId, logo);
 

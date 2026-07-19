@@ -3,15 +3,15 @@
     <div class="flex items-start justify-between gap-3">
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 mb-1">
-          <span class="text-sm font-medium text-blue-400">{{ comment.userDisplayName }}</span>
-          <span class="text-xs text-gray-500">{{ formatDate(comment.createdAt) }}</span>
+          <span class="text-sm font-medium text-gold-text">{{ comment.userDisplayName }}</span>
+          <span class="text-xs text-muted">{{ formatDate(comment.createdAt) }}</span>
         </div>
-        <p class="text-sm text-gray-300 whitespace-pre-wrap break-words">{{ comment.content }}</p>
+        <p class="text-sm text-fg whitespace-pre-wrap break-words">{{ comment.content }}</p>
       </div>
       <button
         v-if="authStore.userId === comment.userId || authStore.isAdmin"
         @click="$emit('delete', comment.id)"
-        class="text-gray-500 hover:text-red-400 transition shrink-0 p-1"
+        class="text-muted hover:text-danger transition shrink-0 p-1"
         title="حذف"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -24,7 +24,7 @@
       <button
         @click="$emit('like', comment.id)"
         class="inline-flex items-center gap-1.5 text-xs transition"
-        :class="comment.isLikedByCurrentUser ? 'text-red-400' : 'text-gray-500 hover:text-red-400'"
+        :class="comment.isLikedByCurrentUser ? 'text-danger' : 'text-muted hover:text-danger'"
         title="لایک"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" :fill="comment.isLikedByCurrentUser ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5">
@@ -35,7 +35,7 @@
       <button
         v-if="authStore.isAuthenticated && !comment.parentCommentId"
         @click="toggleReply"
-        class="text-xs text-gray-500 hover:text-blue-400 transition"
+        class="text-xs text-muted hover:text-gold-text transition"
       >
         {{ showReplyForm ? 'انصراف' : 'پاسخ' }}
       </button>
@@ -45,14 +45,14 @@
       <textarea
         v-model="replyContent"
         rows="2"
-        class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition resize-none"
+        class="w-full bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition resize-none"
         placeholder="پاسخ خود را بنویسید..."
       />
       <div class="flex justify-end mt-2">
         <button
           @click="submitReply"
           :disabled="sendingReply || !replyContent.trim()"
-          class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs rounded font-medium transition"
+          class="px-3 py-1.5 bg-gold hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed text-[#0d0d0f] text-xs rounded font-medium transition"
         >
           <span v-if="sendingReply" class="inline-flex items-center gap-1">
             <div class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -67,7 +67,7 @@
       <div
         v-for="reply in comment.replies"
         :key="reply.id"
-        class="border-r-2 border-gray-700 pr-4"
+        class="border-r-2 border-border pr-4"
       >
         <CommentItem
           :comment="reply"

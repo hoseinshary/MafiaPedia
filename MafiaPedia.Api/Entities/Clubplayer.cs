@@ -21,6 +21,10 @@ public partial class Clubplayer
 
     public int? UserId { get; set; }
 
+    public virtual ICollection<ClubOrder> ClubOrders { get; set; } = new List<ClubOrder>();
+
+    public virtual ICollection<ClubSettlement> ClubSettlements { get; set; } = new List<ClubSettlement>();
+
     public virtual ICollection<Clubplayplayer> Clubplayplayers { get; set; } = new List<Clubplayplayer>();
 
     public virtual ICollection<MasterlistClubplayer> MasterlistClubplayers { get; set; } = new List<MasterlistClubplayer>();

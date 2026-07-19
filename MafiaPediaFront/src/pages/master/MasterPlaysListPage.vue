@@ -1,24 +1,24 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto w-full" v-if="ctx">
     <div class="mb-6">
-      <h1 class="text-xl font-bold text-[#c9b07a]">لیست بازی‌ها</h1>
-      <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ ctx.clubName }}</p>
+      <h1 class="text-xl font-bold text-gold-text">لیست بازی‌ها</h1>
+      <p class="text-sm text-muted mt-1">{{ ctx.clubName }}</p>
     </div>
 
     <!-- Filters -->
-    <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-4 mb-6">
+    <div class="bg-surface border border-border rounded-xl p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label class="text-xs text-[rgba(232,228,217,0.4)] block mb-1">از تاریخ</label>
-          <input v-model="filters.dateFrom" type="date" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" />
+          <label class="text-xs text-muted block mb-1">از تاریخ</label>
+          <input v-model="filters.dateFrom" type="date" class="w-full bg-input border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-gold transition" />
         </div>
         <div>
-          <label class="text-xs text-[rgba(232,228,217,0.4)] block mb-1">تا تاریخ</label>
-          <input v-model="filters.dateTo" type="date" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" />
+          <label class="text-xs text-muted block mb-1">تا تاریخ</label>
+          <input v-model="filters.dateTo" type="date" class="w-full bg-input border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-gold transition" />
         </div>
         <div>
-          <label class="text-xs text-[rgba(232,228,217,0.4)] block mb-1">وضعیت</label>
-          <select v-model="filters.status" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition">
+          <label class="text-xs text-muted block mb-1">وضعیت</label>
+          <select v-model="filters.status" class="w-full bg-input border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-gold transition">
             <option value="">همه</option>
             <option value="pending">در حال پخش</option>
             <option value="notwinside">ثبت برنده</option>
@@ -27,23 +27,23 @@
           </select>
         </div>
         <div class="flex items-end">
-          <button @click="loadPlays(1)" class="w-full px-4 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-bold transition">اعمال فیلتر</button>
+          <button @click="loadPlays(1)" class="w-full px-4 py-2 bg-gold hover:opacity-80 text-[#0d0d0f] text-sm rounded font-bold transition">اعمال فیلتر</button>
         </div>
       </div>
     </div>
 
     <!-- Table -->
-    <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl overflow-hidden">
+    <div class="bg-surface border border-border rounded-xl overflow-hidden">
       <div v-if="loading" class="flex justify-center py-16">
-        <div class="w-8 h-8 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+        <div class="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
-      <div v-else-if="plays.length === 0" class="text-center py-16 text-sm text-[rgba(232,228,217,0.3)]">
+      <div v-else-if="plays.length === 0" class="text-center py-16 text-sm text-muted">
         هیچ بازی‌ای یافت نشد
       </div>
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.5)] bg-[#1a1a1e]">
+            <tr class="border-b border-border text-muted bg-surface-hover">
               <th class="px-4 py-3 text-right">عنوان</th>
               <th class="px-4 py-3 text-right">تاریخ</th>
               <th class="px-4 py-3 text-right">ساعت</th>
@@ -55,14 +55,14 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="play in plays" :key="play.id" @click="goToPlay(play.id)" class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition cursor-pointer text-[#e8e4d9]">
+            <tr v-for="play in plays" :key="play.id" @click="goToPlay(play.id)" class="border-b border-border hover:bg-surface-hover transition cursor-pointer text-fg">
               <td class="px-4 py-3 font-medium">{{ play.title || 'بدون عنوان' }}</td>
-              <td class="px-4 py-3 text-[rgba(232,228,217,0.5)]">{{ formatDate(play.dateTime) }}</td>
-              <td class="px-4 py-3 text-[rgba(232,228,217,0.5)]">{{ formatTime(play.dateTime) }}</td>
-              <td class="px-4 py-3 text-[rgba(232,228,217,0.5)]">{{ play.roomName }}</td>
-              <td class="px-4 py-3 text-[rgba(232,228,217,0.5)]">{{ play.senarioName }}</td>
+              <td class="px-4 py-3 text-muted">{{ formatDate(play.dateTime) }}</td>
+              <td class="px-4 py-3 text-muted">{{ formatTime(play.dateTime) }}</td>
+              <td class="px-4 py-3 text-muted">{{ play.roomName }}</td>
+              <td class="px-4 py-3 text-muted">{{ play.senarioName }}</td>
               <td class="px-4 py-3"><span class="status-badge" :class="playTypeClass(play.playType)">{{ playTypeLabel(play.playType) }}</span></td>
-              <td class="px-4 py-3 text-[rgba(232,228,217,0.5)]">{{ play.playersCount }}</td>
+              <td class="px-4 py-3 text-muted">{{ play.playersCount }}</td>
               <td class="px-4 py-3"><span class="status-badge" :class="statusClass(play.status)">{{ statusLabel(play.status) }}</span></td>
             </tr>
           </tbody>
@@ -72,13 +72,13 @@
 
     <!-- Pagination -->
     <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 mt-6">
-      <button @click="loadPlays(page - 1)" :disabled="page <= 1" class="px-3 py-1.5 text-sm rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.5)] hover:text-[#e8e4d9] disabled:opacity-30 disabled:cursor-not-allowed transition">قبلی</button>
-      <span class="text-sm text-[rgba(232,228,217,0.4)]">صفحه {{ page }} از {{ totalPages }}</span>
-      <button @click="loadPlays(page + 1)" :disabled="page >= totalPages" class="px-3 py-1.5 text-sm rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.5)] hover:text-[#e8e4d9] disabled:opacity-30 disabled:cursor-not-allowed transition">بعدی</button>
+      <button @click="loadPlays(page - 1)" :disabled="page <= 1" class="px-3 py-1.5 text-sm rounded border border-border text-muted hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed transition">قبلی</button>
+      <span class="text-sm text-muted">صفحه {{ page }} از {{ totalPages }}</span>
+      <button @click="loadPlays(page + 1)" :disabled="page >= totalPages" class="px-3 py-1.5 text-sm rounded border border-border text-muted hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed transition">بعدی</button>
     </div>
   </div>
   <div v-else class="flex justify-center py-20">
-    <div class="w-8 h-8 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+    <div class="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
   </div>
 </template>
 

@@ -9,7 +9,7 @@ namespace MafiaPedia.Api.Services.Phase1;
 
 public class UserService : IUserService
 {
-    private static readonly string[] ValidRoles = { "admin", "user", "master", "cafe_owner" };
+    private static readonly string[] ValidRoles = { "admin", "user", "club" };
 
     private readonly MafiaDbContext _context;
 

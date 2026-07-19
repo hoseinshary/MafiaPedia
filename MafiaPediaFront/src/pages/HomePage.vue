@@ -1,12 +1,12 @@
 <template>
-  <div style="background:#0d0d0f;color:#e8e4d9;width:100%;min-height:100vh;padding-bottom:3rem;font-family:'Vazirmatn',sans-serif;" dir="rtl">
+  <div style="background:var(--color-bg);color:var(--color-fg);width:100%;min-height:100vh;padding-bottom:3rem;font-family:'Vazirmatn',sans-serif;" dir="rtl">
   <div class="max-w-6xl mx-auto px-6">
 
     <div v-if="loading" class="flex justify-center items-center py-32">
-      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-gold border-t-transparent rounded-full animate-spin" />
     </div>
 
-    <div v-else-if="error" class="text-center py-20" style="color:rgba(232,228,217,0.4);font-size:15px;">
+    <div v-else-if="error" class="text-center py-20" style="color:var(--color-muted);font-size:15px;">
       خطا در دریافت اطلاعات
     </div>
 
@@ -183,15 +183,16 @@
 
         <div v-if="stats.last5Plays && stats.last5Plays.length > 0" class="mp-plays-list">
           <div v-for="play in stats.last5Plays" :key="play.id" class="mp-play-row" style="cursor:pointer;" @click="goToPlay(play.id)">
+            <PlayThumbnail :picture="play.picture" size="sm" />
             <div :class="['mp-play-side-badge', isMafiaWin(play.winnersideName) ? 'mafia' : 'citizen']">
               {{ isMafiaWin(play.winnersideName) ? 'م' : 'ش' }}
             </div>
             <div class="mp-play-info">
               <div class="mp-play-title">{{ play.title }}</div>
               <div class="mp-play-meta">
-                <span v-if="play.clubName" class="text-gray-600">{{ play.clubName }}</span>
-              <span v-if="play.clubName && play.eventName" class="text-gray-600 mx-1">/</span>
-              <span v-if="play.eventName" class="text-gray-600">{{ play.eventName }}</span>
+                <span v-if="play.clubName" class="text-muted">{{ play.clubName }}</span>
+              <span v-if="play.clubName && play.eventName" class="text-muted mx-1">/</span>
+              <span v-if="play.eventName" class="text-muted">{{ play.eventName }}</span>
                 &nbsp;
                 {{ play.senarioName }} ·
                 {{ formatDate(play.dateTime) }}
@@ -238,6 +239,7 @@ import type { StatisticsHomeDto } from '@/types'
 import donImage from '@/assets/images/slider/don.jpeg'
 import legendaryImage from '@/assets/images/slider/legendary.jpeg'
 import { getPictureUrl } from '@/utils/picture'
+import PlayThumbnail from '@/components/shared/PlayThumbnail.vue'
 
 const imgErrors = ref<Record<number, boolean>>({})
 function onImgError(playerId: number) {
@@ -388,7 +390,7 @@ onMounted(async () => {
   font-size: 13px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #c9b07a;
+  color: var(--color-gold);
   margin-bottom: 1rem;
 }
 .mp-hero-title {
@@ -396,15 +398,15 @@ onMounted(async () => {
   font-weight: 700;
   line-height: 1.2;
   margin: 0 0 0.75rem;
-  color: #e8e4d9;
+  color: var(--color-fg);
 }
 .mp-hero-title em {
   font-style: normal;
-  color: #c9b07a;
+  color: var(--color-gold);
 }
 .mp-hero-sub {
   font-size: 16px;
-  color: rgba(232, 228, 217, 0.45);
+  color: var(--color-muted);
   max-width: 420px;
   margin: 0 auto 2rem;
   line-height: 1.7;
@@ -417,8 +419,8 @@ onMounted(async () => {
 }
 .mp-cta-primary {
   padding: 10px 24px;
-  background: #c9b07a;
-  color: #0d0d0f;
+  background: var(--color-gold);
+  color: var(--color-gold-text);
   border: none;
   border-radius: 8px;
   font-weight: 700;
@@ -429,15 +431,15 @@ onMounted(async () => {
 .mp-cta-secondary {
   padding: 10px 24px;
   background: transparent;
-  color: rgba(232, 228, 217, 0.6);
-  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  color: var(--color-muted);
+  border: 0.5px solid var(--color-border);
   border-radius: 8px;
   font-size: 15px;
   cursor: pointer;
   font-family: inherit;
 }
 .mp-cta-secondary:hover {
-  color: #e8e4d9;
+  color: var(--color-fg);
 }
 
 /* ===== CLUBS ===== */
@@ -455,7 +457,7 @@ onMounted(async () => {
   overflow: hidden;
   position: relative;
   cursor: pointer;
-  border: 0.5px solid rgba(255, 255, 255, 0.06);
+  border: 0.5px solid var(--color-border);
   min-height: 200px;
   display: flex;
   flex-direction: column;
@@ -520,7 +522,7 @@ onMounted(async () => {
 .mp-club-name {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-fg);
   margin: 0 0 3px;
   line-height: 1.1;
 }
@@ -542,7 +544,7 @@ onMounted(async () => {
 .mp-club-stat-num-legendary { color: #3de8cc; }
 .mp-club-stat-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--color-muted);
   display: block;
 }
 
@@ -558,7 +560,7 @@ onMounted(async () => {
   cursor: pointer;
   font-family: inherit;
 }
-.mp-club-btn-don { background: rgba(220, 50, 50, 0.9); color: #fff; }
+.mp-club-btn-don { background: rgba(220, 50, 50, 0.9); color: var(--color-fg); }
 .mp-club-btn-legendary { background: rgba(30, 200, 170, 0.9); color: #0a1a17; }
 
 /* ===== STATS BAR ===== */
@@ -567,8 +569,8 @@ onMounted(async () => {
   justify-content: center;
   gap: 3rem;
   padding: 1.5rem 2rem;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.06);
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
+  border-top: 0.5px solid var(--color-border);
+  border-bottom: 0.5px solid var(--color-border);
 }
 .mp-stat-item {
   text-align: center;
@@ -576,12 +578,12 @@ onMounted(async () => {
 .mp-stat-num {
   font-size: 24px;
   font-weight: 700;
-  color: #c9b07a;
+  color: var(--color-gold);
   display: block;
 }
 .mp-stat-label {
   font-size: 13px;
-  color: rgba(232, 228, 217, 0.35);
+  color: var(--color-muted);
   margin-top: 2px;
   display: block;
 }
@@ -599,13 +601,13 @@ onMounted(async () => {
 .mp-section-title {
   font-size: 16px;
   font-weight: 700;
-  color: rgba(232, 228, 217, 0.5);
+  color: var(--color-muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .mp-section-link {
   font-size: 13px;
-  color: #c9b07a;
+  color: var(--color-gold);
   cursor: pointer;
   text-decoration: none;
 }
@@ -615,12 +617,12 @@ onMounted(async () => {
   display: flex;
   gap: 0;
   margin-bottom: 1rem;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 0.5px solid var(--color-border);
 }
 .mp-tab {
   font-size: 14px;
   padding: 6px 14px;
-  color: rgba(232, 228, 217, 0.35);
+  color: var(--color-muted);
   cursor: pointer;
   border-bottom: 1.5px solid transparent;
   margin-bottom: -0.5px;
@@ -632,8 +634,8 @@ onMounted(async () => {
   transition: color 0.15s;
 }
 .mp-tab.active {
-  color: #c9b07a;
-  border-bottom-color: #c9b07a;
+  color: var(--color-gold);
+  border-bottom-color: var(--color-gold);
 }
 
 /* ===== PODIUM ===== */
@@ -646,68 +648,68 @@ onMounted(async () => {
   grid-column: 1 / -1;
   text-align: center;
   padding: 2rem;
-  color: rgba(232, 228, 217, 0.3);
+  color: var(--color-muted);
   font-size: 15px;
 }
 
 .mp-player-card {
-  background: #141416;
-  border: 0.5px solid rgba(255, 255, 255, 0.07);
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border);
   border-radius: 10px;
   padding: 1rem;
   position: relative;
   overflow: hidden;
 }
 .mp-player-card.first {
-  border-color: rgba(201, 176, 122, 0.3);
-  background: #161510;
+  border-color: var(--color-gold);
+  background: var(--color-surface);
 }
 
 .mp-rank-badge {
   font-size: 13px;
   font-weight: 700;
-  color: rgba(232, 228, 217, 0.25);
+  color: var(--color-muted);
   margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
   gap: 4px;
 }
-.mp-rank-badge.gold { color: #c9b07a; }
+.mp-rank-badge.gold { color: var(--color-gold); }
 .rank-crown { font-size: 12px; }
 
 .mp-avatar {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #2a2820;
-  border: 1.5px solid rgba(201, 176, 122, 0.2);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   font-weight: 700;
-  color: #c9b07a;
+  color: var(--color-gold);
   margin-bottom: 0.6rem;
 }
 
 .mp-player-name {
   font-size: 15px;
   font-weight: 700;
-  color: #e8e4d9;
+  color: var(--color-fg);
   margin: 0 0 2px;
 }
 .mp-player-wr {
   font-size: 13px;
-  color: rgba(232, 228, 217, 0.5);
+  color: var(--color-muted);
   margin: 0;
 }
 .mp-player-wr strong {
-  color: #6fcf8a;
+  color: var(--color-success);
   font-weight: 500;
 }
 .mp-player-games {
   font-size: 13px;
-  color: rgba(232, 228, 217, 1);
+  color: var(--color-fg);
   margin: 4px 0 0;
 }
 
@@ -720,7 +722,7 @@ onMounted(async () => {
 .mp-plays-empty {
   text-align: center;
   padding: 2rem;
-  color: rgba(232, 228, 217, 0.3);
+  color: var(--color-muted);
   font-size: 15px;
 }
 
@@ -728,8 +730,8 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #141416;
-  border: 0.5px solid rgba(255, 255, 255, 0.06);
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border);
   border-radius: 8px;
   padding: 0.7rem 1rem;
 }
@@ -755,32 +757,34 @@ onMounted(async () => {
 .mp-play-title {
   font-size: 15px;
   font-weight: 500;
-  color: #e8e4d9;
+  color: var(--color-fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .mp-play-meta {
   font-size: 13px;
-  color: rgba(232, 228, 217, 0.3);
+  color: var(--color-muted);
   margin-top: 1px;
 }
 .mp-play-yt {
   font-size: 14px;
-  color: rgba(201, 176, 122, 0.5);
+  color: var(--color-gold);
   cursor: pointer;
   flex-shrink: 0;
   text-decoration: none;
+  opacity: 0.5;
 }
 .mp-play-yt:hover {
-  color: #c9b07a;
+  opacity: 1;
+  color: var(--color-gold);
 }
 
 /* ===== SEARCH ===== */
 .mp-search-section {
   margin: 2rem;
-  background: #141416;
-  border: 0.5px solid rgba(255, 255, 255, 0.07);
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
@@ -788,12 +792,12 @@ onMounted(async () => {
 .mp-search-title {
   font-size: 16px;
   font-weight: 700;
-  color: rgba(232, 228, 217, 0.7);
+  color: var(--color-muted);
   margin-bottom: 0.5rem;
 }
 .mp-search-sub {
   font-size: 13px;
-  color: rgba(232, 228, 217, 0.25);
+  color: var(--color-muted);
   margin-bottom: 1rem;
 }
 .mp-search-bar {
@@ -805,25 +809,25 @@ onMounted(async () => {
 }
 .mp-search-input {
   flex: 1;
-  background: #0d0d0f;
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-input-bg);
+  border: 0.5px solid var(--color-input-border);
   border-radius: 7px;
   padding: 8px 12px;
   font-size: 14px;
-  color: #e8e4d9;
+  color: var(--color-fg);
   font-family: inherit;
   outline: none;
   text-align: right;
 }
 .mp-search-input:focus {
-  border-color: rgba(201, 176, 122, 0.3);
+  border-color: var(--color-gold);
 }
 .mp-search-go {
   padding: 8px 16px;
-  background: #c9b07a;
+  background: var(--color-gold);
   border: none;
   border-radius: 7px;
-  color: #0d0d0f;
+  color: var(--color-gold-text);
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;

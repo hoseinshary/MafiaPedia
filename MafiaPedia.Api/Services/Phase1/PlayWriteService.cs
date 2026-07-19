@@ -1,7 +1,9 @@
+using System.Text.Json;
 using MafiaPedia.Api.Data;
 using MafiaPedia.Api.DTOs.Phase1;
 using MafiaPedia.Api.Entities;
 using MafiaPedia.Api.IServices.Phase1;
+using MafiaPedia.Api.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace MafiaPedia.Api.Services.Phase1;
@@ -9,10 +11,14 @@ namespace MafiaPedia.Api.Services.Phase1;
 public class PlayWriteService : IPlayWriteService
 {
     private readonly MafiaDbContext _context;
+    private readonly IWebHostEnvironment _env;
+    private readonly ILogger<PlayWriteService> _logger;
 
-    public PlayWriteService(MafiaDbContext context)
+    public PlayWriteService(MafiaDbContext context, IWebHostEnvironment env, ILogger<PlayWriteService> logger)
     {
         _context = context;
+        _env = env;
+        _logger = logger;
     }
 
     public async Task<bool> UpdatePlayAsync(int playId, UpdatePlayDto dto)
@@ -35,11 +41,15 @@ public class PlayWriteService : IPlayWriteService
         if (dto.GuestCount != null) play.GuestCount = dto.GuestCount;
         if (dto.Link != null) play.Link = dto.Link;
 
-        if (dto.Players != null)
+        if (dto.PlayersJson != null)
         {
+            var players = DeserializePlayers(dto.PlayersJson);
+            if (players is null)
+                throw new InvalidOperationException("فرمت JSON بازیکنان نامعتبر است");
+
             _context.Playplayers.RemoveRange(play.Playplayers);
 
-            var newPlayers = dto.Players.Select(p => new Playplayer
+            var newPlayers = players.Select(p => new Playplayer
             {
                 PlayId = playId,
                 PlayerId = p.PlayerId,
@@ -49,6 +59,16 @@ public class PlayWriteService : IPlayWriteService
             }).ToList();
 
             await _context.Playplayers.AddRangeAsync(newPlayers);
+        }
+
+        var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "plays");
+        Directory.CreateDirectory(uploadsDir);
+
+        var picturePath = await ResolvePictureAsync(dto.Picture, dto.Link, play.Link, uploadsDir);
+        if (picturePath != null)
+        {
+            DeleteOldPlayPicture(play.Picture);
+            play.Picture = picturePath;
         }
 
         await _context.SaveChangesAsync();
@@ -73,6 +93,13 @@ public class PlayWriteService : IPlayWriteService
 
     public async Task<int> AddPlayAsync(CreatePlayDto dto)
     {
+        var players = DeserializePlayers(dto.PlayersJson) ?? new List<CreatePlayPlayerDto>();
+
+        var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "plays");
+        Directory.CreateDirectory(uploadsDir);
+
+        var picturePath = await ResolvePictureAsync(dto.Picture, dto.Link, null, uploadsDir);
+
         var play = new Play
         {
             Title = dto.Title,
@@ -86,7 +113,8 @@ public class PlayWriteService : IPlayWriteService
             MasterId = dto.MasterId,
             UserId = dto.UserId,
             GuestCount = dto.GuestCount,
-            Link = dto.Link
+            Link = dto.Link,
+            Picture = picturePath
         };
 
         await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -94,7 +122,7 @@ public class PlayWriteService : IPlayWriteService
         _context.Plays.Add(play);
         await _context.SaveChangesAsync();
 
-        foreach (var playerDto in dto.Players)
+        foreach (var playerDto in players)
         {
             var playplayer = new Playplayer
             {
@@ -111,5 +139,63 @@ public class PlayWriteService : IPlayWriteService
         await transaction.CommitAsync();
 
         return play.Id;
+    }
+
+    private async Task<string?> ResolvePictureAsync(IFormFile? uploadedPicture, string? incomingLink, string? existingLink, string uploadsDir)
+    {
+        if (uploadedPicture is not null)
+            return await SaveUploadedPictureAsync(uploadedPicture, uploadsDir);
+
+        if (!string.IsNullOrWhiteSpace(incomingLink) && incomingLink != existingLink)
+        {
+            var videoId = YoutubeThumbnailHelper.ExtractVideoId(incomingLink);
+            if (videoId is not null)
+            {
+                var path = await YoutubeThumbnailHelper.DownloadThumbnailAsync(videoId, uploadsDir, _logger);
+                if (path is not null)
+                    return path;
+            }
+        }
+
+        return null;
+    }
+
+    private async Task<string> SaveUploadedPictureAsync(IFormFile picture, string uploadsDir)
+    {
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var extension = Path.GetExtension(picture.FileName).ToLowerInvariant();
+
+        if (!allowedExtensions.Contains(extension))
+            throw new InvalidOperationException("Only jpg, jpeg, png, webp files are allowed.");
+
+        if (picture.Length > 2 * 1024 * 1024)
+            throw new InvalidOperationException("File size must be less than 2 MB.");
+
+        var fileName = $"{Guid.NewGuid()}{extension}";
+        var filePath = Path.Combine(uploadsDir, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await picture.CopyToAsync(stream);
+        }
+
+        return $"/uploads/plays/{fileName}";
+    }
+
+    private void DeleteOldPlayPicture(string? picturePath)
+    {
+        if (string.IsNullOrEmpty(picturePath)) return;
+        var fullPath = Path.Combine(_env.WebRootPath, picturePath.TrimStart('/'));
+        if (File.Exists(fullPath))
+            File.Delete(fullPath);
+    }
+
+    private static List<CreatePlayPlayerDto>? DeserializePlayers(string? playersJson)
+    {
+        if (string.IsNullOrWhiteSpace(playersJson)) return null;
+        return JsonSerializer.Deserialize<List<CreatePlayPlayerDto>>(playersJson, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
     }
 }

@@ -1,13 +1,13 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-[#e8e4d9]">رنکینگ بهترین بازیکنان شهروند</h1>
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-fg">رنکینگ بهترین بازیکنان شهروند</h1>
 
     <div class="flex flex-wrap gap-4 mb-6 items-end">
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">کلاب</label>
+        <label class="text-sm text-muted">کلاب</label>
         <select
           v-model="filters.clubId"
-          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm min-w-[140px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
+          class="bg-surface border border-border rounded px-3 py-2 text-sm min-w-[140px] text-fg focus:outline-none focus:border-gold"
           @change="fetchRanking()"
         >
           <option :value="undefined">همه</option>
@@ -16,10 +16,10 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">ایونت</label>
+        <label class="text-sm text-muted">ایونت</label>
         <select
           v-model="filters.eventId"
-          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm min-w-[140px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
+          class="bg-surface border border-border rounded px-3 py-2 text-sm min-w-[140px] text-fg focus:outline-none focus:border-gold"
           @change="fetchRanking()"
         >
           <option :value="undefined">همه</option>
@@ -28,10 +28,10 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">سناریو</label>
+        <label class="text-sm text-muted">سناریو</label>
         <select
           v-model="filters.senarioId"
-          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm min-w-[140px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
+          class="bg-surface border border-border rounded px-3 py-2 text-sm min-w-[140px] text-fg focus:outline-none focus:border-gold"
           @change="fetchRanking()"
         >
           <option :value="undefined">همه</option>
@@ -40,29 +40,29 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">مینیموم تعداد بازی</label>
+        <label class="text-sm text-muted">مینیموم تعداد بازی</label>
         <input
           v-model.number="filters.minimumGames"
           type="number"
           min="0"
-          class="bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm w-[120px] text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)]"
+          class="bg-surface border border-border rounded px-3 py-2 text-sm w-[120px] text-fg focus:outline-none focus:border-gold"
           @change="fetchRanking()"
         />
       </div>
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-gold border-t-transparent rounded-full animate-spin" />
     </div>
 
-    <div v-else-if="data.length === 0" class="text-center py-20 text-[rgba(232,228,217,0.4)] text-lg">
+    <div v-else-if="data.length === 0" class="text-center py-20 text-muted text-lg">
       No players found.
     </div>
 
     <div v-else class="overflow-x-auto">
       <table class="w-full text-sm border-collapse">
         <thead>
-          <tr class="border-b border-[rgba(255,255,255,0.07)] bg-[#1a1a1e] text-[rgba(232,228,217,0.5)]">
+          <tr class="border-b border-border bg-surface-hover text-muted">
             <th
               v-for="col in columns"
               :key="col.key"
@@ -82,7 +82,7 @@
           <tr
             v-for="(row, index) in paginated"
             :key="row.playerId"
-            class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[#1a1a1e] transition text-[#e8e4d9]"
+            class="border-b border-border hover:bg-surface-hover transition text-fg"
           >
             <td class="px-4 py-3 text-center">
               <span v-if="showTrophies && (page - 1) * perPage + index < 3" class="ml-1">
@@ -93,7 +93,7 @@
             <td class="px-4 py-3">
               <router-link
                 :to="`/player/${row.playerId}`"
-                class="text-[#c9b07a] hover:underline font-medium"
+                class="text-gold-text hover:underline font-medium"
               >
                 {{ row.playerName }}
               </router-link>
@@ -106,20 +106,20 @@
       </table>
 
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-        <span class="text-sm text-[rgba(232,228,217,0.4)]">
+        <span class="text-sm text-muted">
           Page {{ page }} of {{ totalPages }}
         </span>
         <div class="flex gap-2">
           <button
             :disabled="page <= 1"
-            class="px-4 py-2 text-sm rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
+            class="px-4 py-2 text-sm rounded border border-border text-muted disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-hover transition"
             @click="page = Math.max(1, page - 1)"
           >
             Previous
           </button>
           <button
             :disabled="page >= totalPages"
-            class="px-4 py-2 text-sm rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
+            class="px-4 py-2 text-sm rounded border border-border text-muted disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-hover transition"
             @click="page = Math.min(totalPages, page + 1)"
           >
             Next

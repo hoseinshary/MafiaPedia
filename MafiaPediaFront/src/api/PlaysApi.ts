@@ -1,9 +1,29 @@
 import apiClient from './apiClient'
 import type { CreatePlayPayload, PlayDetailDto, PaginatedPlays, PlayFilterParams } from '@/types'
 
+function toFormData(payload: CreatePlayPayload, pictureFile?: File): FormData {
+  const fd = new FormData()
+  fd.append('title', payload.title)
+  fd.append('dateTime', payload.dateTime)
+  fd.append('playersCount', String(payload.playersCount))
+  fd.append('desc', payload.desc)
+  fd.append('senarioId', String(payload.senarioId))
+  fd.append('winnersideId', String(payload.winnersideId))
+  fd.append('eventId', String(payload.eventId))
+  fd.append('roomId', String(payload.roomId))
+  fd.append('masterId', String(payload.masterId))
+  fd.append('guestCount', String(payload.guestCount))
+  fd.append('link', payload.link)
+  fd.append('playersJson', JSON.stringify(payload.players))
+  if (pictureFile) {
+    fd.append('picture', pictureFile)
+  }
+  return fd
+}
+
 export const PlaysApi = {
-  createPlay(payload: CreatePlayPayload) {
-    return apiClient.post('/plays', payload)
+  createPlay(payload: CreatePlayPayload, pictureFile?: File) {
+    return apiClient.post('/plays', toFormData(payload, pictureFile))
   },
 
   getPlays(page: number, pageSize: number, search?: string, filter?: PlayFilterParams) {
@@ -37,8 +57,8 @@ export const PlaysApi = {
     return apiClient.get<PlayDetailDto>(`/plays/${playId}`)
   },
 
-  updatePlay(playId: number, payload: CreatePlayPayload) {
-    return apiClient.put(`/plays/${playId}`, payload)
+  updatePlay(playId: number, payload: CreatePlayPayload, pictureFile?: File) {
+    return apiClient.put(`/plays/${playId}`, toFormData(payload, pictureFile))
   },
 
   deletePlay(playId: number) {

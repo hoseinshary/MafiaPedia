@@ -2,14 +2,14 @@
   <div>
     <div class="flex items-center gap-2 flex-wrap">
       <div class="flex flex-col gap-1 flex-1">
-        <label class="text-xs text-[rgba(232,228,217,0.4)]">نقش</label>
+        <label class="text-xs text-muted">نقش</label>
         <div class="flex gap-2 flex-wrap">
           <button
             v-for="r in availableRoles"
             :key="r"
             @click="selectedRole = r"
             class="px-3 py-1.5 text-xs rounded font-medium transition"
-            :class="selectedRole === r ? 'bg-[#c9b07a] text-[#0d0d0f]' : 'bg-[rgba(255,255,255,0.05)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9]'"
+            :class="selectedRole === r ? 'bg-gold text-[#0d0d0f]' : 'bg-surface-hover text-muted hover:text-fg'"
           >
             {{ roleLabel(r) }}
           </button>
@@ -18,7 +18,7 @@
       <button
         @click="submit"
         :disabled="!selectedRole || loading"
-        class="px-4 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition whitespace-nowrap inline-flex items-center gap-2 self-end"
+        class="px-4 py-2 bg-gold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition whitespace-nowrap inline-flex items-center gap-2 self-end"
       >
         <div v-if="loading" class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
         {{ member ? 'ویرایش' : 'افزودن عضو' }}
@@ -26,7 +26,7 @@
       <button
         v-if="member"
         @click="$emit('cancelled')"
-        class="px-3 py-2 text-sm text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] transition self-end"
+        class="px-3 py-2 text-sm text-muted hover:text-fg transition self-end"
       >
         انصراف
       </button>
@@ -37,14 +37,14 @@
         <button
           @click="userTab = 'existing'"
           class="px-3 py-1.5 text-xs rounded font-medium transition"
-          :class="userTab === 'existing' ? 'bg-[#c9b07a] text-[#0d0d0f]' : 'bg-[rgba(255,255,255,0.05)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9]'"
+          :class="userTab === 'existing' ? 'bg-gold text-[#0d0d0f]' : 'bg-surface-hover text-muted hover:text-fg'"
         >
           یوزر موجود
         </button>
         <button
           @click="userTab = 'new'"
           class="px-3 py-1.5 text-xs rounded font-medium transition"
-          :class="userTab === 'new' ? 'bg-[#c9b07a] text-[#0d0d0f]' : 'bg-[rgba(255,255,255,0.05)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9]'"
+          :class="userTab === 'new' ? 'bg-gold text-[#0d0d0f]' : 'bg-surface-hover text-muted hover:text-fg'"
         >
           یوزر جدید
         </button>
@@ -55,28 +55,28 @@
           v-model="userQuery"
           type="text"
           placeholder="جستجوی کاربر..."
-          class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+          class="w-full bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
           @input="onUserSearch"
           @focus="onUserFocus"
         />
         <div
           v-if="userResults.length > 0"
-          class="absolute left-0 right-0 top-full mt-1 bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded shadow-lg z-50 overflow-hidden"
+          class="absolute left-0 right-0 top-full mt-1 bg-surface border border-border rounded shadow-lg z-50 overflow-hidden"
         >
           <div
             v-for="u in userResults"
             :key="u.id"
             @click="selectUser(u)"
-            class="px-3 py-2 text-sm text-[#e8e4d9] hover:bg-[rgba(255,255,255,0.05)] cursor-pointer transition"
+            class="px-3 py-2 text-sm text-fg hover:bg-surface-hover cursor-pointer transition"
           >
             {{ u.displayName || u.username }} — {{ u.mobile }}
           </div>
         </div>
         <div v-if="selectedUser" class="mt-1 flex items-center gap-2">
-          <span class="text-xs text-[rgba(232,228,217,0.5)]">
+          <span class="text-xs text-muted">
             {{ selectedUser.displayName || selectedUser.username }}
           </span>
-          <button @click="clearUser" class="text-xs text-[#e07070] hover:underline">حذف</button>
+          <button @click="clearUser" class="text-xs text-danger hover:underline">حذف</button>
         </div>
       </div>
 
@@ -84,22 +84,22 @@
         <div v-if="!newUserData" class="flex items-center gap-2">
           <button
             @click="showNewUserModal = true"
-            class="px-3 py-1.5 bg-[rgba(201,176,122,0.15)] hover:bg-[rgba(201,176,122,0.25)] text-[#c9b07a] text-xs rounded font-medium transition"
+            class="px-3 py-1.5 bg-gold/15 hover:bg-gold/25 text-gold-text text-xs rounded font-medium transition"
           >
             ساخت یوزر جدید
           </button>
         </div>
         <div v-else class="flex items-center gap-2">
-          <span class="text-xs text-[rgba(232,228,217,0.5)]">
+          <span class="text-xs text-muted">
             یوزر جدید: {{ newUserData.username }}
           </span>
-          <button @click="editNewUser" class="text-xs text-[#c9b07a] hover:underline">ویرایش</button>
-          <button @click="clearNewUser" class="text-xs text-[#e07070] hover:underline">حذف</button>
+          <button @click="editNewUser" class="text-xs text-gold-text hover:underline">ویرایش</button>
+          <button @click="clearNewUser" class="text-xs text-danger hover:underline">حذف</button>
         </div>
       </div>
     </div>
 
-    <p v-if="error" class="text-xs text-[#e07070] mt-1">{{ error }}</p>
+    <p v-if="error" class="text-xs text-danger mt-1">{{ error }}</p>
 
     <NewMasterUserModal
       :is-open="showNewUserModal"

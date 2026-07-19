@@ -1,29 +1,29 @@
 <template>
   <div dir="rtl" class="w-full md:w-3/4 mx-auto">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-white">ویرایش بازی</h1>
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-fg">ویرایش بازی</h1>
 
     <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm" :class="notification.type === 'success' ? 'bg-green-900 text-green-300 border border-green-700' : 'bg-red-900 text-red-300 border border-red-700'">
       {{ notification.message }}
     </div>
 
     <div v-if="loadingPlay" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-4 border-gray-600 border-t-red-500 rounded-full animate-spin" />
+      <div class="w-10 h-10 border-4 border-border border-t-danger rounded-full animate-spin" />
     </div>
 
     <template v-else>
-      <section class="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6">
-        <h2 class="text-lg font-semibold mb-4 text-white">اطلاعات بازی</h2>
+      <section class="bg-surface rounded-lg border border-border p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-4 text-fg">اطلاعات بازی</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-sm text-gray-400">عنوان</label>
-            <input v-model="form.title" type="text" class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition" />
+            <label class="text-sm text-muted">عنوان</label>
+            <input v-model="form.title" type="text" class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-danger transition" />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm text-gray-400">تاریخ</label>
+            <label class="text-sm text-muted">تاریخ</label>
             <input
               v-model="form.dateTime"
               type="date"
-              class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition"
+              class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-danger transition"
               dir="ltr"
             />
             <div v-if="!form.dateTime && touched" class="text-xs text-red-400 mt-1">
@@ -31,58 +31,73 @@
             </div>
           </div>
           <div class="flex flex-col gap-1 md:col-span-2">
-            <label class="text-sm text-gray-400">توضیحات</label>
-            <textarea v-model="form.desc" rows="3" class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition resize-none"></textarea>
+            <label class="text-sm text-muted">توضیحات</label>
+            <textarea v-model="form.desc" rows="3" class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-danger transition resize-none"></textarea>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm text-gray-400">سناریو</label>
-            <select v-model.number="form.senarioId" class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition" @change="onScenarioChange">
+            <label class="text-sm text-muted">سناریو</label>
+            <select v-model.number="form.senarioId" class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-danger transition" @change="onScenarioChange">
               <option :value="0" disabled>انتخاب سناریو</option>
               <option v-for="s in scenarios" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm text-gray-400">کلاب</label>
-            <select v-model.number="form.clubId" class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition" @change="onClubChange">
+            <label class="text-sm text-muted">کلاب</label>
+            <select v-model.number="form.clubId" class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-danger transition" @change="onClubChange">
               <option :value="0" disabled>انتخاب کلاب</option>
               <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm text-gray-400">ایونت</label>
-            <select v-model.number="form.eventId" class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition" :disabled="!form.clubId">
+            <label class="text-sm text-muted">ایونت</label>
+            <select v-model.number="form.eventId" class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-danger transition" :disabled="!form.clubId">
               <option :value="0" disabled>{{ form.clubId ? 'انتخاب ایونت' : 'ابتدا کلاب را انتخاب کنید' }}</option>
               <option v-for="e in filteredEvents" :key="e.id" :value="e.id">{{ e.name }}</option>
             </select>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm text-gray-400">برنده</label>
-            <select v-model.number="form.winnersideId" class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
+            <label class="text-sm text-muted">برنده</label>
+            <select v-model.number="form.winnersideId" class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-danger transition">
               <option :value="0" disabled>انتخاب برنده</option>
               <option :value="1">شهروند</option>
               <option :value="2">مافیا</option>
             </select>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm text-gray-400">لینک</label>
-            <input v-model="form.link" type="text" class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition" />
+            <label class="text-sm text-muted">لینک</label>
+            <input v-model="form.link" type="text" class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-danger transition" />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-sm text-gray-400">تعداد بازیکن</label>
-            <input v-model.number="form.playersCount" type="number" min="1" max="50" class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition" @input="syncPlayerRows" />
+            <label class="text-sm text-muted">تصویر بندانگشتی (اختیاری)</label>
+            <input
+              type="file"
+              accept="image/*"
+              class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg file:bg-gold file:text-[#0d0d0f] file:border-0 file:rounded file:px-3 file:py-1 file:font-medium file:cursor-pointer file:ml-2 focus:outline-none focus:border-danger transition"
+              @change="onThumbnailSelect"
+            />
+            <span class="text-xs text-muted mt-1">اگه خالی بذاری و لینک تغییر کرده باشه، به‌صورت خودکار از روی لینک یوتیوب تلاش می‌کنیم تصویر بگیریم.</span>
+            <div v-if="thumbnailPreview || existingPicture" class="mt-2 relative w-56 rounded-lg overflow-hidden bg-surface border border-border">
+              <div class="aspect-video relative">
+                <img :src="thumbnailPreview || existingPicture || ''" class="w-full h-full object-cover" alt="" />
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm text-muted">تعداد بازیکن</label>
+            <input v-model.number="form.playersCount" type="number" min="1" max="50" class="bg-surface border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-danger transition" @input="syncPlayerRows" />
           </div>
         </div>
       </section>
 
-      <section class="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6">
-        <h2 class="text-lg font-semibold mb-4 text-white">بازیکنان</h2>
-        <div v-if="form.players.length === 0" class="text-center py-8 text-gray-500">
+      <section class="bg-surface rounded-lg border border-border p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-4 text-fg">بازیکنان</h2>
+        <div v-if="form.players.length === 0" class="text-center py-8 text-muted">
           تعداد بازیکن را مشخص کنید
         </div>
         <div v-else class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
-              <tr class="border-b border-gray-600 bg-gray-700 text-gray-300">
+              <tr class="border-b border-border bg-surface text-fg">
                 <th class="px-4 py-3 text-right">#</th>
                 <th class="px-4 py-3 text-right">بازیکن</th>
                 <th class="px-4 py-3 text-right">نقش</th>
@@ -91,8 +106,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(player, index) in form.players" :key="index" class="border-b border-gray-700">
-                <td class="px-4 py-2 text-gray-400">{{ index + 1 }}</td>
+              <tr v-for="(player, index) in form.players" :key="index" class="border-b border-border">
+                <td class="px-4 py-2 text-muted">{{ index + 1 }}</td>
                 <td class="px-4 py-2">
                   <div class="relative">
                     <input
@@ -106,22 +121,22 @@
                       @keydown.prevent.down="onArrowDown(index)"
                       @keydown.prevent.enter="onEnter(index)"
                       placeholder="جستجوی بازیکن..."
-                      class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500 transition w-40"
+                      class="bg-surface border border-border rounded px-2 py-1 text-sm text-fg placeholder-muted focus:outline-none focus:border-danger transition w-40"
                     />
                     <div
                       v-if="playerSuggestions[index]?.show && playerSuggestions[index]?.results.length"
-                      class="absolute left-0 right-0 top-full mt-1 bg-gray-700 border border-gray-600 rounded shadow-lg z-50 overflow-hidden"
+                      class="absolute left-0 right-0 top-full mt-1 bg-surface border border-border rounded shadow-lg z-50 overflow-hidden"
                     >
                       <div
                         v-for="(s, sIdx) in playerSuggestions[index].results"
                         :key="s.id"
                         @mousedown.prevent="selectPlayer(index, s)"
                         @mouseenter="playerSuggestions[index].highlightedIndex = sIdx"
-                        class="px-3 py-2 cursor-pointer text-sm text-gray-200"
-                        :class="sIdx === playerSuggestions[index].highlightedIndex ? 'bg-gray-600' : 'hover:bg-gray-600'"
+                        class="px-3 py-2 cursor-pointer text-sm text-fg"
+                        :class="sIdx === playerSuggestions[index].highlightedIndex ? 'bg-surface-hover' : 'hover:bg-surface-hover'"
                       >
                         {{ s.name }}
-                        <span class="text-xs text-gray-400">({{ s.totalGames }} games)</span>
+                        <span class="text-xs text-muted">({{ s.totalGames }} games)</span>
                       </div>
                     </div>
                     <div v-if="duplicateError(index)" class="text-xs text-red-400 mt-1">
@@ -133,7 +148,7 @@
                   </div>
                 </td>
                 <td class="px-4 py-2">
-                  <select v-model.number="player.roleId" class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-red-500 transition w-32">
+                  <select v-model.number="player.roleId" class="bg-surface border border-border rounded px-2 py-1 text-sm text-fg focus:outline-none focus:border-danger transition w-32">
                     <option :value="0" disabled>انتخاب نقش</option>
                     <option v-for="r in filteredRoles" :key="r.id" :value="r.id">{{ r.name }}</option>
                   </select>
@@ -142,10 +157,10 @@
                   </div>
                 </td>
                 <td class="px-4 py-2">
-                  <input v-model.number="player.action" type="number" min="0" class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-red-500 transition w-20" />
+                  <input v-model.number="player.action" type="number" min="0" class="bg-surface border border-border rounded px-2 py-1 text-sm text-fg focus:outline-none focus:border-danger transition w-20" />
                 </td>
                 <td class="px-4 py-2">
-                  <input v-model.number="player.rank" type="number" min="0" class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-red-500 transition w-20" />
+                  <input v-model.number="player.rank" type="number" min="0" class="bg-surface border border-border rounded px-2 py-1 text-sm text-fg focus:outline-none focus:border-danger transition w-20" />
                 </td>
               </tr>
             </tbody>
@@ -156,14 +171,14 @@
       <div class="flex justify-end gap-3 mb-8">
         <router-link
           to="/plays"
-          class="px-6 py-3 bg-gray-700 text-gray-300 rounded font-medium hover:bg-gray-600 transition text-center"
+          class="px-6 py-3 bg-surface text-fg rounded font-medium hover:bg-surface-hover transition text-center"
         >
           انصراف
         </router-link>
         <button
           @click="submitForm"
           :disabled="saving"
-          class="px-6 py-3 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          class="px-6 py-3 bg-blue-600 text-fg rounded font-medium hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <span v-if="saving" class="inline-flex items-center gap-2">
             <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -180,6 +195,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { LookupApi, PlayerApi, PlaysApi } from '@/api'
+import { getPictureUrl } from '@/utils/picture'
 import type { Senario, Event as EventItem, Role, Club, PlayerSearchResult } from '@/types'
 
 const route = useRoute()
@@ -215,6 +231,19 @@ const playerSuggestions = reactive<Record<number, PlayerSuggestionState>>({})
 const playerCache = ref<Map<number, string>>(new Map())
 
 const notification = ref<{ type: 'success' | 'error'; message: string } | null>(null)
+
+const thumbnailFile = ref<File | null>(null)
+const thumbnailPreview = ref<string | null>(null)
+const existingPicture = ref<string | null>(null)
+
+function onThumbnailSelect(e: Event) {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file) {
+    thumbnailFile.value = file
+    thumbnailPreview.value = URL.createObjectURL(file)
+  }
+}
 
 const form = reactive({
   title: '',
@@ -390,7 +419,7 @@ async function submitForm() {
         action: p.action,
         rank: p.rank,
       })),
-    })
+    }, thumbnailFile.value ?? undefined)
     notification.value = { type: 'success', message: 'تغییرات با موفقیت ذخیره شد' }
     setTimeout(() => {
       router.push('/plays')
@@ -428,6 +457,7 @@ onMounted(async () => {
     form.link = play.link || ''
     form.playersCount = play.playersCount
     form.clubId = play.eventId ? events.value.find(e => e.id === play.eventId)?.clubId || 0 : 0
+    if (play.picture) existingPicture.value = getPictureUrl(play.picture)
 
     if (play.players && play.players.length > 0) {
       form.players = play.players.map((p: { playerId: number; roleId: number; action?: number; rank?: number }) => ({

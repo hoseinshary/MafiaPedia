@@ -1,28 +1,28 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-[#e8e4d9]">لیست بازیکنان</h1>
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-fg">لیست بازیکنان</h1>
 
     <div class="mb-6">
       <input
         v-model="searchQuery"
         type="text"
         placeholder="جستجوی بازیکن..."
-        class="w-full md:w-1/2 bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+        class="w-full md:w-1/2 bg-surface border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
       />
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-gold border-t-transparent rounded-full animate-spin" />
     </div>
 
-    <div v-else-if="players.length === 0" class="text-center py-20 text-[rgba(232,228,217,0.4)] text-lg">
+    <div v-else-if="players.length === 0" class="text-center py-20 text-muted text-lg">
       هیچ بازیکنی یافت نشد.
     </div>
 
     <div v-else class="overflow-x-auto">
       <table class="w-full text-sm border-collapse">
         <thead>
-          <tr class="border-b border-[rgba(255,255,255,0.07)] bg-[#1a1a1e] text-[rgba(232,228,217,0.5)]">
+          <tr class="border-b border-border bg-surface-hover text-muted">
             <th class="px-4 py-3 text-right">عکس</th>
             <th class="px-4 py-3 text-right">نام</th>
             <th class="px-4 py-3 text-right">کد</th>
@@ -34,7 +34,7 @@
           <tr
             v-for="player in players"
             :key="player.id"
-            class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[#1a1a1e] transition text-[#e8e4d9]"
+            class="border-b border-border hover:bg-surface-hover transition text-fg"
           >
             <td class="px-4 py-3">
               <img
@@ -45,20 +45,20 @@
               />
               <div
                 v-else
-                class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold select-none"
+                class="w-9 h-9 rounded-full flex items-center justify-center text-fg text-sm font-bold select-none"
                 :style="{ backgroundColor: avatarColor(player.name) }"
               >
                 {{ player.name.charAt(0) }}
               </div>
             </td>
             <td class="px-4 py-3 font-medium">{{ player.name }}</td>
-            <td class="px-4 py-3 text-[rgba(232,228,217,0.4)]">{{ player.code || '—' }}</td>
+            <td class="px-4 py-3 text-muted">{{ player.code || '—' }}</td>
             <td class="px-4 py-3">{{ player.totalGames }}</td>
             <td v-if="isAdmin" class="px-4 py-3">
               <div class="flex items-center gap-2">
                 <router-link
                   :to="`/admin/players/${player.id}/edit`"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#c9b07a] text-[#0d0d0f] hover:bg-[#b8a16e] transition"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-gold text-[#0d0d0f] hover:opacity-80 transition"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
@@ -66,7 +66,7 @@
                   ویرایش
                 </router-link>
                 <button
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#e07070] text-[#0d0d0f] hover:bg-[#d06060] transition"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-danger text-[#0d0d0f] hover:opacity-80 transition"
                   @click="confirmDelete(player)"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -81,20 +81,20 @@
       </table>
 
       <div class="flex items-center justify-between gap-4 mt-6 text-sm">
-        <span class="text-[rgba(232,228,217,0.4)]">
+        <span class="text-muted">
           صفحه {{ page }} از {{ totalPages }}
         </span>
         <div class="flex gap-2">
           <button
             :disabled="page <= 1"
-            class="px-4 py-2 rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
+            class="px-4 py-2 rounded border border-border text-muted disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-hover transition"
             @click="page = Math.max(1, page - 1)"
           >
             قبلی
           </button>
           <button
             :disabled="page >= totalPages"
-            class="px-4 py-2 rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
+            class="px-4 py-2 rounded border border-border text-muted disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-hover transition"
             @click="page = Math.min(totalPages, page + 1)"
           >
             بعدی

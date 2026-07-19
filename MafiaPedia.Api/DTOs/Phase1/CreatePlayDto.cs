@@ -14,7 +14,8 @@ public class CreatePlayDto
     public int UserId { get; set; } = 1;
     public int? GuestCount { get; set; }
     public string? Link { get; set; }
-    public List<CreatePlayPlayerDto> Players { get; set; } = new();
+    public string? PlayersJson { get; set; }
+    public IFormFile? Picture { get; set; }
 }
 
 public class CreatePlayPlayerDto

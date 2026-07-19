@@ -129,6 +129,7 @@ public class StatisticsService : IStatisticsService
                 Title = p.Title,
                 DateTime = p.DateTime,
                 Link = p.Link,
+                Picture = p.Picture,
                 SenarioName = p.Senario != null ? p.Senario.Name : "",
                 EventName = p.Event != null ? p.Event.Name : "",
                 ClubName = p.Event != null && p.Event.Club != null ? p.Event.Club.Name : "",

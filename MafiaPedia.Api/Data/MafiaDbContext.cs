@@ -21,6 +21,12 @@ public partial class MafiaDbContext : DbContext
 
     public virtual DbSet<ClubClubplayer> ClubClubplayers { get; set; }
 
+    public virtual DbSet<ClubOrder> ClubOrders { get; set; }
+
+    public virtual DbSet<ClubOrderItem> ClubOrderItems { get; set; }
+
+    public virtual DbSet<ClubSettlement> ClubSettlements { get; set; }
+
     public virtual DbSet<Clubplay> Clubplays { get; set; }
 
     public virtual DbSet<Clubplayer> Clubplayers { get; set; }
@@ -41,11 +47,17 @@ public partial class MafiaDbContext : DbContext
 
     public virtual DbSet<MasterlistClubplayer> MasterlistClubplayers { get; set; }
 
+    public virtual DbSet<Nerkh> Nerkhs { get; set; }
+
     public virtual DbSet<Play> Plays { get; set; }
 
     public virtual DbSet<Player> Players { get; set; }
 
     public virtual DbSet<Playplayer> Playplayers { get; set; }
+
+    public virtual DbSet<Product> Products { get; set; }
+
+    public virtual DbSet<ProductCategory> ProductCategories { get; set; }
 
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -64,7 +76,8 @@ public partial class MafiaDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseMySql("name=ConnectionStrings:DefaultConnection", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.38-mysql"));
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseMySql("server=localhost;port=3306;database=mafia;user=devuser;password=123456", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.38-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -97,6 +110,9 @@ public partial class MafiaDbContext : DbContext
             entity.Property(e => e.Phone)
                 .HasMaxLength(11)
                 .HasColumnName("phone");
+            entity.Property(e => e.VatPercent)
+                .HasColumnType("decimal(5,2)")
+                .HasColumnName("vatPercent");
         });
 
         modelBuilder.Entity<ClubClubplayer>(entity =>
@@ -126,6 +142,129 @@ public partial class MafiaDbContext : DbContext
                 .HasConstraintName("fk_clubclubplayer_clubplayer");
         });
 
+        modelBuilder.Entity<ClubOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("club_order");
+
+            entity.HasIndex(e => e.DeletedByUserId, "fk_cluborder_deletedby");
+
+            entity.HasIndex(e => e.RegisteredByUserId, "fk_cluborder_registeredby");
+
+            entity.HasIndex(e => new { e.ClubId, e.BusinessDate }, "idx_cluborder_businessdate");
+
+            entity.HasIndex(e => e.ClubPlayerId, "idx_cluborder_clubplayer");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime");
+            entity.Property(e => e.DeletedAt).HasColumnType("datetime");
+            entity.Property(e => e.SettledAt).HasColumnType("datetime");
+            entity.Property(e => e.Status)
+                .HasDefaultValueSql("'open'")
+                .HasColumnType("enum('open','partial','settled')");
+
+            entity.HasOne(d => d.Club).WithMany(p => p.ClubOrders)
+                .HasForeignKey(d => d.ClubId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_cluborder_club");
+
+            entity.HasOne(d => d.ClubPlayer).WithMany(p => p.ClubOrders)
+                .HasForeignKey(d => d.ClubPlayerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_cluborder_clubplayer");
+
+            entity.HasOne(d => d.DeletedByUser).WithMany(p => p.ClubOrderDeletedByUsers)
+                .HasForeignKey(d => d.DeletedByUserId)
+                .HasConstraintName("fk_cluborder_deletedby");
+
+            entity.HasOne(d => d.RegisteredByUser).WithMany(p => p.ClubOrderRegisteredByUsers)
+                .HasForeignKey(d => d.RegisteredByUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_cluborder_registeredby");
+        });
+
+        modelBuilder.Entity<ClubOrderItem>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("club_order_item");
+
+            entity.HasIndex(e => e.DeletedByUserId, "fk_orderitem_deletedby");
+
+            entity.HasIndex(e => e.OrderId, "fk_orderitem_order");
+
+            entity.HasIndex(e => e.ProductId, "fk_orderitem_product");
+
+            entity.Property(e => e.DeletedAt).HasColumnType("datetime");
+            entity.Property(e => e.Quantity).HasDefaultValueSql("'1'");
+            entity.Property(e => e.UnitPrice).HasPrecision(10, 2);
+
+            entity.HasOne(d => d.DeletedByUser).WithMany(p => p.ClubOrderItems)
+                .HasForeignKey(d => d.DeletedByUserId)
+                .HasConstraintName("fk_orderitem_deletedby");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.ClubOrderItems)
+                .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_orderitem_order");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.ClubOrderItems)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_orderitem_product");
+        });
+
+        modelBuilder.Entity<ClubSettlement>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("club_settlement");
+
+            entity.HasIndex(e => e.ClubId, "fk_settlement_club");
+
+            entity.HasIndex(e => e.CreatedByUserId, "fk_settlement_createdby");
+
+            entity.HasIndex(e => e.DeletedByUserId, "fk_settlement_deletedby");
+
+            entity.HasIndex(e => e.OrderId, "fk_settlement_order");
+
+            entity.HasIndex(e => e.ClubPlayerId, "idx_settlement_clubplayer");
+
+            entity.Property(e => e.Amount).HasPrecision(10, 2);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime");
+            entity.Property(e => e.DeletedAt).HasColumnType("datetime");
+            entity.Property(e => e.Note).HasMaxLength(300);
+            entity.Property(e => e.PaymentMethod).HasColumnType("enum('cash','pos','card_to_card')");
+
+            entity.HasOne(d => d.Club).WithMany(p => p.ClubSettlements)
+                .HasForeignKey(d => d.ClubId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_settlement_club");
+
+            entity.HasOne(d => d.ClubPlayer).WithMany(p => p.ClubSettlements)
+                .HasForeignKey(d => d.ClubPlayerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_settlement_clubplayer");
+
+            entity.HasOne(d => d.CreatedByUser).WithMany(p => p.ClubSettlementCreatedByUsers)
+                .HasForeignKey(d => d.CreatedByUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_settlement_createdby");
+
+            entity.HasOne(d => d.DeletedByUser).WithMany(p => p.ClubSettlementDeletedByUsers)
+                .HasForeignKey(d => d.DeletedByUserId)
+                .HasConstraintName("fk_settlement_deletedby");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.ClubSettlements)
+                .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_settlement_order");
+        });
+
         modelBuilder.Entity<Clubplay>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -135,9 +274,13 @@ public partial class MafiaDbContext : DbContext
                 .HasCharSet("utf8mb3")
                 .UseCollation("utf8mb3_general_ci");
 
+            entity.HasIndex(e => e.DeletedByUserId, "fk_clubplay_deletedby");
+
             entity.HasIndex(e => e.EventId, "fk_clubplay_event_idx");
 
             entity.HasIndex(e => e.MasterId, "fk_clubplay_master_idx");
+
+            entity.HasIndex(e => e.NerkhId, "fk_clubplay_nerkh");
 
             entity.HasIndex(e => e.RoomId, "fk_clubplay_room_idx");
 
@@ -147,8 +290,11 @@ public partial class MafiaDbContext : DbContext
 
             entity.HasIndex(e => e.UserId, "fk_clubplay_user_idx");
 
+            entity.HasIndex(e => e.IsDeleted, "idx_clubplay_isdeleted");
+
             entity.Property(e => e.BusinessDate).HasComputedColumnSql("if((cast(`DateTime` as time) < _utf8mb4'12:00:00'),(cast(`DateTime` as date) - interval 1 day),cast(`DateTime` as date))", true);
             entity.Property(e => e.DateTime).HasColumnType("datetime");
+            entity.Property(e => e.DeletedAt).HasColumnType("datetime");
             entity.Property(e => e.Desc).HasMaxLength(300);
             entity.Property(e => e.Link).HasMaxLength(300);
             entity.Property(e => e.PlayType)
@@ -158,6 +304,10 @@ public partial class MafiaDbContext : DbContext
                 .HasColumnType("enum('pending','notwinside','notrank','done')")
                 .HasColumnName("status");
             entity.Property(e => e.Title).HasMaxLength(50);
+
+            entity.HasOne(d => d.DeletedByUser).WithMany(p => p.ClubplayDeletedByUsers)
+                .HasForeignKey(d => d.DeletedByUserId)
+                .HasConstraintName("fk_clubplay_deletedby");
 
             entity.HasOne(d => d.Event).WithMany(p => p.Clubplays)
                 .HasForeignKey(d => d.EventId)
@@ -169,6 +319,10 @@ public partial class MafiaDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_clubplay_master");
 
+            entity.HasOne(d => d.Nerkh).WithMany(p => p.Clubplays)
+                .HasForeignKey(d => d.NerkhId)
+                .HasConstraintName("fk_clubplay_nerkh");
+
             entity.HasOne(d => d.Room).WithMany(p => p.Clubplays)
                 .HasForeignKey(d => d.RoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -179,7 +333,7 @@ public partial class MafiaDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_clubplay_senario");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Clubplays)
+            entity.HasOne(d => d.User).WithMany(p => p.ClubplayUsers)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_clubplay_user");
@@ -427,6 +581,36 @@ public partial class MafiaDbContext : DbContext
                 .HasConstraintName("fk_list_list");
         });
 
+        modelBuilder.Entity<Nerkh>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("nerkh");
+
+            entity.HasIndex(e => e.ClubId, "fk_nerkh_club");
+
+            entity.HasIndex(e => e.DeletedByUserId, "fk_nerkh_deletedby");
+
+            entity.HasIndex(e => e.DefaultClubId, "uq_nerkh_default_per_club").IsUnique();
+
+            entity.Property(e => e.DefaultClubId).HasComputedColumnSql("case when ((`IsDefault` = 1) and (`IsDeleted` = 0)) then `ClubId` else NULL end", true);
+            entity.Property(e => e.DeletedAt).HasColumnType("datetime");
+            entity.Property(e => e.IsActive)
+                .IsRequired()
+                .HasDefaultValueSql("'1'");
+            entity.Property(e => e.Name).HasMaxLength(45);
+            entity.Property(e => e.Price).HasPrecision(10, 2);
+
+            entity.HasOne(d => d.Club).WithMany(p => p.Nerkhs)
+                .HasForeignKey(d => d.ClubId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_nerkh_club");
+
+            entity.HasOne(d => d.DeletedByUser).WithMany(p => p.Nerkhs)
+                .HasForeignKey(d => d.DeletedByUserId)
+                .HasConstraintName("fk_nerkh_deletedby");
+        });
+
         modelBuilder.Entity<Play>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -542,6 +726,63 @@ public partial class MafiaDbContext : DbContext
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_playplayer_role1");
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("product");
+
+            entity.HasIndex(e => e.CategoryId, "fk_product_category");
+
+            entity.HasIndex(e => e.ClubId, "fk_product_club");
+
+            entity.HasIndex(e => e.DeletedByUserId, "fk_product_deletedby");
+
+            entity.Property(e => e.DeletedAt).HasColumnType("datetime");
+            entity.Property(e => e.IsActive)
+                .IsRequired()
+                .HasDefaultValueSql("'1'");
+            entity.Property(e => e.Name).HasMaxLength(45);
+            entity.Property(e => e.Price).HasPrecision(10, 2);
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Products)
+                .HasForeignKey(d => d.CategoryId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_product_category");
+
+            entity.HasOne(d => d.Club).WithMany(p => p.Products)
+                .HasForeignKey(d => d.ClubId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_product_club");
+
+            entity.HasOne(d => d.DeletedByUser).WithMany(p => p.Products)
+                .HasForeignKey(d => d.DeletedByUserId)
+                .HasConstraintName("fk_product_deletedby");
+        });
+
+        modelBuilder.Entity<ProductCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("product_category");
+
+            entity.HasIndex(e => e.ClubId, "fk_prodcat_club");
+
+            entity.HasIndex(e => e.DeletedByUserId, "fk_prodcat_deletedby");
+
+            entity.Property(e => e.DeletedAt).HasColumnType("datetime");
+            entity.Property(e => e.Name).HasMaxLength(45);
+
+            entity.HasOne(d => d.Club).WithMany(p => p.ProductCategories)
+                .HasForeignKey(d => d.ClubId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_prodcat_club");
+
+            entity.HasOne(d => d.DeletedByUser).WithMany(p => p.ProductCategories)
+                .HasForeignKey(d => d.DeletedByUserId)
+                .HasConstraintName("fk_prodcat_deletedby");
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>
@@ -736,7 +977,7 @@ public partial class MafiaDbContext : DbContext
                 .HasColumnName("password_salt");
             entity.Property(e => e.Role)
                 .HasDefaultValueSql("'user'")
-                .HasColumnType("enum('admin','user','master','cafe_owner')")
+                .HasColumnType("enum('admin','user','club')")
                 .HasColumnName("role");
             entity.Property(e => e.Username).HasMaxLength(20);
         });

@@ -1,31 +1,31 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl md:text-3xl font-bold text-[#e8e4d9]">مدیریت کافه‌ها</h1>
+      <h1 class="text-2xl md:text-3xl font-bold text-fg">مدیریت کافه‌ها</h1>
       <router-link
         to="/admin/clubs/create"
-        class="px-4 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-medium transition inline-flex items-center gap-2"
+        class="px-4 py-2 bg-gold hover:opacity-80 text-[#0d0d0f] text-sm rounded font-medium transition inline-flex items-center gap-2"
       >
         کافه جدید
       </router-link>
     </div>
 
-    <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-[rgba(111,207,138,0.1)] border-[rgba(111,207,138,0.2)] text-[#6fcf8a]' : 'bg-[rgba(224,112,112,0.1)] border-[rgba(224,112,112,0.2)] text-[#e07070]'">
+    <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-success/20 border-success text-success' : 'bg-danger/20 border-danger text-danger'">
       {{ notification.message }}
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-gold border-t-transparent rounded-full animate-spin" />
     </div>
 
-    <div v-else-if="clubs.length === 0" class="text-center py-20 text-[rgba(232,228,217,0.4)] text-lg">
+    <div v-else-if="clubs.length === 0" class="text-center py-20 text-muted text-lg">
       هیچ کافه‌ای ثبت نشده است.
     </div>
 
     <div v-else class="overflow-x-auto">
       <table class="w-full text-sm border-collapse">
         <thead>
-          <tr class="border-b border-[rgba(255,255,255,0.07)] bg-[#1a1a1e] text-[rgba(232,228,217,0.5)]">
+          <tr class="border-b border-border bg-surface-hover text-muted">
             <th class="px-4 py-3 text-right">نام کافه</th>
             <th class="px-4 py-3 text-right">اتاق‌ها</th>
             <th class="px-4 py-3 text-right">گردانندگان</th>
@@ -36,16 +36,16 @@
           <tr
             v-for="club in clubs"
             :key="club.id"
-            class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[#1a1a1e] transition text-[#e8e4d9]"
+            class="border-b border-border hover:bg-surface-hover transition text-fg"
           >
             <td class="px-4 py-3 font-medium">{{ club.name }}</td>
-            <td class="px-4 py-3 text-[rgba(232,228,217,0.4)]">{{ club.roomCount }}</td>
-            <td class="px-4 py-3 text-[rgba(232,228,217,0.4)]">{{ club.masterCount }}</td>
+            <td class="px-4 py-3 text-muted">{{ club.roomCount }}</td>
+            <td class="px-4 py-3 text-muted">{{ club.masterCount }}</td>
             <td class="px-4 py-3">
               <div class="flex items-center gap-2">
                 <router-link
                   :to="`/admin/clubs/${club.id}`"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#c9b07a] text-[#0d0d0f] hover:bg-[#b8a16e] transition"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-gold text-[#0d0d0f] hover:opacity-80 transition"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
@@ -54,7 +54,7 @@
                   مشاهده
                 </router-link>
                 <button
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#e07070] text-[#0d0d0f] hover:bg-[#d06060] transition"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-danger text-[#0d0d0f] hover:opacity-80 transition"
                   @click="confirmDelete(club)"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">

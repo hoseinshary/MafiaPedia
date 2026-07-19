@@ -23,7 +23,7 @@ public class ClubManagementService : IClubManagementService
         return await _context.Clubs
             .OrderBy(c => c.Name)
             .Select(c => new ClubDto(
-                c.Id, c.Name ?? "", c.Address, c.Phone, c.City, c.Description, c.Logo
+                c.Id, c.Name ?? "", c.Address, c.Phone, c.City, c.Description, c.Logo, c.VatPercent
             ))
             .ToListAsync();
     }
@@ -46,6 +46,7 @@ public class ClubManagementService : IClubManagementService
             club.City,
             club.Description,
             club.Logo,
+            club.VatPercent,
             club.Rooms.Select(r => new RoomDto(r.Id, r.Name ?? "", r.ClubId, r.IsActive ?? true)).ToList(),
             club.Masters.Select(m => new MasterDto(
                 m.Id,
@@ -73,7 +74,7 @@ public class ClubManagementService : IClubManagementService
         };
         _context.Clubs.Add(club);
         await _context.SaveChangesAsync();
-        return new ClubDto(club.Id, club.Name ?? "", club.Address, club.Phone, club.City, club.Description, club.Logo);
+        return new ClubDto(club.Id, club.Name ?? "", club.Address, club.Phone, club.City, club.Description, club.Logo, club.VatPercent);
     }
 
     public async Task<ClubDto?> UpdateClubAsync(int clubId, UpdateClubDto dto)
@@ -86,9 +87,10 @@ public class ClubManagementService : IClubManagementService
         if (dto.Phone != null) club.Phone = dto.Phone;
         if (dto.City != null) club.City = dto.City;
         if (dto.Description != null) club.Description = dto.Description;
+        if (dto.VatPercent.HasValue) club.VatPercent = dto.VatPercent;
 
         await _context.SaveChangesAsync();
-        return new ClubDto(club.Id, club.Name ?? "", club.Address, club.Phone, club.City, club.Description, club.Logo);
+        return new ClubDto(club.Id, club.Name ?? "", club.Address, club.Phone, club.City, club.Description, club.Logo, club.VatPercent);
     }
 
     public async Task<bool> DeleteClubAsync(int clubId)

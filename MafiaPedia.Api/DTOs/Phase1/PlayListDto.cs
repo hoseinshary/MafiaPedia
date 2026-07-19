@@ -7,6 +7,7 @@ public class PlayListDto
     public DateTime? DateTime { get; set; }
     public int? PlayersCount { get; set; }
     public string? Link { get; set; }
+    public string? Picture { get; set; }
     public string? SenarioName { get; set; }
     public string? MasterName { get; set; }
     public string? WinnersideName { get; set; }
@@ -44,6 +45,7 @@ public class PlayDetailDto
     public int? PlayersCount { get; set; }
     public int? GuestCount { get; set; }
     public string? Link { get; set; }
+    public string? Picture { get; set; }
     public string? Desc { get; set; }
 
     // IDs (for edit form)

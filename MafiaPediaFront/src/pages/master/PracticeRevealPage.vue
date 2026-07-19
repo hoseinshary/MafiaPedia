@@ -1,40 +1,40 @@
 <template>
   <div class="min-h-[80vh] flex flex-col items-center px-4 py-8">
     <!-- banner -->
-    <div class="w-full max-w-md mb-6 px-4 py-2 rounded-lg text-center text-xs bg-[rgba(201,176,122,0.12)] border border-[rgba(201,176,122,0.25)] text-[#c9b07a]">
+    <div class="w-full max-w-md mb-6 px-4 py-2 rounded-lg text-center text-xs bg-gold/10 border border-gold/20 text-gold-text">
       این یک پیش‌نمایش است — هیچ بازی‌ای ثبت نمی‌شود
     </div>
 
     <!-- step 1: setup -->
     <div v-if="step === 'setup'" class="w-full max-w-sm">
-      <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-2xl p-8">
-        <h1 class="text-lg font-bold text-[#c9b07a] text-center mb-8">پیش‌نمایش نقش‌ها</h1>
+      <div class="bg-surface border border-border rounded-2xl p-8">
+        <h1 class="text-lg font-bold text-gold-text text-center mb-8">پیش‌نمایش نقش‌ها</h1>
 
         <div class="mb-4">
-          <label class="block text-sm text-[rgba(232,228,217,0.5)] mb-2">سناریو</label>
-          <select v-model="selectedSenarioId" class="w-full p-3 rounded-lg bg-[#0d0d0f] border border-[rgba(255,255,255,0.1)] text-[#e8e4d9] text-sm appearance-none">
+          <label class="block text-sm text-muted mb-2">سناریو</label>
+          <select v-model="selectedSenarioId" class="w-full p-3 rounded-lg bg-input border border-border text-fg text-sm appearance-none">
             <option :value="0" disabled>انتخاب سناریو</option>
             <option v-for="s in scenarios" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
 
         <div class="mb-6">
-          <label class="block text-sm text-[rgba(232,228,217,0.5)] mb-2">تعداد بازیکن</label>
+          <label class="block text-sm text-muted mb-2">تعداد بازیکن</label>
           <input
             v-model.number="playerCount"
             type="number"
             min="2"
             max="30"
-            class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.1)] rounded-xl px-3 py-2.5 text-[#e8e4d9] text-sm text-center"
+            class="w-full bg-input border border-border rounded-xl px-3 py-2.5 text-fg text-sm text-center"
           />
         </div>
 
-        <div v-if="errorMsg" class="text-xs text-[#e07070] text-center mb-4">{{ errorMsg }}</div>
+        <div v-if="errorMsg" class="text-xs text-danger text-center mb-4">{{ errorMsg }}</div>
 
         <button
           @click="startPreview"
           :disabled="loading"
-          class="w-full py-2.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-bold transition disabled:opacity-50"
+          class="w-full py-2.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-sm rounded font-bold transition disabled:opacity-50"
         >
           <span v-if="loading" class="inline-block w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
           <span v-else>شروع پیش‌نمایش</span>
@@ -45,8 +45,8 @@
     <!-- step 2: reveal -->
     <div v-else-if="step === 'reveal'" class="flex flex-col items-center w-full">
       <div class="text-center mb-6">
-        <h1 class="text-lg font-bold text-[#c9b07a]">پیش‌نمایش نقش‌ها</h1>
-        <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ selectedScenarioName }} — {{ playerCount }} نفر</p>
+        <h1 class="text-lg font-bold text-gold-text">پیش‌نمایش نقش‌ها</h1>
+        <p class="text-sm text-muted mt-1">{{ selectedScenarioName }} — {{ playerCount }} نفر</p>
       </div>
 
       <RoleRevealStepper
@@ -56,7 +56,7 @@
         <template #reset-btn>
           <button
             @click="reshufflePractice"
-            class="text-xs text-[rgba(232,228,217,0.25)] hover:text-[#c9b07a] transition underline underline-offset-2"
+            class="text-xs text-muted hover:text-gold-text transition underline underline-offset-2"
           >
             ریست و پخش دوباره
           </button>
@@ -64,7 +64,7 @@
         <template #completion-actions>
           <button
             @click="resetAll"
-            class="px-6 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-bold transition"
+            class="px-6 py-2 bg-gold hover:opacity-80 text-[#0d0d0f] text-sm rounded font-bold transition"
           >
             شروع دوباره
           </button>

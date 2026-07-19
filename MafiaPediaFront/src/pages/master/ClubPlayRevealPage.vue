@@ -1,9 +1,9 @@
 <template>
   <div class="min-h-[80vh] flex flex-col items-center justify-center px-4 py-8" v-if="play">
     <div class="text-center mb-8">
-      <h1 class="text-lg font-bold text-[#c9b07a]">پخش نقش</h1>
-      <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ play.title || 'بازی بدون عنوان' }} — {{ play.roomName }}</p>
-      <p class="text-lg text-[rgba(232,228,217,0.9)] mt-1">{{ play.senarioName }}</p>
+      <h1 class="text-lg font-bold text-gold-text">پخش نقش</h1>
+      <p class="text-sm text-muted mt-1">{{ play.title || 'بازی بدون عنوان' }} — {{ play.roomName }}</p>
+      <p class="text-lg text-muted mt-1">{{ play.senarioName }}</p>
     </div>
 
     <RoleRevealStepper
@@ -13,7 +13,7 @@
       <template #reset-btn>
         <button
           @click="showConfirm = true"
-          class="text-xs text-[rgba(232,228,217,0.25)] hover:text-[#e07070] transition underline underline-offset-2"
+          class="text-xs text-muted hover:text-danger transition underline underline-offset-2"
         >
           ریست و پخش دوباره
         </button>
@@ -23,14 +23,14 @@
           <button
             @click="doConfirmReveal"
             :disabled="confirming"
-            class="px-6 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-bold transition inline-flex items-center justify-center gap-2"
+            class="px-6 py-2 bg-gold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-bold transition inline-flex items-center justify-center gap-2"
           >
             <div v-if="confirming" class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
             تایید و شروع بازی
           </button>
           <button
             @click="goBack"
-            class="px-6 py-2 bg-transparent border border-[rgba(255,255,255,0.1)] hover:border-[rgba(201,176,122,0.3)] text-[rgba(232,228,217,0.5)] hover:text-[#e8e4d9] text-sm rounded font-medium transition"
+            class="px-6 py-2 bg-transparent border border-border hover:border-gold/30 text-muted hover:text-fg text-sm rounded font-medium transition"
           >
             بازگشت
           </button>
@@ -50,7 +50,7 @@
     />
   </div>
   <div v-else class="flex justify-center py-20">
-    <div class="w-8 h-8 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+    <div class="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
   </div>
 </template>
 
@@ -84,6 +84,7 @@ const stepperItems = computed<RevealItem[]>(() =>
     rolePhoto: p.rolePhoto,
     sideId: p.sideId,
     isGuest: p.isGuest,
+    entryCount: p.entryCount,
   }))
 )
 

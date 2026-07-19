@@ -1,15 +1,15 @@
 <template>
   <div class="max-w-2xl mx-auto" v-if="isStaff ? clubInfo : masterCtx">
     <div class="mb-8">
-      <h1 class="text-xl font-bold text-[#c9b07a]">ثبت بازی جدید</h1>
-      <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ isStaff ? clubInfo?.name : masterCtx?.clubName }}</p>
+      <h1 class="text-xl font-bold text-gold-text">ثبت بازی جدید</h1>
+      <p class="text-sm text-muted mt-1">{{ isStaff ? clubInfo?.name : masterCtx?.clubName }}</p>
     </div>
 
     <div v-if="isStaff && !selectedMasterId" class="mb-6">
-      <label class="block text-sm text-[rgba(232,228,217,0.6)] mb-2">انتخاب گرداننده</label>
+      <label class="block text-sm text-muted mb-2">انتخاب گرداننده</label>
       <select
         v-model="selectedMasterId"
-        class="w-full bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2 text-[#e8e4d9]"
+        class="w-full bg-surface border border-border rounded px-4 py-2 text-fg"
       >
         <option value="" disabled>یک گرداننده انتخاب کنید</option>
         <option v-for="m in masters" :key="m.id" :value="m.id">{{ m.name }}</option>
@@ -31,9 +31,9 @@
     />
   </div>
   <div v-else-if="loading" class="flex justify-center py-20">
-    <div class="w-8 h-8 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+    <div class="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
   </div>
-  <div v-else class="text-center py-20 text-[rgba(232,228,217,0.4)]">
+  <div v-else class="text-center py-20 text-muted">
     دسترسی غیرمجاز
   </div>
 </template>

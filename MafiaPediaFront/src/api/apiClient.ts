@@ -127,16 +127,18 @@ apiClient.interceptors.response.use(
         isRefreshing = false
       }
     }
-    const { toastError, toastWarning } = useToast()
+    const status = error.response?.status
+    const serverMsg = error.response?.data?.message
 
-    if (!error.response) {
-      toastError('اتصال به سرور برقرار نیست')
-    } else if (error.response.status === 403) {
-      toastError('شما دسترسی به این بخش را ندارید')
-    } else if (error.response.status === 409) {
-      toastWarning(error.response?.data?.message ?? 'تعارض در عملیات')
-    } else if (error.response.status === 500) {
-      toastError('خطای سرور — لطفاً دوباره تلاش کنید')
+    if (serverMsg && status >= 400) {
+      // Backend sent a structured error via Exception Middleware ({message, traceId})
+      useToast().toastError(serverMsg)
+    } else if (!error.response) {
+      useToast().toastError('اتصال به سرور برقرار نیست')
+    } else if (status === 403) {
+      useToast().toastError('شما دسترسی به این بخش را ندارید')
+    } else if (status === 500) {
+      useToast().toastError('خطای سرور — لطفاً دوباره تلاش کنید')
     }
     return Promise.reject(error)
   }

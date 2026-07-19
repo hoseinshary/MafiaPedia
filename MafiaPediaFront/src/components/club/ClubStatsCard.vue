@@ -1,42 +1,42 @@
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-    <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6">
-      <h3 class="text-xs text-[rgba(232,228,217,0.4)] mb-3">آمار هفتگی کافه</h3>
+    <div class="bg-surface border border-border rounded-xl p-6">
+      <h3 class="text-xs text-muted mb-3">آمار هفتگی کافه</h3>
       <div v-if="weeklyLoading" class="flex justify-center py-4">
-        <div class="w-5 h-5 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+        <div class="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
       <div v-else class="grid grid-cols-3 gap-2">
         <div>
-          <div class="text-2xl font-bold text-[#e8e4d9]">{{ weekStats?.totalPlays ?? '-' }}</div>
-          <div class="text-xs text-[rgba(232,228,217,0.4)]">تعداد بازی</div>
+          <div class="text-2xl font-bold text-fg">{{ weekStats?.totalPlays ?? '-' }}</div>
+          <div class="text-xs text-muted">تعداد بازی</div>
         </div>
         <div>
-          <div class="text-2xl font-bold text-[#e8e4d9]">{{ weekStats?.totalEntries ?? '-' }}</div>
-          <div class="text-xs text-[rgba(232,228,217,0.4)]">نفر-بازی</div>
+          <div class="text-2xl font-bold text-fg">{{ weekStats?.totalEntries ?? '-' }}</div>
+          <div class="text-xs text-muted">نفر-بازی</div>
         </div>
         <div>
-          <div class="text-2xl font-bold text-[rgba(232,228,217,0.4)]">{{ weekStats?.totalGuestEntries ?? '-' }}</div>
-          <div class="text-xs text-[rgba(232,228,217,0.4)]">مهمان</div>
+          <div class="text-2xl font-bold text-muted">{{ weekStats?.totalGuestEntries ?? '-' }}</div>
+          <div class="text-xs text-muted">مهمان</div>
         </div>
       </div>
     </div>
-    <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6">
-      <h3 class="text-xs text-[rgba(232,228,217,0.4)] mb-3">آمار ماهانه کافه</h3>
+    <div class="bg-surface border border-border rounded-xl p-6">
+      <h3 class="text-xs text-muted mb-3">آمار ماهانه کافه</h3>
       <div v-if="monthlyLoading" class="flex justify-center py-4">
-        <div class="w-5 h-5 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+        <div class="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
       <div v-else class="grid grid-cols-3 gap-2">
         <div>
-          <div class="text-2xl font-bold text-[#e8e4d9]">{{ monthStats?.totalPlays ?? '-' }}</div>
-          <div class="text-xs text-[rgba(232,228,217,0.4)]">تعداد بازی</div>
+          <div class="text-2xl font-bold text-fg">{{ monthStats?.totalPlays ?? '-' }}</div>
+          <div class="text-xs text-muted">تعداد بازی</div>
         </div>
         <div>
-          <div class="text-2xl font-bold text-[#e8e4d9]">{{ monthStats?.totalEntries ?? '-' }}</div>
-          <div class="text-xs text-[rgba(232,228,217,0.4)]">نفر-بازی</div>
+          <div class="text-2xl font-bold text-fg">{{ monthStats?.totalEntries ?? '-' }}</div>
+          <div class="text-xs text-muted">نفر-بازی</div>
         </div>
         <div>
-          <div class="text-2xl font-bold text-[rgba(232,228,217,0.4)]">{{ monthStats?.totalGuestEntries ?? '-' }}</div>
-          <div class="text-xs text-[rgba(232,228,217,0.4)]">مهمان</div>
+          <div class="text-2xl font-bold text-muted">{{ monthStats?.totalGuestEntries ?? '-' }}</div>
+          <div class="text-xs text-muted">مهمان</div>
         </div>
       </div>
     </div>

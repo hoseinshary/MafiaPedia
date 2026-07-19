@@ -1,93 +1,93 @@
 <template>
-  <div dir="rtl" class="min-h-screen bg-gray-900 flex items-start justify-center px-4 py-10">
+  <div dir="rtl" class="min-h-screen bg-bg flex items-start justify-center px-4 py-10">
     <div class="w-full max-w-lg">
       <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-white">ویرایش بازیکن</h1>
-        <p class="text-gray-400 mt-2 text-sm">اطلاعات بازیکن را ویرایش کنید</p>
+        <h1 class="text-3xl font-bold text-fg">ویرایش بازیکن</h1>
+        <p class="text-muted mt-2 text-sm">اطلاعات بازیکن را ویرایش کنید</p>
       </div>
 
       <div v-if="loadingDetail" class="flex justify-center py-20">
-        <div class="w-10 h-10 border-4 border-gray-600 border-t-red-500 rounded-full animate-spin" />
+        <div class="w-10 h-10 border-4 border-border border-t-red-500 rounded-full animate-spin" />
       </div>
 
-      <form v-else @submit.prevent="handleSubmit" class="bg-gray-800 rounded-lg p-6 space-y-5">
-        <div v-if="error" class="bg-red-900/50 border border-red-700 text-red-300 text-sm rounded px-4 py-3">
+      <form v-else @submit.prevent="handleSubmit" class="bg-surface rounded-lg p-6 space-y-5">
+        <div v-if="error" class="bg-danger/20 border border-danger text-danger text-sm rounded px-4 py-3">
           {{ error }}
         </div>
-        <div v-if="success" class="bg-green-900/50 border border-green-700 text-green-300 text-sm rounded px-4 py-3">
+        <div v-if="success" class="bg-success/20 border border-success text-success text-sm rounded px-4 py-3">
           {{ success }}
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-gray-300">نام <span class="text-red-500">*</span></label>
+          <label class="text-sm text-fg">نام <span class="text-danger">*</span></label>
           <input
             v-model="name"
             type="text"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+            class="bg-surface-hover border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
             placeholder="نام بازیکن"
           />
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-gray-300">کد بازیکن</label>
+          <label class="text-sm text-fg">کد بازیکن</label>
           <input
             v-model="code"
             type="text"
             dir="ltr"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+            class="bg-surface-hover border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
             placeholder="اختیاری"
           />
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-gray-300">موبایل</label>
+          <label class="text-sm text-fg">موبایل</label>
           <input
             v-model="mobile"
             type="text"
             dir="ltr"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+            class="bg-surface-hover border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
             placeholder="09123456789"
           />
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-gray-300">تاریخ تولد</label>
+          <label class="text-sm text-fg">تاریخ تولد</label>
           <input
             v-model="birthday"
             type="text"
             dir="ltr"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+            class="bg-surface-hover border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
             placeholder="مثال: ۱۳۷۰/۰۱/۱۵"
           />
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-gray-300">توضیحات</label>
+          <label class="text-sm text-fg">توضیحات</label>
           <textarea
             v-model="desc"
             rows="3"
-            class="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition resize-none"
+            class="bg-surface-hover border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition resize-none"
             placeholder="توضیحات درباره بازیکن"
           />
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-gray-300">عکس پروفایل</label>
+          <label class="text-sm text-fg">عکس پروفایل</label>
           <div v-if="currentPicture && !preview" class="mb-2">
-            <img :src="currentPicture" class="w-24 h-24 rounded-lg object-cover border border-gray-600" />
-            <p class="text-xs text-gray-500 mt-1">عکس فعلی</p>
+            <img :src="currentPicture" class="w-24 h-24 rounded-lg object-cover border border-border" />
+            <p class="text-xs text-muted mt-1">عکس فعلی</p>
           </div>
           <input
             ref="fileInput"
             type="file"
             accept=".jpg,.jpeg,.png,.webp"
             @change="onFileChange"
-            class="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer"
+            class="text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-gold file:text-[#0d0d0f] hover:file:opacity-80 file:cursor-pointer"
           />
-          <div v-if="fileError" class="text-xs text-red-400 mt-1">{{ fileError }}</div>
+          <div v-if="fileError" class="text-xs text-danger mt-1">{{ fileError }}</div>
           <div v-if="preview" class="mt-2">
-            <img :src="preview" class="w-24 h-24 rounded-lg object-cover border border-gray-600" />
-            <p class="text-xs text-gray-500 mt-1">عکس جدید</p>
+            <img :src="preview" class="w-24 h-24 rounded-lg object-cover border border-border" />
+            <p class="text-xs text-muted mt-1">عکس جدید</p>
           </div>
         </div>
 
@@ -95,7 +95,7 @@
           <button
             type="submit"
             :disabled="submitting"
-            class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded font-medium transition"
+            class="flex-1 py-2.5 bg-gold hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed text-[#0d0d0f] rounded font-medium transition"
           >
             <span v-if="submitting" class="inline-flex items-center gap-2">
               <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -105,7 +105,7 @@
           </button>
           <router-link
             to="/players/list"
-            class="flex-1 py-2.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded font-medium transition text-center"
+            class="flex-1 py-2.5 bg-surface-hover hover:bg-surface-hover text-fg rounded font-medium transition text-center"
           >
             انصراف
           </router-link>

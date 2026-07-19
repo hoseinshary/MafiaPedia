@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using MafiaPedia.Api.Common.Exceptions;
 using MafiaPedia.Api.Data;
 using MafiaPedia.Api.DTOs.Phase2.ClubPlay;
 using MafiaPedia.Api.Entities;
@@ -36,9 +37,10 @@ public class ClubPlayService : IClubPlayService
             if (room is null)
                 throw new KeyNotFoundException("اتاق یافت نشد");
 
-            if (dto.Participants.Count != dto.PlayersCount)
+            var totalEntryCount = dto.Participants.Sum(p => p.EntryCount);
+            if (totalEntryCount != dto.PlayersCount)
                 throw new InvalidOperationException(
-                    $"تعداد بازیکنان انتخاب‌شده ({dto.Participants.Count}) با PlayersCount ({dto.PlayersCount}) مطابقت ندارد");
+                    $"تعداد کل ورودی‌ها ({totalEntryCount}) با PlayersCount ({dto.PlayersCount}) مطابقت ندارد");
 
             var participantIds = dto.Participants.Select(p => p.ClubPlayerId).ToList();
 
@@ -91,7 +93,32 @@ public class ClubPlayService : IClubPlayService
                 eventId = defaultEvent.Id;
             }
 
-            var guestCount = dto.Participants.Count(p => p.IsGuest);
+                int? nerkhId;
+                string? nerkhName;
+                if (dto.NerkhId.HasValue)
+                {
+                    var nerkh = await _context.Nerkhs
+                        .FirstOrDefaultAsync(n => n.Id == dto.NerkhId.Value && n.ClubId == clubId && !n.IsDeleted);
+                    if (nerkh is null)
+                        throw new InvalidOperationException("نرخ انتخاب‌شده برای این کافه معتبر نیست");
+                    nerkhId = nerkh.Id;
+                    nerkhName = nerkh.Name;
+                }
+                else
+                {
+                    var defaultNerkh = await _context.Nerkhs
+                        .Where(n => n.ClubId == clubId && n.IsDefault && !n.IsDeleted)
+                        .FirstOrDefaultAsync();
+                    if (defaultNerkh is null)
+                        throw new InvalidOperationException("این کافه هیچ نرخ پیش‌فرضی تعریف نکرده است");
+                    nerkhId = defaultNerkh.Id;
+                    nerkhName = defaultNerkh.Name;
+                }
+
+                var guestCount = dto.Participants.Where(p => p.IsGuest).Sum(p => p.EntryCount);
+
+            // Validate EntryCount rules
+            ValidateEntryCountRules(dto.PlayType, dto.Participants);
 
             // Auto-generate title if empty
             var title = dto.Title?.Trim();
@@ -129,7 +156,8 @@ public class ClubPlayService : IClubPlayService
                 EventId = eventId,
                 Link = dto.Link,
                 PlayType = dto.PlayType,
-                Status = dto.PlayType == "normal" ? "done" : "pending"
+                Status = dto.PlayType == "normal" ? "done" : "pending",
+                NerkhId = nerkhId
             };
 
             _context.Clubplays.Add(clubPlay);
@@ -163,6 +191,8 @@ public class ClubPlayService : IClubPlayService
                 clubPlay.WinnersideId,
                 eventId,
                 evt?.Name ?? "",
+                nerkhId,
+                nerkhName,
                 participants
             );
         }
@@ -180,27 +210,31 @@ public class ClubPlayService : IClubPlayService
             .Include(p => p.Senario)
             .Include(p => p.Master)
             .Include(p => p.Event)
+            .Include(p => p.Nerkh)
             .Include(p => p.Clubplayplayers)
                 .ThenInclude(pp => pp.Player)
             .Include(p => p.Clubplayplayers)
                 .ThenInclude(pp => pp.Role)
                     .ThenInclude(r => r.Side)
-            .FirstOrDefaultAsync(p => p.Id == playId);
+            .FirstOrDefaultAsync(p => p.Id == playId && !p.IsDeleted);
 
         if (play is null) return null;
 
         if (play.Room.ClubId != clubId) return null;
 
-        var participants = play.Clubplayplayers
-            .OrderBy(pp => pp.Id)
+        var playersList = play.Clubplayplayers.OrderBy(pp => pp.Id).ToList();
+        var ecMap = playersList.GroupBy(pp => pp.PlayerId).ToDictionary(g => g.Key, g => g.Count());
+        var participants = playersList
             .Select(pp => new ClubPlayParticipantDto(
+                pp.Id,
                 pp.PlayerId,
                 pp.Player.Name ?? "",
                 pp.RoleId,
                 pp.Role.Name ?? "",
                 pp.Role.SideId,
                 pp.Role.Photo,
-                pp.IsGuest
+                pp.IsGuest,
+                ecMap.GetValueOrDefault(pp.PlayerId, 1)
             ))
             .ToList();
 
@@ -223,6 +257,8 @@ public class ClubPlayService : IClubPlayService
             play.WinnersideId,
             play.EventId,
             play.Event?.Name ?? "",
+            play.NerkhId,
+            play.Nerkh?.Name,
             participants
         );
     }
@@ -233,12 +269,13 @@ public class ClubPlayService : IClubPlayService
             .Include(p => p.Room)
             .Include(p => p.Senario)
             .Include(p => p.Master)
+            .Include(p => p.Nerkh)
             .Include(p => p.Clubplayplayers)
                 .ThenInclude(pp => pp.Player)
             .Include(p => p.Clubplayplayers)
                 .ThenInclude(pp => pp.Role)
                     .ThenInclude(r => r.Side)
-            .FirstOrDefaultAsync(p => p.Id == playId);
+            .FirstOrDefaultAsync(p => p.Id == playId && !p.IsDeleted);
 
         if (play is null) return null;
         if (play.Room.ClubId != clubId) return null;
@@ -278,15 +315,18 @@ public class ClubPlayService : IClubPlayService
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
+            var ecMap = existingPlayers.GroupBy(pp => pp.PlayerId).ToDictionary(g => g.Key, g => g.Count());
             var participants = existingPlayers
                 .Select(pp => new ClubPlayParticipantDto(
+                    pp.Id,
                     pp.PlayerId,
                     pp.Player.Name ?? "",
                     pp.RoleId,
                     pp.Role.Name ?? "",
                     pp.Role.SideId,
                     pp.Role.Photo,
-                    pp.IsGuest
+                    pp.IsGuest,
+                    ecMap.GetValueOrDefault(pp.PlayerId, 1)
                 ))
                 .ToList();
 
@@ -309,6 +349,8 @@ public class ClubPlayService : IClubPlayService
             play.WinnersideId,
             play.EventId,
             play.Event?.Name ?? "",
+            play.NerkhId,
+            play.Nerkh?.Name,
             participants
         );
         }
@@ -327,6 +369,7 @@ public class ClubPlayService : IClubPlayService
         return await _context.Clubplays
             .CountAsync(p => p.Room.ClubId == clubId
                           && p.MasterId == masterId
+                          && !p.IsDeleted
                           && p.DateTime >= dayStart
                           && p.DateTime < dayEnd);
     }
@@ -392,7 +435,7 @@ public class ClubPlayService : IClubPlayService
             .Include(p => p.Clubplayplayers)
                 .ThenInclude(pp => pp.Role)
                     .ThenInclude(r => r.Side)
-            .FirstOrDefaultAsync(p => p.Id == playId);
+            .FirstOrDefaultAsync(p => p.Id == playId && !p.IsDeleted);
 
         if (play is null) return null;
         if (play.Room.ClubId != clubId) return null;
@@ -407,21 +450,21 @@ public class ClubPlayService : IClubPlayService
             throw new InvalidOperationException(
                 $"تعداد رتبه‌ها ({ranks.Count}) با تعداد بازیکنان ({play.PlayersCount}) مطابقت ندارد");
 
-        var duplicateIds = ranks.GroupBy(r => r.ClubPlayerId).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+        var duplicateIds = ranks.GroupBy(r => r.Id).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
         if (duplicateIds.Count != 0)
             throw new InvalidOperationException(
-                $"بازیکن تکراری در لیست رتبه‌ها: {string.Join("، ", duplicateIds)}");
+                $"ردیف تکراری در لیست رتبه‌ها: {string.Join("، ", duplicateIds)}");
 
-        var existingPlayerIds = play.Clubplayplayers.Select(pp => pp.PlayerId).ToHashSet();
-        var missingIds = ranks.Select(r => r.ClubPlayerId).Where(id => !existingPlayerIds.Contains(id)).ToList();
+        var existingRowIds = play.Clubplayplayers.Select(pp => pp.Id).ToHashSet();
+        var missingIds = ranks.Select(r => r.Id).Where(id => !existingRowIds.Contains(id)).ToList();
         if (missingIds.Count != 0)
             throw new InvalidOperationException(
-                $"این بازیکنان در این بازی نیستند: {string.Join("، ", missingIds)}");
+                $"این ردیف‌ها در این بازی نیستند: {string.Join("، ", missingIds)}");
 
-        var rankById = ranks.ToDictionary(r => r.ClubPlayerId, r => r.Rank);
+        var rankByRowId = ranks.ToDictionary(r => r.Id, r => r.Rank);
         foreach (var pp in play.Clubplayplayers)
         {
-            if (rankById.TryGetValue(pp.PlayerId, out var rank))
+            if (rankByRowId.TryGetValue(pp.Id, out var rank))
             {
                 pp.Rank = rank;
             }
@@ -435,7 +478,7 @@ public class ClubPlayService : IClubPlayService
     public async Task<List<ClubPlayListItemDto>> GetPlaysByBusinessDateAsync(int clubId, int masterId, DateOnly businessDate)
     {
         return await _context.Clubplays
-            .Where(p => p.Room.ClubId == clubId && p.MasterId == masterId && p.BusinessDate == businessDate)
+            .Where(p => p.Room.ClubId == clubId && p.MasterId == masterId && !p.IsDeleted && p.BusinessDate == businessDate)
             .OrderBy(p => p.DateTime)
             .Select(p => new ClubPlayListItemDto(
                 p.Id,
@@ -456,7 +499,7 @@ public class ClubPlayService : IClubPlayService
     public async Task<List<ClubPlayListItemDto>> GetClubPlaysByBusinessDateAsync(int clubId, DateOnly businessDate)
     {
         return await _context.Clubplays
-            .Where(p => p.Room.ClubId == clubId && p.BusinessDate == businessDate)
+            .Where(p => p.Room.ClubId == clubId && !p.IsDeleted && p.BusinessDate == businessDate)
             .OrderBy(p => p.DateTime)
             .Select(p => new ClubPlayListItemDto(
                 p.Id,
@@ -477,7 +520,7 @@ public class ClubPlayService : IClubPlayService
     public async Task<List<ClubPlayListItemDto>> GetOpenPlaysAsync(int clubId, int masterId)
     {
         return await _context.Clubplays
-            .Where(p => p.Room.ClubId == clubId && p.MasterId == masterId && p.Status != "done")
+            .Where(p => p.Room.ClubId == clubId && p.MasterId == masterId && !p.IsDeleted && p.Status != "done")
             .OrderBy(p => p.DateTime)
             .Select(p => new ClubPlayListItemDto(
                 p.Id,
@@ -501,7 +544,7 @@ public class ClubPlayService : IClubPlayService
         var query = _context.Clubplays
             .Include(p => p.Room)
             .Include(p => p.Senario)
-            .Where(p => p.Room.ClubId == clubId && p.MasterId == masterId);
+            .Where(p => p.Room.ClubId == clubId && p.MasterId == masterId && !p.IsDeleted);
 
         if (dateFrom.HasValue)
         {
@@ -552,13 +595,17 @@ public class ClubPlayService : IClubPlayService
         else throw new InvalidOperationException("پریود نامعتبر است. از week یا month استفاده کنید");
 
         var playIdsQuery = _context.Clubplays
-            .Where(p => p.Room.ClubId == clubId && p.BusinessDate >= from && p.BusinessDate <= today);
+            .Where(p => p.Room.ClubId == clubId && !p.IsDeleted && p.BusinessDate >= from && p.BusinessDate <= today);
 
         var totalPlays = await playIdsQuery.CountAsync();
         var playIds = await playIdsQuery.Select(p => p.Id).ToListAsync();
 
-        var totalEntries = await _context.Clubplayplayers.CountAsync(pp => playIds.Contains(pp.PlayId) && !pp.IsGuest);
-        var totalGuestEntries = await _context.Clubplayplayers.CountAsync(pp => playIds.Contains(pp.PlayId) && pp.IsGuest);
+        var totalEntries = await _context.Clubplayplayers
+            .Where(pp => playIds.Contains(pp.PlayId) && !pp.IsGuest)
+            .SumAsync(pp => pp.EntryCount);
+        var totalGuestEntries = await _context.Clubplayplayers
+            .Where(pp => playIds.Contains(pp.PlayId) && pp.IsGuest)
+            .SumAsync(pp => pp.EntryCount);
 
         return new MasterStatsDto(totalPlays, totalEntries, totalGuestEntries);
     }
@@ -573,7 +620,7 @@ public class ClubPlayService : IClubPlayService
         else throw new InvalidOperationException("پریود نامعتبر است. از week یا month استفاده کنید");
 
         var plays = await _context.Clubplays
-            .Where(p => p.Room.ClubId == clubId && p.BusinessDate >= from && p.BusinessDate <= today)
+            .Where(p => p.Room.ClubId == clubId && !p.IsDeleted && p.BusinessDate >= from && p.BusinessDate <= today)
             .Include(p => p.Master)
             .Select(p => new { p.Id, p.MasterId, MasterName = p.Master.Name })
             .ToListAsync();
@@ -583,7 +630,7 @@ public class ClubPlayService : IClubPlayService
         var entryCounts = await _context.Clubplayplayers
             .Where(pp => playIds.Contains(pp.PlayId))
             .GroupBy(pp => pp.PlayId)
-            .Select(g => new { PlayId = g.Key, Entries = g.Count(x => !x.IsGuest), Guests = g.Count(x => x.IsGuest) })
+            .Select(g => new { PlayId = g.Key, Entries = g.Where(x => !x.IsGuest).Sum(x => x.EntryCount), Guests = g.Where(x => x.IsGuest).Sum(x => x.EntryCount) })
             .ToListAsync();
 
         var entryLookup = entryCounts.ToDictionary(x => x.PlayId);
@@ -620,22 +667,24 @@ public class ClubPlayService : IClubPlayService
         }
 
         var playIdsQuery = _context.Clubplays
-            .Where(p => p.Room.ClubId == clubId && p.MasterId == masterId && p.BusinessDate >= from && p.BusinessDate <= today);
+            .Where(p => p.Room.ClubId == clubId && p.MasterId == masterId && !p.IsDeleted && p.BusinessDate >= from && p.BusinessDate <= today);
 
         var totalPlays = await playIdsQuery.CountAsync();
 
         var playIds = await playIdsQuery.Select(p => p.Id).ToListAsync();
 
         var totalEntries = await _context.Clubplayplayers
-            .CountAsync(pp => playIds.Contains(pp.PlayId) && !pp.IsGuest);
+            .Where(pp => playIds.Contains(pp.PlayId) && !pp.IsGuest)
+            .SumAsync(pp => pp.EntryCount);
 
         var totalGuestEntries = await _context.Clubplayplayers
-            .CountAsync(pp => playIds.Contains(pp.PlayId) && pp.IsGuest);
+            .Where(pp => playIds.Contains(pp.PlayId) && pp.IsGuest)
+            .SumAsync(pp => pp.EntryCount);
 
         return new MasterStatsDto(totalPlays, totalEntries, totalGuestEntries);
     }
 
-    public async Task<ClubPlayDetailDto?> UpdateClubPlayAsync(int clubId, int playId, int? restrictToMasterId, UpdateClubPlayDto dto)
+    public async Task<ClubPlayDetailDto?> UpdateClubPlayAsync(int clubId, int playId, int? restrictToMasterId, string? actingClubRole, UpdateClubPlayDto dto)
     {
         var play = await LoadPlayWithIncludesAsync(playId);
 
@@ -658,10 +707,11 @@ public class ClubPlayService : IClubPlayService
         if (dto.Participants.Count == 0)
             throw new InvalidOperationException("لیست شرکت‌کنندگان خالی است");
 
-        // Validate no duplicates
-        var participantIds = dto.Participants.Select(p => p.ClubPlayerId).ToList();
-        var distinctIds = participantIds.Distinct().Count();
-        if (distinctIds != participantIds.Count)
+        var incomingEntryTotal = dto.Participants.Sum(p => p.EntryCount);
+
+        // Validate no duplicate distinct PlayerIds in the DTO
+        var distinctDtoPlayerIds = dto.Participants.Select(p => p.ClubPlayerId).Distinct().ToList();
+        if (distinctDtoPlayerIds.Count != dto.Participants.Count)
             throw new InvalidOperationException("بازیکن تکراری در لیست شرکت‌کنندگان وجود دارد");
 
         // Validate all are club members
@@ -670,44 +720,66 @@ public class ClubPlayService : IClubPlayService
             .Select(cc => cc.ClubplayerId)
             .ToListAsync();
 
-        var invalidIds = participantIds.Where(id => !membershipIds.Contains(id)).ToList();
+        var invalidIds = distinctDtoPlayerIds.Where(id => !membershipIds.Contains(id)).ToList();
         if (invalidIds.Count != 0)
             throw new InvalidOperationException($"این بازیکنان عضو این کافه نیستند: {string.Join("، ", invalidIds)}");
+
+        // Validate EntryCount rules against the new playType
+        ValidateEntryCountRulesForUpdate(dto.PlayType, dto.Participants, play.Clubplayplayers);
+
+        // Supervisor permission check: reject if supervisor tries to change entryCount for any player
+        var currentRowCountByPlayer = play.Clubplayplayers
+            .GroupBy(pp => pp.PlayerId)
+            .ToDictionary(g => g.Key, g => g.Count());
+        if (actingClubRole == "supervisor")
+        {
+            foreach (var p in dto.Participants)
+            {
+                var currentRowCount = currentRowCountByPlayer.GetValueOrDefault(p.ClubPlayerId, 0);
+                if (p.EntryCount != currentRowCount)
+                    throw new ForbiddenAppException("سوپروایزر مجاز به تغییر تعداد ورودی نیست");
+            }
+        }
 
         // ═══════════════════════════════════════════
         // Determine update tier
         // ═══════════════════════════════════════════
-        var currentPlayerIds = play.Clubplayplayers.Select(pp => pp.PlayerId).OrderBy(x => x).ToList();
-        var incomingPlayerIds = participantIds.OrderBy(x => x).ToList();
+        var currentDistinctPlayers = play.Clubplayplayers
+            .Select(pp => pp.PlayerId).Distinct().OrderBy(x => x).ToList();
+        var incomingDistinctPlayers = distinctDtoPlayerIds.OrderBy(x => x).ToList();
 
         bool sameSenario = play.SenarioId == dto.SenarioId;
-        bool sameCount = play.PlayersCount == dto.Participants.Count;
-        bool samePlayerSet = currentPlayerIds.SequenceEqual(incomingPlayerIds);
-        bool sameGuests = samePlayerSet && play.Clubplayplayers
-            .OrderBy(pp => pp.PlayerId)
-            .Select(pp => pp.IsGuest)
-            .SequenceEqual(dto.Participants.OrderBy(p => p.ClubPlayerId).Select(p => p.IsGuest));
+        bool sameTotalCount = play.PlayersCount == incomingEntryTotal;
+        bool sameDistinctPlayerSet = currentDistinctPlayers.SequenceEqual(incomingDistinctPlayers);
+        bool sameRowDistribution = sameDistinctPlayerSet
+            && currentDistinctPlayers.All(id => currentRowCountByPlayer[id] ==
+                dto.Participants.First(p => p.ClubPlayerId == id).EntryCount);
+        bool sameGuests = sameDistinctPlayerSet
+            && currentDistinctPlayers.All(id =>
+                play.Clubplayplayers.First(pp => pp.PlayerId == id).IsGuest ==
+                dto.Participants.First(p => p.ClubPlayerId == id).IsGuest);
 
-        bool needsFullRebuild = !sameSenario || !sameCount;
-        bool needsParticipantSwap = !needsFullRebuild && !samePlayerSet;
-        bool metadataOnly = sameSenario && sameCount && samePlayerSet && sameGuests;
+        bool needsFullRebuild = !sameSenario || !sameTotalCount;
+        bool needsParticipantSwap = !needsFullRebuild && !sameDistinctPlayerSet;
+        bool needsEntryCountAdjust = !needsFullRebuild && sameDistinctPlayerSet && !sameRowDistribution;
+        bool metadataOnly = sameSenario && sameTotalCount && sameDistinctPlayerSet && sameRowDistribution && sameGuests;
 
         // Validate role set exists (skip only for metadata-only — participant/senario didn't change)
         List<int>? roleIds = null;
         if (!metadataOnly)
         {
             var roleSet = await _context.SenarioRoleSets
-                .FirstOrDefaultAsync(rs => rs.SenarioId == dto.SenarioId && rs.PlayerCount == dto.Participants.Count);
+                .FirstOrDefaultAsync(rs => rs.SenarioId == dto.SenarioId && rs.PlayerCount == incomingEntryTotal);
 
             if (roleSet is null)
-                throw new InvalidOperationException($"این سناریو برای {dto.Participants.Count} نفر هنوز پیکربندی نشده است");
+                throw new InvalidOperationException($"این سناریو برای {incomingEntryTotal} نفر هنوز پیکربندی نشده است");
 
             roleIds = JsonSerializer.Deserialize<List<int>>(roleSet.RoleIds);
-            if (roleIds is null || roleIds.Count != dto.Participants.Count)
+            if (roleIds is null || roleIds.Count != incomingEntryTotal)
             {
                 _logger.LogError(
                     "SenarioRoleSet Id={Id}: RoleIds array length ({Actual}) does not match PlayerCount ({Expected})",
-                    roleSet.Id, roleIds?.Count ?? 0, dto.Participants.Count);
+                    roleSet.Id, roleIds?.Count ?? 0, incomingEntryTotal);
                 throw new InvalidOperationException("خطای یکپارچگی داده‌های پیکربندی سناریو");
             }
         }
@@ -720,19 +792,31 @@ public class ClubPlayService : IClubPlayService
             if (needsFullRebuild)
             {
                 // ──────────────────────────────────────
-                // Tier C: SenarioId or player-count changed
+                // Tier C: SenarioId or total entry-count changed
                 //         → full role rebuild from scratch
                 // ──────────────────────────────────────
                 _context.Clubplayplayers.RemoveRange(play.Clubplayplayers);
                 participants = await CreateClubPlayParticipantsAsync(
                     playId, dto.Participants, roleIds!, shuffle: true);
                 play.WinnersideId = null;
+                play.Status = dto.PlayType == "normal" ? "done" : "pending";
             }
             else if (needsParticipantSwap)
             {
                 // ──────────────────────────────────────
-                // Tier B: Same scenario + count, different members
-                //         → merge participants preserving roles
+                // Tier B: Same scenario + total count, different member set
+                //         → merge participants preserving roles, handling row expansion
+                // ──────────────────────────────────────
+                participants = await MergeParticipantsPreservingRoles(
+                    playId, play.Clubplayplayers, dto.Participants, roleIds!);
+                play.WinnersideId = null;
+            }
+            else if (needsEntryCountAdjust)
+            {
+                // ──────────────────────────────────────
+                // Tier B2: Same scenario + total count + same players,
+                //          but entryCount distribution changed
+                //         → adjust row counts per PlayerId preserving roles
                 // ──────────────────────────────────────
                 participants = await MergeParticipantsPreservingRoles(
                     playId, play.Clubplayplayers, dto.Participants, roleIds!);
@@ -746,25 +830,34 @@ public class ClubPlayService : IClubPlayService
                 // ──────────────────────────────────────
                 if (!sameGuests)
                 {
-                    // IsGuest flags changed — update existing records
                     var incomingMap = dto.Participants.ToDictionary(p => p.ClubPlayerId);
                     foreach (var pp in play.Clubplayplayers)
                     {
                         pp.IsGuest = incomingMap[pp.PlayerId].IsGuest;
+                        pp.EntryCount = 1;
                     }
                 }
                 participants = play.Clubplayplayers
                     .OrderBy(pp => pp.Id)
                     .Select(pp => new ClubPlayParticipantDto(
+                        pp.Id,
                         pp.PlayerId,
                         pp.Player.Name ?? "",
                         pp.RoleId,
                         pp.Role.Name ?? "",
                         pp.Role.SideId,
                         pp.Role.Photo,
-                        pp.IsGuest
+                        pp.IsGuest,
+                        0
                     ))
                     .ToList();
+                // Compute and set entryCount (row-group count) on each result row
+                var ecMap = participants.GroupBy(r => r.ClubPlayerId).ToDictionary(g => g.Key, g => g.Count());
+                for (int i = 0; i < participants.Count; i++)
+                {
+                    var r = participants[i];
+                    participants[i] = r with { EntryCount = ecMap[r.ClubPlayerId] };
+                }
             }
 
             // ──────────────────────────────────────
@@ -774,18 +867,39 @@ public class ClubPlayService : IClubPlayService
             play.DateTime = dto.DateTime;
             play.RoomId = dto.RoomId;
             play.SenarioId = dto.SenarioId;
-            play.PlayersCount = dto.Participants.Count;
-            play.GuestCount = dto.Participants.Count(p => p.IsGuest);
+            play.PlayersCount = incomingEntryTotal;
+            play.GuestCount = dto.Participants.Where(p => p.IsGuest).Sum(p => p.EntryCount);
             play.Desc = dto.Desc;
             play.Link = dto.Link;
             play.PlayType = dto.PlayType;
             play.EventId = dto.EventId;
 
-            play.Status = ClubPlayStatusResolver.Resolve(
-                statusBeforeChanges,
-                play.PlayType,
-                play.WinnersideId,
-                play.Clubplayplayers.Select(pp => pp.Rank));
+            if (dto.NerkhId.HasValue)
+            {
+                var nerkh = await _context.Nerkhs
+                    .FirstOrDefaultAsync(n => n.Id == dto.NerkhId.Value && n.ClubId == clubId && !n.IsDeleted);
+                if (nerkh is null)
+                    throw new InvalidOperationException("نرخ انتخاب‌شده برای این کافه معتبر نیست");
+                play.NerkhId = nerkh.Id;
+            }
+            else
+            {
+                var defaultNerkh = await _context.Nerkhs
+                    .Where(n => n.ClubId == clubId && n.IsDefault && !n.IsDeleted)
+                    .FirstOrDefaultAsync();
+                if (defaultNerkh is null)
+                    throw new InvalidOperationException("این کافه هیچ نرخ پیش‌فرضی تعریف نکرده است");
+                play.NerkhId = defaultNerkh.Id;
+            }
+
+            if (!needsFullRebuild)
+            {
+                play.Status = ClubPlayStatusResolver.Resolve(
+                    statusBeforeChanges,
+                    play.PlayType,
+                    play.WinnersideId,
+                    play.Clubplayplayers.Select(pp => pp.Rank));
+            }
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -800,7 +914,7 @@ public class ClubPlayService : IClubPlayService
                 room.Name ?? "",
                 dto.SenarioId,
                 senario?.Name ?? "",
-                dto.Participants.Count,
+                incomingEntryTotal,
                 play.GuestCount ?? 0,
                 play.Desc,
                 play.Link,
@@ -811,6 +925,8 @@ public class ClubPlayService : IClubPlayService
                 play.WinnersideId,
                 play.EventId,
                 play.Event?.Name ?? "",
+                play.NerkhId,
+                play.Nerkh?.Name,
                 participants
             );
         }
@@ -822,12 +938,14 @@ public class ClubPlayService : IClubPlayService
     }
 
     public async Task<ClubPlayParticipantDto> ReplaceParticipantAsync(
-        int clubId, int playId, int? restrictToMasterId, int currentClubPlayerId, ReplaceParticipantDto dto)
+        int clubId, int playId, int? restrictToMasterId, int participantRowId, ReplaceParticipantDto dto)
     {
         var play = await _context.Clubplays
             .Include(p => p.Clubplayplayers)
+                .ThenInclude(pp => pp.Role)
+                    .ThenInclude(r => r.Side)
             .Include(p => p.Room)
-            .FirstOrDefaultAsync(p => p.Id == playId);
+            .FirstOrDefaultAsync(p => p.Id == playId && !p.IsDeleted);
 
         if (play is null)
             throw new KeyNotFoundException("بازی یافت نشد");
@@ -841,9 +959,12 @@ public class ClubPlayService : IClubPlayService
         if (restrictToMasterId.HasValue && play.Status == "done")
             throw new InvalidOperationException("بازی‌های تکمیل‌شده قابل ویرایش نیستند");
 
-        var target = play.Clubplayplayers.FirstOrDefault(pp => pp.PlayerId == currentClubPlayerId);
-        if (target is null)
-            throw new KeyNotFoundException("این بازیکن در این بازی یافت نشد");
+        var targetRow = play.Clubplayplayers.FirstOrDefault(pp => pp.Id == participantRowId);
+        if (targetRow is null)
+            throw new KeyNotFoundException("این ردیف شرکت‌کننده در این بازی یافت نشد");
+
+        var oldPlayerId = targetRow.PlayerId;
+        var oldRoleId = targetRow.RoleId;
 
         // Validate new player is a club member
         var isMember = await _context.ClubClubplayers
@@ -852,32 +973,105 @@ public class ClubPlayService : IClubPlayService
         if (!isMember)
             throw new InvalidOperationException("بازیکن جدید عضو این کافه نیست");
 
-        // Validate no duplicate
-        var isDuplicate = play.Clubplayplayers.Any(pp => pp.PlayerId == dto.NewClubPlayerId);
-        if (isDuplicate)
-            throw new InvalidOperationException("این بازیکن قبلاً در این بازی ثبت شده است");
+        // Validate EntryCount rules
+        if (dto.EntryCount < 1 || dto.EntryCount > 10)
+            throw new ValidationAppException("EntryCount باید بین ۱ تا ۱۰ باشد");
 
-        // Swap: update PlayerId and IsGuest only — RoleId, Rank, Action untouched
-        target.PlayerId = dto.NewClubPlayerId;
-        target.IsGuest = dto.IsGuest;
+        if (dto.EntryCount > 1 && play.PlayType != "normal")
+            throw new ValidationAppException("EntryCount بیشتر از ۱ فقط در بازی‌های normal مجاز است");
+
+        if (dto.IsGuest && dto.EntryCount != 1)
+            throw new ValidationAppException("ورودی مهمان (IsGuest) فقط با EntryCount=۱ مجاز است");
+
+        // Per-row replace: swap PlayerId and IsGuest on the single target row
+        targetRow.PlayerId = dto.NewClubPlayerId;
+        targetRow.IsGuest = dto.IsGuest;
+        targetRow.EntryCount = 1;
+
+        // If there's already a row for the new player in this play (duplicate check),
+        // we allow it only if entryCount > 1 scenario (different physical rows for same player ID).
+        // In the per-row replace, having the same PlayerId on another row is OK.
 
         await _context.SaveChangesAsync();
 
-        // Load new player + existing role for DTO
         var newPlayer = await _context.Clubplayers.FindAsync(dto.NewClubPlayerId);
         var role = await _context.Roles
             .Include(r => r.Side)
-            .FirstOrDefaultAsync(r => r.Id == target.RoleId);
+            .FirstOrDefaultAsync(r => r.Id == oldRoleId);
 
         return new ClubPlayParticipantDto(
-            target.PlayerId,
+            targetRow.Id,
+            targetRow.PlayerId,
             newPlayer?.Name ?? "",
-            target.RoleId,
+            targetRow.RoleId,
             role?.Name ?? "",
             role?.SideId ?? 0,
             role?.Photo,
-            target.IsGuest
+            targetRow.IsGuest,
+            dto.EntryCount
         );
+    }
+
+    public async Task<bool> DeleteClubPlayAsync(int clubId, int playId, int actingUserId, bool isAdmin, int? restrictToMasterId)
+    {
+        var play = await _context.Clubplays
+            .Include(p => p.Room)
+            .FirstOrDefaultAsync(p => p.Id == playId);
+
+        if (play is null || play.IsDeleted) return false;
+        if (!isAdmin && play.Room.ClubId != clubId) return false;
+
+        if (restrictToMasterId.HasValue)
+        {
+            if (play.MasterId != restrictToMasterId.Value)
+                throw new InvalidOperationException("شما نمی‌توانید بازی دیگری را حذف کنید");
+
+            if (play.Status == "done")
+                throw new InvalidOperationException("بازی‌های تکمیل‌شده توسط گرداننده قابل حذف نیستند — از مدیر یا سوپروایزر کافه بخواهید");
+        }
+
+        play.IsDeleted = true;
+        play.DeletedAt = DateTime.UtcNow;
+        play.DeletedByUserId = actingUserId;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<(List<ClubPlayDeletedListItemDto> Items, int Total)> GetDeletedPlaysAsync(int clubId, int page, int pageSize)
+    {
+        var query = _context.Clubplays
+            .Include(p => p.Room)
+            .Include(p => p.Senario)
+            .Include(p => p.Master)
+            .Where(p => p.Room.ClubId == clubId && p.IsDeleted);
+
+        var total = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(p => p.DeletedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new ClubPlayDeletedListItemDto(
+                p.Id,
+                p.Title,
+                p.DateTime ?? default,
+                p.BusinessDate ?? default,
+                p.Room.Name ?? "",
+                p.Senario.Name ?? "",
+                p.PlayersCount ?? 0,
+                p.GuestCount ?? 0,
+                p.Status,
+                p.PlayType,
+                p.Master.Name,
+                p.DeletedAt,
+                p.DeletedByUserId,
+                p.DeletedByUserId != null
+                    ? _context.Users.Where(u => u.Id == p.DeletedByUserId).Select(u => u.DisplayName).FirstOrDefault()
+                    : null
+            ))
+            .ToListAsync();
+
+        return (items, total);
     }
 
     private async Task<Clubplay?> LoadPlayWithIncludesAsync(int playId)
@@ -887,26 +1081,30 @@ public class ClubPlayService : IClubPlayService
             .Include(p => p.Senario)
             .Include(p => p.Master)
             .Include(p => p.Event)
+            .Include(p => p.Nerkh)
             .Include(p => p.Clubplayplayers)
                 .ThenInclude(pp => pp.Player)
             .Include(p => p.Clubplayplayers)
                 .ThenInclude(pp => pp.Role)
                     .ThenInclude(r => r.Side)
-            .FirstOrDefaultAsync(p => p.Id == playId);
+            .FirstOrDefaultAsync(p => p.Id == playId && !p.IsDeleted);
     }
 
     private static ClubPlayDetailDto MapToDetailDto(Clubplay play)
     {
-        var participants = play.Clubplayplayers
-            .OrderBy(pp => pp.Id)
+        var playersList = play.Clubplayplayers.OrderBy(pp => pp.Id).ToList();
+        var ecMap = playersList.GroupBy(pp => pp.PlayerId).ToDictionary(g => g.Key, g => g.Count());
+        var participants = playersList
             .Select(pp => new ClubPlayParticipantDto(
+                pp.Id,
                 pp.PlayerId,
                 pp.Player.Name ?? "",
                 pp.RoleId,
                 pp.Role.Name ?? "",
                 pp.Role.SideId,
                 pp.Role.Photo,
-                pp.IsGuest
+                pp.IsGuest,
+                ecMap.GetValueOrDefault(pp.PlayerId, 1)
             ))
             .ToList();
 
@@ -929,6 +1127,8 @@ public class ClubPlayService : IClubPlayService
             play.WinnersideId,
             play.EventId,
             play.Event?.Name ?? "",
+            play.NerkhId,
+            play.Nerkh?.Name,
             participants
         );
     }
@@ -948,34 +1148,53 @@ public class ClubPlayService : IClubPlayService
             .ToDictionaryAsync(r => r.Id);
 
         var result = new List<ClubPlayParticipantDto>();
+        var addedEntities = new List<Clubplayplayer>();
+        int roleIndex = 0;
 
-        for (int i = 0; i < participantInputs.Count; i++)
+        foreach (var input in participantInputs)
         {
-            var input = participantInputs[i];
-            var roleId = assignedRoleIds[i];
-
-            _context.Clubplayplayers.Add(new Clubplayplayer
+            for (int copy = 0; copy < input.EntryCount; copy++)
             {
-                PlayerId = input.ClubPlayerId,
-                RoleId = roleId,
-                PlayId = playId,
-                Rank = null,
-                Action = null,
-                IsGuest = input.IsGuest
-            });
+                var roleId = assignedRoleIds[roleIndex++];
 
-            var player = clubPlayerLookup[input.ClubPlayerId];
-            var role = roleLookup[roleId];
+                var entity = new Clubplayplayer
+                {
+                    PlayerId = input.ClubPlayerId,
+                    RoleId = roleId,
+                    PlayId = playId,
+                    Rank = null,
+                    Action = null,
+                    IsGuest = input.IsGuest,
+                    EntryCount = 1
+                };
+                _context.Clubplayplayers.Add(entity);
+                addedEntities.Add(entity);
 
-            result.Add(new ClubPlayParticipantDto(
-                input.ClubPlayerId,
-                player.Name ?? "",
-                roleId,
-                role.Name ?? "",
-                role.SideId,
-                role.Photo,
-                input.IsGuest
-            ));
+                var player = clubPlayerLookup[input.ClubPlayerId];
+                var role = roleLookup[roleId];
+
+                result.Add(new ClubPlayParticipantDto(
+                    0,
+                    input.ClubPlayerId,
+                    player.Name ?? "",
+                    roleId,
+                    role.Name ?? "",
+                    role.SideId,
+                    role.Photo,
+                    input.IsGuest,
+                    0
+                ));
+            }
+        }
+
+        // Save to populate entity Ids
+        await _context.SaveChangesAsync();
+
+        // Set Id and entryCount on result DTOs
+        var entryCountMap = addedEntities.GroupBy(e => e.PlayerId).ToDictionary(g => g.Key, g => g.Count());
+        for (int i = 0; i < result.Count; i++)
+        {
+            result[i] = result[i] with { Id = addedEntities[i].Id, EntryCount = entryCountMap[addedEntities[i].PlayerId] };
         }
 
         return result;
@@ -987,72 +1206,159 @@ public class ClubPlayService : IClubPlayService
         List<ParticipantInputDto> incomingParticipants,
         List<int> allRoleIds)
     {
-        var currentMap = currentPlayers.ToDictionary(pp => pp.PlayerId);
+        var currentRowsByPlayer = currentPlayers.GroupBy(pp => pp.PlayerId).ToDictionary(g => g.Key, g => g.OrderBy(pp => pp.Id).ToList());
         var incomingIds = incomingParticipants.Select(p => p.ClubPlayerId).ToHashSet();
-
-        var removed = currentMap.Keys.Where(id => !incomingIds.Contains(id)).ToList();
-        var added = incomingParticipants.Where(p => !currentMap.ContainsKey(p.ClubPlayerId)).ToList();
-
-        // Collect freed RoleIds from removed players
-        var freedRoles = removed.Select(id => currentMap[id].RoleId).ToList();
-
-        // Remove old records
-        foreach (var id in removed)
-            _context.Clubplayplayers.Remove(currentMap[id]);
-
-        // Update IsGuest for common players
         var incomingMap = incomingParticipants.ToDictionary(p => p.ClubPlayerId);
-        foreach (var id in currentMap.Keys.Where(incomingIds.Contains))
-            currentMap[id].IsGuest = incomingMap[id].IsGuest;
+        var allRolePool = new List<int>(allRoleIds);
 
-        // Add new records — assign freed roles deterministically (first-freed → first-new)
-        var newPlayerRoles = new Dictionary<int, int>();
-        for (int i = 0; i < added.Count; i++)
+        var removedIds = currentRowsByPlayer.Keys.Where(id => !incomingIds.Contains(id)).ToList();
+        var addedInputs = incomingParticipants.Where(p => !currentRowsByPlayer.ContainsKey(p.ClubPlayerId)).ToList();
+        var commonIds = currentRowsByPlayer.Keys.Where(incomingIds.Contains).ToList();
+
+        // Collect freed RoleIds from ALL rows of removed players
+        var freedRoles = new List<int>();
+        foreach (var id in removedIds)
         {
-            var roleId = i < freedRoles.Count ? freedRoles[i] : allRoleIds[i];
-            newPlayerRoles[added[i].ClubPlayerId] = roleId;
-            _context.Clubplayplayers.Add(new Clubplayplayer
+            foreach (var row in currentRowsByPlayer[id])
             {
-                PlayerId = added[i].ClubPlayerId,
-                RoleId = roleId,
-                PlayId = playId,
-                Rank = null,
-                Action = null,
-                IsGuest = added[i].IsGuest
-            });
+                freedRoles.Add(row.RoleId);
+                _context.Clubplayplayers.Remove(row);
+            }
         }
 
-        // Fetch player & role data for the DTO
+        // Adjust row count for common players, update IsGuest on each group
+        var roleIndex = 0;
+        foreach (var id in commonIds)
+        {
+            var targetCount = incomingMap[id].EntryCount;
+            var existingRows = currentRowsByPlayer[id];
+            var currentCount = existingRows.Count;
+
+            foreach (var row in existingRows)
+                row.IsGuest = incomingMap[id].IsGuest;
+
+            if (targetCount > currentCount)
+            {
+                var extra = targetCount - currentCount;
+                for (int i = 0; i < extra; i++)
+                {
+                    var roleId = roleIndex < freedRoles.Count ? freedRoles[roleIndex++] : allRolePool[0];
+                    _context.Clubplayplayers.Add(new Clubplayplayer
+                    {
+                        PlayerId = id,
+                        RoleId = roleId,
+                        PlayId = playId,
+                        Rank = null,
+                        Action = null,
+                        IsGuest = incomingMap[id].IsGuest,
+                        EntryCount = 1
+                    });
+                }
+            }
+            else if (targetCount < currentCount)
+            {
+                var removeCount = currentCount - targetCount;
+                var toRemove = existingRows.Skip(currentCount - removeCount).ToList();
+                foreach (var row in toRemove)
+                {
+                    freedRoles.Add(row.RoleId);
+                    _context.Clubplayplayers.Remove(row);
+                }
+            }
+        }
+
+        // Assign remaining freed roles to added players
+        foreach (var input in addedInputs)
+        {
+            for (int copy = 0; copy < input.EntryCount; copy++)
+            {
+                var roleId = roleIndex < freedRoles.Count ? freedRoles[roleIndex++] : allRolePool[0];
+                _context.Clubplayplayers.Add(new Clubplayplayer
+                {
+                    PlayerId = input.ClubPlayerId,
+                    RoleId = roleId,
+                    PlayId = playId,
+                    Rank = null,
+                    Action = null,
+                    IsGuest = input.IsGuest,
+                    EntryCount = 1
+                });
+            }
+        }
+
+        // Save to persist all changes and populate row Ids
+        await _context.SaveChangesAsync();
+
+        // Reload all rows for this play to get final state
+        var savedRows = await _context.Clubplayplayers
+            .Where(pp => pp.PlayId == playId)
+            .OrderBy(pp => pp.Id)
+            .ToListAsync();
+
+        // Fetch player and role data for DTO
         var allPlayerIds = incomingParticipants.Select(p => p.ClubPlayerId).ToList();
         var players = await _context.Clubplayers
             .Where(p => allPlayerIds.Contains(p.Id))
             .ToDictionaryAsync(p => p.Id);
-        var roles = await _context.Roles
-            .Where(r => allRoleIds.Contains(r.Id))
+        var usedRoleIds = savedRows.Select(r => r.RoleId).Distinct().ToList();
+        var roleLookup = await _context.Roles
+            .Where(r => usedRoleIds.Contains(r.Id))
             .ToDictionaryAsync(r => r.Id);
 
-        var result = new List<ClubPlayParticipantDto>();
-        foreach (var input in incomingParticipants)
-        {
-            var roleId = newPlayerRoles.TryGetValue(input.ClubPlayerId, out var fromNew)
-                ? fromNew
-                : currentMap[input.ClubPlayerId].RoleId;
-
-            var player = players[input.ClubPlayerId];
-            var role = roles[roleId];
-
-            result.Add(new ClubPlayParticipantDto(
-                input.ClubPlayerId,
-                player.Name ?? "",
-                roleId,
-                role.Name ?? "",
-                role.SideId,
-                role.Photo,
-                input.IsGuest
-            ));
-        }
+        var entryPerPlayer = savedRows.GroupBy(pp => pp.PlayerId).ToDictionary(g => g.Key, g => g.Count());
+        var result = savedRows
+            .Select(pp =>
+            {
+                var role = roleLookup.GetValueOrDefault(pp.RoleId);
+                return new ClubPlayParticipantDto(
+                    pp.Id,
+                    pp.PlayerId,
+                    players.GetValueOrDefault(pp.PlayerId)?.Name ?? "",
+                    pp.RoleId,
+                    role?.Name ?? "",
+                    role?.SideId ?? 0,
+                    role?.Photo,
+                    pp.IsGuest,
+                    entryPerPlayer.GetValueOrDefault(pp.PlayerId, 1)
+                );
+            })
+            .ToList();
 
         return result;
+    }
+
+    // TODO: use EntryCount as quantity multiplier when computing game admission fee in club_order
+    private static void ValidateEntryCountRules(string playType, List<ParticipantInputDto> participants)
+    {
+        foreach (var p in participants)
+        {
+            if (p.EntryCount < 1 || p.EntryCount > 10)
+                throw new ValidationAppException("EntryCount باید بین ۱ تا ۱۰ باشد");
+
+            if (p.EntryCount > 1 && playType != "normal")
+                throw new ValidationAppException("EntryCount بیشتر از ۱ فقط در بازی‌های normal مجاز است");
+
+            if (p.IsGuest && p.EntryCount != 1)
+                throw new ValidationAppException("ورودی مهمان (IsGuest) فقط با EntryCount=۱ مجاز است");
+        }
+    }
+
+    private static void ValidateEntryCountRulesForUpdate(
+        string playType, List<ParticipantInputDto> participants,
+        ICollection<Clubplayplayer> existingPlayers)
+    {
+        // Re-validate all three rules
+        foreach (var p in participants)
+        {
+            if (p.EntryCount < 1 || p.EntryCount > 10)
+                throw new ValidationAppException("EntryCount باید بین ۱ تا ۱۰ باشد");
+
+            if (p.EntryCount > 1 && playType != "normal")
+                throw new ValidationAppException("EntryCount بیشتر از ۱ فقط در بازی‌های normal مجاز است");
+
+            if (p.IsGuest && p.EntryCount != 1)
+                throw new ValidationAppException("ورودی مهمان (IsGuest) فقط با EntryCount=۱ مجاز است");
+        }
     }
 
     private static List<int> ShuffleCopy(List<int> source)

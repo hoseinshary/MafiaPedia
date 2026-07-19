@@ -1,43 +1,43 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto w-full" v-if="ctx">
     <div class="mb-8">
-      <h1 class="text-xl font-bold text-[#c9b07a]">داشبورد</h1>
-      <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ ctx.clubName }}</p>
+      <h1 class="text-xl font-bold text-gold-text">داشبورد</h1>
+      <p class="text-sm text-muted mt-1">{{ ctx.clubName }}</p>
     </div>
 
     <!-- Quick links -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <router-link to="/master/plays/create" class="block bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 hover:border-[rgba(201,176,122,0.3)] transition text-center">
+      <router-link to="/master/plays/create" class="block bg-surface border border-border rounded-xl p-6 hover:border-gold/30 transition text-center">
         <div class="text-2xl mb-2">🎯</div>
-        <div class="text-sm font-bold text-[#c9b07a]">ثبت بازی جدید</div>
-        <div class="text-xs text-[rgba(232,228,217,0.3)] mt-1">ایجاد یک بازی جدید در کافه</div>
+        <div class="text-sm font-bold text-gold-text">ثبت بازی جدید</div>
+        <div class="text-xs text-muted mt-1">ایجاد یک بازی جدید در کافه</div>
       </router-link>
-      <router-link to="/master/plays/practice" class="block bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 hover:border-[rgba(201,176,122,0.3)] transition text-center">
+      <router-link to="/master/plays/practice" class="block bg-surface border border-border rounded-xl p-6 hover:border-gold/30 transition text-center">
         <div class="text-2xl mb-2">🎲</div>
-        <div class="text-sm font-bold text-[#c9b07a]">حالت تمرین</div>
-        <div class="text-xs text-[rgba(232,228,217,0.3)] mt-1">پیش‌نمایش پخش نقش بدون ثبت بازی</div>
+        <div class="text-sm font-bold text-gold-text">حالت تمرین</div>
+        <div class="text-xs text-muted mt-1">پیش‌نمایش پخش نقش بدون ثبت بازی</div>
       </router-link>
     </div>
 
     <!-- Today's plays -->
-    <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 mb-8">
+    <div class="bg-surface border border-border rounded-xl p-6 mb-8">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
-          <button @click="navigateDate(-1)" class="text-xs text-[rgba(232,228,217,0.3)] hover:text-[#c9b07a] transition px-2 py-1 border border-[rgba(255,255,255,0.07)] rounded">▶ روز قبل</button>
-          <h2 class="text-sm font-bold text-[#e8e4d9]">بازی‌های {{ formatHeadingDate(viewedDate) }} <span class="text-[rgba(232,228,217,0.8)] font-normal">— {{ totalEntries }} نفر-بازی</span></h2>
-          <button @click="navigateDate(1)" :disabled="isToday" class="text-xs text-[rgba(232,228,217,0.3)] hover:text-[#c9b07a] disabled:opacity-30 disabled:cursor-not-allowed transition px-2 py-1 border border-[rgba(255,255,255,0.07)] rounded">روز بعد ◀</button>
+          <button @click="navigateDate(-1)" class="text-xs text-muted hover:text-gold-text transition px-2 py-1 border border-border rounded">▶ روز قبل</button>
+          <h2 class="text-sm font-bold text-fg">بازی‌های {{ formatHeadingDate(viewedDate) }} <span class="text-muted font-normal">— {{ totalEntries }} نفر-بازی</span></h2>
+          <button @click="navigateDate(1)" :disabled="isToday" class="text-xs text-muted hover:text-gold-text disabled:opacity-30 disabled:cursor-not-allowed transition px-2 py-1 border border-border rounded">روز بعد ◀</button>
         </div>
       </div>
       <div v-if="todaysLoading" class="flex justify-center py-8">
-        <div class="w-6 h-6 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+        <div class="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
-      <div v-else-if="todaysPlays.length === 0" class="text-center py-8 text-sm text-[rgba(232,228,217,0.3)]">
+      <div v-else-if="todaysPlays.length === 0" class="text-center py-8 text-sm text-muted">
         امروز هنوز بازی‌ای ثبت نشده
       </div>
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.5)]">
+            <tr class="border-b border-border text-muted">
               <th class="px-3 py-2 text-right">عنوان</th>
               <th class="px-3 py-2 text-right">ساعت</th>
               <th class="px-3 py-2 text-right">سالن</th>
@@ -48,13 +48,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="play in todaysPlays" :key="play.id" @click="goToPlay(play.id)" class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition cursor-pointer text-[#e8e4d9]">
+            <tr v-for="play in todaysPlays" :key="play.id" @click="goToPlay(play.id)" class="border-b border-border hover:bg-surface-hover transition cursor-pointer text-fg">
               <td class="px-3 py-2.5 font-medium">{{ play.title || 'بدون عنوان' }}</td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ formatTime(play.dateTime) }}</td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.roomName }}</td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.senarioName }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ formatTime(play.dateTime) }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ play.roomName }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ play.senarioName }}</td>
               <td class="px-3 py-2.5"><span class="status-badge" :class="playTypeClass(play.playType)">{{ playTypeLabel(play.playType) }}</span></td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.playersCount }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ play.playersCount }}</td>
               <td class="px-3 py-2.5"><span class="status-badge" :class="statusClass(play.status)">{{ statusLabel(play.status) }}</span></td>
             </tr>
           </tbody>
@@ -64,63 +64,63 @@
 
     <!-- Stats -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6">
-        <h3 class="text-xs text-[rgba(232,228,217,0.4)] mb-3">آمار هفتگی</h3>
+      <div class="bg-surface border border-border rounded-xl p-6">
+        <h3 class="text-xs text-muted mb-3">آمار هفتگی</h3>
         <div v-if="weeklyLoading" class="flex justify-center py-4">
-          <div class="w-5 h-5 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+          <div class="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
         </div>
         <div v-else class="grid grid-cols-3 gap-2">
           <div>
-            <div class="text-2xl font-bold text-[#e8e4d9]">{{ weekStats?.totalPlays ?? '-' }}</div>
-            <div class="text-xs text-[rgba(232,228,217,0.4)]">تعداد بازی</div>
+            <div class="text-2xl font-bold text-fg">{{ weekStats?.totalPlays ?? '-' }}</div>
+            <div class="text-xs text-muted">تعداد بازی</div>
           </div>
           <div>
-            <div class="text-2xl font-bold text-[#e8e4d9]">{{ weekStats?.totalEntries ?? '-' }}</div>
-            <div class="text-xs text-[rgba(232,228,217,0.4)]">نفر-بازی</div>
+            <div class="text-2xl font-bold text-fg">{{ weekStats?.totalEntries ?? '-' }}</div>
+            <div class="text-xs text-muted">نفر-بازی</div>
           </div>
           <div>
-            <div class="text-2xl font-bold text-[rgba(232,228,217,0.4)]">{{ weekStats?.totalGuestEntries ?? '-' }}</div>
-            <div class="text-xs text-[rgba(232,228,217,0.4)]">مهمان</div>
+            <div class="text-2xl font-bold text-muted">{{ weekStats?.totalGuestEntries ?? '-' }}</div>
+            <div class="text-xs text-muted">مهمان</div>
           </div>
         </div>
       </div>
-      <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6">
-        <h3 class="text-xs text-[rgba(232,228,217,0.4)] mb-3">آمار ماهانه</h3>
+      <div class="bg-surface border border-border rounded-xl p-6">
+        <h3 class="text-xs text-muted mb-3">آمار ماهانه</h3>
         <div v-if="monthlyLoading" class="flex justify-center py-4">
-          <div class="w-5 h-5 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+          <div class="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
         </div>
         <div v-else class="grid grid-cols-3 gap-2">
           <div>
-            <div class="text-2xl font-bold text-[#e8e4d9]">{{ monthStats?.totalPlays ?? '-' }}</div>
-            <div class="text-xs text-[rgba(232,228,217,0.4)]">تعداد بازی</div>
+            <div class="text-2xl font-bold text-fg">{{ monthStats?.totalPlays ?? '-' }}</div>
+            <div class="text-xs text-muted">تعداد بازی</div>
           </div>
           <div>
-            <div class="text-2xl font-bold text-[#e8e4d9]">{{ monthStats?.totalEntries ?? '-' }}</div>
-            <div class="text-xs text-[rgba(232,228,217,0.4)]">نفر-بازی</div>
+            <div class="text-2xl font-bold text-fg">{{ monthStats?.totalEntries ?? '-' }}</div>
+            <div class="text-xs text-muted">نفر-بازی</div>
           </div>
           <div>
-            <div class="text-2xl font-bold text-[rgba(232,228,217,0.4)]">{{ monthStats?.totalGuestEntries ?? '-' }}</div>
-            <div class="text-xs text-[rgba(232,228,217,0.4)]">مهمان</div>
+            <div class="text-2xl font-bold text-muted">{{ monthStats?.totalGuestEntries ?? '-' }}</div>
+            <div class="text-xs text-muted">مهمان</div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Open plays -->
-    <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 mb-8">
+    <div class="bg-surface border border-border rounded-xl p-6 mb-8">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-bold text-[#e8e4d9]">کارهای باقی‌مانده</h2>
+        <h2 class="text-sm font-bold text-fg">کارهای باقی‌مانده</h2>
       </div>
       <div v-if="openLoading" class="flex justify-center py-8">
-        <div class="w-6 h-6 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+        <div class="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
-      <div v-else-if="openPlays.length === 0" class="text-center py-8 text-sm text-[rgba(232,228,217,0.3)]">
+      <div v-else-if="openPlays.length === 0" class="text-center py-8 text-sm text-muted">
         هیچ بازی ناقصی وجود ندارد
       </div>
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.5)]">
+            <tr class="border-b border-border text-muted">
               <th class="px-3 py-2 text-right">عنوان</th>
               <th class="px-3 py-2 text-right">تاریخ</th>
               <th class="px-3 py-2 text-right">سالن</th>
@@ -130,11 +130,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="play in openPlays" :key="play.id" @click="goToPlay(play.id)" class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition cursor-pointer text-[#e8e4d9]">
+            <tr v-for="play in openPlays" :key="play.id" @click="goToPlay(play.id)" class="border-b border-border hover:bg-surface-hover transition cursor-pointer text-fg">
               <td class="px-3 py-2.5 font-medium">{{ play.title || 'بدون عنوان' }}</td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ formatDate(play.dateTime) }}</td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.roomName }}</td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.senarioName }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ formatDate(play.dateTime) }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ play.roomName }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ play.senarioName }}</td>
               <td class="px-3 py-2.5"><span class="status-badge" :class="playTypeClass(play.playType)">{{ playTypeLabel(play.playType) }}</span></td>
               <td class="px-3 py-2.5"><span class="status-badge" :class="statusClass(play.status)">{{ statusLabel(play.status) }}</span></td>
             </tr>
@@ -144,21 +144,21 @@
     </div>
 
     <!-- Recent plays preview -->
-    <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6">
+    <div class="bg-surface border border-border rounded-xl p-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-bold text-[#e8e4d9]">همه‌ی بازی‌ها</h2>
-        <router-link to="/master/plays" class="text-xs text-[#c9b07a] hover:underline">مشاهده همه</router-link>
+        <h2 class="text-sm font-bold text-fg">همه‌ی بازی‌ها</h2>
+        <router-link to="/master/plays" class="text-xs text-gold-text hover:underline">مشاهده همه</router-link>
       </div>
       <div v-if="recentLoading" class="flex justify-center py-8">
-        <div class="w-6 h-6 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+        <div class="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
-      <div v-else-if="recentPlays.length === 0" class="text-center py-8 text-sm text-[rgba(232,228,217,0.3)]">
+      <div v-else-if="recentPlays.length === 0" class="text-center py-8 text-sm text-muted">
         هنوز بازی‌ای ثبت نشده
       </div>
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.5)]">
+            <tr class="border-b border-border text-muted">
               <th class="px-3 py-2 text-right">عنوان</th>
               <th class="px-3 py-2 text-right">تاریخ</th>
               <th class="px-3 py-2 text-right">سالن</th>
@@ -169,13 +169,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="play in recentPlays" :key="play.id" @click="goToPlay(play.id)" class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition cursor-pointer text-[#e8e4d9]">
+            <tr v-for="play in recentPlays" :key="play.id" @click="goToPlay(play.id)" class="border-b border-border hover:bg-surface-hover transition cursor-pointer text-fg">
               <td class="px-3 py-2.5 font-medium">{{ play.title || 'بدون عنوان' }}</td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ formatDate(play.dateTime) }}</td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.roomName }}</td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.senarioName }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ formatDate(play.dateTime) }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ play.roomName }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ play.senarioName }}</td>
               <td class="px-3 py-2.5"><span class="status-badge" :class="playTypeClass(play.playType)">{{ playTypeLabel(play.playType) }}</span></td>
-              <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.playersCount }}</td>
+              <td class="px-3 py-2.5 text-muted">{{ play.playersCount }}</td>
               <td class="px-3 py-2.5"><span class="status-badge" :class="statusClass(play.status)">{{ statusLabel(play.status) }}</span></td>
             </tr>
           </tbody>
@@ -184,7 +184,7 @@
     </div>
   </div>
   <div v-else class="flex justify-center py-20">
-    <div class="w-8 h-8 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+    <div class="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
   </div>
 </template>
 

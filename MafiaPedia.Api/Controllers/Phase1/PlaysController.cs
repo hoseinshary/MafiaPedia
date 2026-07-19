@@ -41,17 +41,25 @@ public class PlaysController : ControllerBase
 
     [HttpPost]
     [Authorize]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<int>> AddPlay([FromBody] CreatePlayDto dto)
+    public async Task<ActionResult<int>> AddPlay([FromForm] CreatePlayDto dto)
     {
-        if (dto.Players.Count == 0)
+        if (string.IsNullOrWhiteSpace(dto.PlayersJson))
             return BadRequest("At least one player is required.");
 
         dto.UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var playId = await _playWriteService.AddPlayAsync(dto);
-        return CreatedAtAction(nameof(AddPlay), new { id = playId }, playId);
+        try
+        {
+            var playId = await _playWriteService.AddPlayAsync(dto);
+            return CreatedAtAction(nameof(AddPlay), new { id = playId }, playId);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("{playId:int}")]
@@ -72,15 +80,23 @@ public class PlaysController : ControllerBase
 
     [HttpPut("{playId:int}")]
     [Authorize(Policy = "AdminOnly")]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdatePlay(int playId, [FromBody] UpdatePlayDto dto)
+    public async Task<IActionResult> UpdatePlay(int playId, [FromForm] UpdatePlayDto dto)
     {
-        var result = await _playWriteService.UpdatePlayAsync(playId, dto);
-        if (!result) return NotFound(new { message = "بازی یافت نشد" });
-        return Ok(new { message = "بازی با موفقیت ویرایش شد" });
+        try
+        {
+            var result = await _playWriteService.UpdatePlayAsync(playId, dto);
+            if (!result) return NotFound(new { message = "بازی یافت نشد" });
+            return Ok(new { message = "بازی با موفقیت ویرایش شد" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

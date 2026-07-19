@@ -1,97 +1,97 @@
 <template>
   <div>
-    <div v-if="existingCustomerInfo && isCreateMode" class="mb-4 px-4 py-3 rounded text-sm bg-[rgba(201,176,122,0.1)] border border-[rgba(201,176,122,0.2)] text-[#c9b07a]">
+    <div v-if="existingCustomerInfo && isCreateMode" class="mb-4 px-4 py-3 rounded text-sm bg-gold/10 border border-gold/20 text-gold-text">
       این شماره قبلاً با نام «{{ existingCustomerInfo.name }}» ثبت شده — با ثبت، فقط این مشتری به کافه اضافه می‌شود و اطلاعاتش تغییر نمی‌کند.
     </div>
 
     <div class="flex flex-col gap-3">
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">نام <span class="text-[#e07070]">*</span></label>
+        <label class="text-sm text-muted">نام <span class="text-danger">*</span></label>
         <input
           v-model="form.name"
           type="text"
           :disabled="fieldsDisabled"
-          class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition disabled:opacity-40"
+          class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition disabled:opacity-40"
           placeholder="نام مشتری"
         />
       </div>
 
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">موبایل <span class="text-[#e07070]">*</span></label>
+        <label class="text-sm text-muted">موبایل <span class="text-danger">*</span></label>
         <input
           v-model="form.mobile"
           type="text"
           :readonly="!isCreateMode"
           :disabled="!isCreateMode"
           maxlength="11"
-          class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition disabled:opacity-40 ltr text-left"
+          class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition disabled:opacity-40 ltr text-left"
           placeholder="09123456789"
           @blur="onMobileBlur"
         />
       </div>
 
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">تاریخ تولد</label>
+        <label class="text-sm text-muted">تاریخ تولد</label>
         <input
           v-model="form.birthday"
           type="date"
           :disabled="fieldsDisabled"
-          class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition disabled:opacity-40"
+          class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg focus:outline-none focus:border-gold transition disabled:opacity-40"
         />
       </div>
 
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">کد</label>
+        <label class="text-sm text-muted">کد</label>
         <input
           v-model="form.code"
           type="text"
           :disabled="fieldsDisabled"
-          class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition disabled:opacity-40"
+          class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition disabled:opacity-40"
           placeholder="کد مشتری"
         />
       </div>
 
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">توضیحات</label>
+        <label class="text-sm text-muted">توضیحات</label>
         <textarea
           v-model="form.desc"
           :disabled="fieldsDisabled"
           rows="2"
-          class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition resize-none disabled:opacity-40"
+          class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition resize-none disabled:opacity-40"
           placeholder="توضیحات"
         />
       </div>
 
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">عکس</label>
+        <label class="text-sm text-muted">عکس</label>
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
           :disabled="fieldsDisabled"
-          class="w-full text-sm text-[rgba(232,228,217,0.4)] file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-[rgba(201,176,122,0.15)] file:text-[#c9b07a] hover:file:bg-[rgba(201,176,122,0.25)] transition cursor-pointer disabled:opacity-40"
+          class="w-full text-sm text-muted file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-gold/15 file:text-gold-text hover:file:bg-gold/25 transition cursor-pointer disabled:opacity-40"
           @change="onPictureChange"
         />
         <img
           v-if="picturePreview"
           :src="picturePreview"
-          class="mt-2 w-20 h-20 rounded object-cover border border-[rgba(255,255,255,0.07)]"
+          class="mt-2 w-20 h-20 rounded object-cover border border-border"
         />
       </div>
 
-      <p v-if="error" class="text-xs text-[#e07070]">{{ error }}</p>
+      <p v-if="error" class="text-xs text-danger">{{ error }}</p>
     </div>
 
-    <div class="flex gap-3 justify-end mt-6 pt-4 border-t border-[rgba(255,255,255,0.07)]">
+    <div class="flex gap-3 justify-end mt-6 pt-4 border-t border-border">
       <button
         @click="$emit('cancel')"
-        class="px-4 py-2 border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] text-sm rounded font-medium transition"
+        class="px-4 py-2 border border-border text-muted hover:text-fg text-sm rounded font-medium transition"
       >
         انصراف
       </button>
       <button
         @click="submit"
         :disabled="!form.name.trim() || !form.mobile.trim() || loading"
-        class="px-4 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition inline-flex items-center gap-2"
+        class="px-4 py-2 bg-gold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition inline-flex items-center gap-2"
       >
         <div v-if="loading" class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
         {{ initial ? 'ویرایش' : 'افزودن مشتری' }}

@@ -19,6 +19,8 @@ public partial class Clubplayplayer
 
     public bool IsGuest { get; set; }
 
+    public int EntryCount { get; set; }
+
     public virtual Clubplay Play { get; set; } = null!;
 
     public virtual Clubplayer Player { get; set; } = null!;

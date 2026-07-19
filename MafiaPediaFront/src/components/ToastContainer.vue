@@ -13,11 +13,11 @@
           style="
             min-width: 260px;
             max-width: 360px;
-            background: #141416;
-            border: 0.5px solid rgba(255,255,255,0.1);
+            background: var(--color-surface);
+            border: 0.5px solid var(--color-border);
             font-family: Vazirmatn, system-ui, sans-serif;
             font-size: 14px;
-            color: #e8e4d9;
+            color: var(--color-fg);
           "
         >
           <span class="flex-shrink-0 text-base leading-none">{{ icon(toast.type) }}</span>
@@ -46,9 +46,9 @@ function icon(type: ToastType): string {
 }
 
 function borderClass(type: ToastType): string {
-  if (type === 'error') return 'border-r-[4px] border-r-[#e07070]'
-  if (type === 'success') return 'border-r-[4px] border-r-[#6fcf8a]'
-  return 'border-r-[4px] border-r-[#c9b07a]'
+  if (type === 'error') return 'border-r-[4px] border-r-danger'
+  if (type === 'success') return 'border-r-[4px] border-r-success'
+  return 'border-r-[4px] border-r-gold'
 }
 </script>
 

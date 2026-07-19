@@ -1,10 +1,10 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl md:text-3xl font-bold text-[#e8e4d9]">مدیریت کاربران</h1>
+      <h1 class="text-2xl md:text-3xl font-bold text-fg">مدیریت کاربران</h1>
       <button
         @click="showCreateModal = true"
-        class="px-4 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-medium transition"
+        class="px-4 py-2 bg-gold hover:opacity-80 text-[#0d0d0f] text-sm rounded font-medium transition"
       >
         کاربر جدید
       </button>
@@ -15,26 +15,26 @@
         v-model="searchQuery"
         type="text"
         placeholder="جستجوی کاربر..."
-        class="w-full md:w-1/2 bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+        class="w-full md:w-1/2 bg-surface border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
       />
     </div>
 
-    <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-[rgba(111,207,138,0.1)] border-[rgba(111,207,138,0.2)] text-[#6fcf8a]' : 'bg-[rgba(224,112,112,0.1)] border-[rgba(224,112,112,0.2)] text-[#e07070]'">
+    <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-success/20 border-success text-success' : 'bg-danger/20 border-danger text-danger'">
       {{ notification.message }}
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
-      <div class="w-10 h-10 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+      <div class="w-10 h-10 border-2 border-gold border-t-transparent rounded-full animate-spin" />
     </div>
 
-    <div v-else-if="users.length === 0" class="text-center py-20 text-[rgba(232,228,217,0.4)] text-lg">
+    <div v-else-if="users.length === 0" class="text-center py-20 text-muted text-lg">
       هیچ کاربری یافت نشد.
     </div>
 
     <div v-else class="overflow-x-auto">
       <table class="w-full text-sm border-collapse">
         <thead>
-          <tr class="border-b border-[rgba(255,255,255,0.07)] bg-[#1a1a1e] text-[rgba(232,228,217,0.5)]">
+          <tr class="border-b border-border bg-surface-hover text-muted">
             <th class="px-4 py-3 text-right">نام نمایشی</th>
             <th class="px-4 py-3 text-right">نام کاربری</th>
             <th class="px-4 py-3 text-right">موبایل</th>
@@ -48,27 +48,27 @@
           <tr
             v-for="user in users"
             :key="user.id"
-            class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[#1a1a1e] transition text-[#e8e4d9]"
+            class="border-b border-border hover:bg-surface-hover transition text-fg"
           >
             <td class="px-4 py-3 font-medium">{{ user.displayName || '—' }}</td>
             <td class="px-4 py-3">{{ user.username }}</td>
-            <td class="px-4 py-3 text-[rgba(232,228,217,0.4)]">{{ user.mobile || '—' }}</td>
+            <td class="px-4 py-3 text-muted">{{ user.mobile || '—' }}</td>
             <td class="px-4 py-3">
               <span class="inline-block px-2 py-0.5 rounded text-xs font-medium" :class="roleBadgeClass(user.role)">
                 {{ roleLabel(user.role) }}
               </span>
             </td>
             <td class="px-4 py-3">
-              <span class="inline-block px-2 py-0.5 rounded text-xs font-medium" :class="user.isActive ? 'bg-[rgba(111,207,138,0.15)] text-[#6fcf8a]' : 'bg-[rgba(224,112,112,0.15)] text-[#e07070]'">
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-medium" :class="user.isActive ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger'">
                 {{ user.isActive ? 'فعال' : 'غیرفعال' }}
               </span>
             </td>
-            <td class="px-4 py-3 text-[rgba(232,228,217,0.4)] whitespace-nowrap">{{ user.lastLogin ? formatDate(user.lastLogin) : '—' }}</td>
+            <td class="px-4 py-3 text-muted whitespace-nowrap">{{ user.lastLogin ? formatDate(user.lastLogin) : '—' }}</td>
             <td class="px-4 py-3">
               <div class="flex items-center gap-2">
                 <router-link
                   :to="`/admin/users/${user.id}/edit`"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#c9b07a] text-[#0d0d0f] hover:bg-[#b8a16e] transition"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-gold text-[#0d0d0f] hover:opacity-80 transition"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
@@ -76,7 +76,7 @@
                   ویرایش
                 </router-link>
                 <button
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#e07070] text-[#0d0d0f] hover:bg-[#d06060] transition"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-danger text-[#0d0d0f] hover:opacity-80 transition"
                   @click="confirmDelete(user)"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -91,20 +91,20 @@
       </table>
 
       <div class="flex items-center justify-between gap-4 mt-6 text-sm">
-        <span class="text-[rgba(232,228,217,0.4)]">
+        <span class="text-muted">
           صفحه {{ page }} از {{ totalPages }}
         </span>
         <div class="flex gap-2">
           <button
             :disabled="page <= 1"
-            class="px-4 py-2 rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
+            class="px-4 py-2 rounded border border-border text-muted disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-hover transition"
             @click="page = Math.max(1, page - 1)"
           >
             قبلی
           </button>
           <button
             :disabled="page >= totalPages"
-            class="px-4 py-2 rounded border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1a1a1e] transition"
+            class="px-4 py-2 rounded border border-border text-muted disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-hover transition"
             @click="page = Math.min(totalPages, page + 1)"
           >
             بعدی
@@ -117,34 +117,34 @@
     <Teleport to="body">
       <div v-if="showCreateModal" dir="rtl" class="fixed inset-0 z-50 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/60" @click="showCreateModal = false" />
-        <div class="relative bg-[#141416] rounded-[10px] w-full max-w-md mx-4 p-6 shadow-xl border border-[rgba(255,255,255,0.07)] max-h-[90vh] overflow-y-auto">
-          <h3 class="text-lg font-bold text-[#e8e4d9] mb-4">ایجاد کاربر جدید</h3>
+        <div class="relative bg-surface rounded-[10px] w-full max-w-md mx-4 p-6 shadow-xl border border-border max-h-[90vh] overflow-y-auto">
+          <h3 class="text-lg font-bold text-fg mb-4">ایجاد کاربر جدید</h3>
 
-          <div v-if="createError" class="mb-4 px-4 py-2 rounded text-sm bg-[rgba(224,112,112,0.1)] border border-[rgba(224,112,112,0.2)] text-[#e07070]">
+          <div v-if="createError" class="mb-4 px-4 py-2 rounded text-sm bg-danger/10 border border-danger/20 text-danger">
             {{ createError }}
           </div>
 
           <div class="space-y-4">
             <div class="flex flex-col gap-1">
-              <label class="text-sm text-[rgba(232,228,217,0.4)]">نام کاربری <span class="text-[#e07070]">*</span></label>
-              <input v-model="createForm.username" type="text" dir="ltr" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" />
+              <label class="text-sm text-muted">نام کاربری <span class="text-danger">*</span></label>
+              <input v-model="createForm.username" type="text" dir="ltr" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition" />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm text-[rgba(232,228,217,0.4)]">رمز عبور <span class="text-[#e07070]">*</span></label>
-              <input v-model="createForm.password" type="password" dir="ltr" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" />
-              <div v-if="createTouched && createForm.password && createForm.password.length < 6" class="text-xs text-[#e07070] mt-1">حداقل ۶ کاراکتر</div>
+              <label class="text-sm text-muted">رمز عبور <span class="text-danger">*</span></label>
+              <input v-model="createForm.password" type="password" dir="ltr" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition" />
+              <div v-if="createTouched && createForm.password && createForm.password.length < 6" class="text-xs text-danger mt-1">حداقل ۶ کاراکتر</div>
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm text-[rgba(232,228,217,0.4)]">نام نمایشی</label>
-              <input v-model="createForm.displayName" type="text" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" />
+              <label class="text-sm text-muted">نام نمایشی</label>
+              <input v-model="createForm.displayName" type="text" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition" />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm text-[rgba(232,228,217,0.4)]">موبایل</label>
-              <input v-model="createForm.mobile" type="text" dir="ltr" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" />
+              <label class="text-sm text-muted">موبایل</label>
+              <input v-model="createForm.mobile" type="text" dir="ltr" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition" />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-sm text-[rgba(232,228,217,0.4)]">نقش</label>
-              <select v-model="createForm.role" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition">
+              <label class="text-sm text-muted">نقش</label>
+              <select v-model="createForm.role" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-gold transition">
                 <option value="user">بازیکن</option>
                 <option value="admin">ادمین</option>
                 <option value="master">گرداننده</option>
@@ -157,14 +157,14 @@
             <button
               @click="submitCreate"
               :disabled="creating"
-              class="flex-1 py-2.5 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] rounded font-medium transition inline-flex items-center justify-center gap-2"
+              class="flex-1 py-2.5 bg-gold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] rounded font-medium transition inline-flex items-center justify-center gap-2"
             >
               <div v-if="creating" class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
               ایجاد کاربر
             </button>
             <button
               @click="showCreateModal = false"
-              class="flex-1 py-2.5 bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.08)] text-[rgba(232,228,217,0.4)] rounded font-medium transition"
+              class="flex-1 py-2.5 bg-surface-hover hover:bg-surface text-muted rounded font-medium transition"
             >
               انصراف
             </button>
@@ -218,12 +218,12 @@ let debounceTimer: ReturnType<typeof setTimeout>
 
 const roleBadgeClass = (role: string): string => {
   const map: Record<string, string> = {
-    admin: 'bg-[rgba(224,112,112,0.15)] text-[#e07070]',
-    user: 'bg-[rgba(112,168,224,0.15)] text-[#70a8e0]',
-    master: 'bg-[rgba(201,176,122,0.15)] text-[#c9b07a]',
-    cafe_owner: 'bg-[rgba(111,207,138,0.15)] text-[#6fcf8a]',
+    admin: 'bg-danger/15 text-danger',
+    user: 'bg-gold/15 text-gold-text',
+    master: 'bg-gold/15 text-gold-text',
+    cafe_owner: 'bg-success/15 text-success',
   }
-  return map[role] || 'bg-[rgba(232,228,217,0.1)] text-[rgba(232,228,217,0.5)]'
+  return map[role] || 'bg-border text-muted'
 }
 
 const roleLabel = (role: string): string => {

@@ -9,7 +9,7 @@
     <div v-show="open" class="dropdown-menu" @click.stop>
       <router-link to="/account/profile" class="dropdown-link" @click="open = false">پروفایل</router-link>
       <router-link to="/account/password" class="dropdown-link" @click="open = false">تغییر رمز عبور</router-link>
-      <div class="border-t border-[rgba(255,255,255,0.07)] my-1" />
+      <div class="border-t border-border my-1" />
       <button @click="handleLogout" class="dropdown-link w-full text-right" style="color:#e07070;">خروج</button>
     </div>
   </div>
@@ -58,13 +58,13 @@ onUnmounted(() => {
   border: 0.5px solid var(--color-border);
   border-radius: 6px;
   background: transparent;
-  color: rgba(232,228,217,0.7);
+  color: var(--color-muted);
   cursor: pointer;
   font-family: inherit;
   transition: color 0.15s;
 }
 .btn-ghost:hover {
-  color: var(--color-text);
+  color: var(--color-fg);
 }
 .dropdown-menu {
   position: absolute;
@@ -73,7 +73,7 @@ onUnmounted(() => {
   top: 100%;
   margin-top: 4px;
   min-width: 180px;
-  background: var(--color-card);
+  background: var(--color-surface);
   border: 0.5px solid var(--color-border);
   border-radius: 8px;
   padding: 4px 0;
@@ -84,7 +84,7 @@ onUnmounted(() => {
   display: block;
   padding: 7px 16px;
   font-size: 13px;
-  color: rgba(232,228,217,0.5);
+  color: var(--color-muted);
   text-decoration: none;
   transition: all 0.12s;
   background: none;
@@ -93,7 +93,7 @@ onUnmounted(() => {
   font-family: inherit;
 }
 .dropdown-link:hover {
-  color: #c9b07a;
-  background: rgba(255,255,255,0.03);
+  color: var(--color-gold);
+  background: var(--color-surface-hover);
 }
 </style>

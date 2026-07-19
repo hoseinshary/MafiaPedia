@@ -174,6 +174,7 @@ export interface PlayDto {
   guestCount: number
   desc: string | null
   link: string | null
+  picture: string | null
   senarioId: number
   senarioName: string
   winnersideId: number
@@ -345,6 +346,7 @@ export interface PlayListDto {
   dateTime: string
   playersCount: number
   link: string | null
+  picture: string | null
   senarioName: string
   masterName: string
   winnersideName: string

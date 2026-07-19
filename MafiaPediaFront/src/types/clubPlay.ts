@@ -1,6 +1,7 @@
 export interface ReplaceParticipantDto {
   newClubPlayerId: number
   isGuest: boolean
+  entryCount?: number
 }
 
 export interface MasterContextDto {
@@ -13,6 +14,7 @@ export interface MasterContextDto {
 export interface ParticipantInputDto {
   clubPlayerId: number
   isGuest: boolean
+  entryCount?: number
 }
 
 export interface CreateClubPlayDto {
@@ -25,12 +27,14 @@ export interface CreateClubPlayDto {
   link?: string
   playType: 'normal' | 'rank' | 'superrank' | 'etc'
   eventId?: number | null
+  nerkhId?: number | null
   shuffleRoles?: boolean
   masterId?: number
   participants: ParticipantInputDto[]
 }
 
 export interface ClubPlayParticipantDto {
+  id: number
   clubPlayerId: number
   name: string
   roleId: number
@@ -38,6 +42,7 @@ export interface ClubPlayParticipantDto {
   sideId: number
   rolePhoto: string | null
   isGuest: boolean
+  entryCount: number
 }
 
 export interface ClubPlayDetailDto {
@@ -59,6 +64,8 @@ export interface ClubPlayDetailDto {
   winnersideId: number | null
   eventId: number
   eventName: string
+  nerkhId: number | null
+  nerkhName: string | null
   participants: ClubPlayParticipantDto[]
 }
 
@@ -74,6 +81,12 @@ export interface ClubPlayListItemDto {
   status: string
   playType: string
   masterName?: string | null
+}
+
+export interface ClubPlayDeletedListItemDto extends ClubPlayListItemDto {
+  deletedAt: string | null
+  deletedByUserId: number | null
+  deletedByDisplayName: string | null
 }
 
 export interface MasterStatsDto {

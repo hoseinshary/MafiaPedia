@@ -243,6 +243,46 @@ public class ClubPlayController : ClubControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
     }
 
+    // ── Deletion ──
+
+    [HttpDelete("{playId:int}")]
+    [Authorize(Policy = "ClubOnly")]
+    public async Task<IActionResult> DeleteClubPlay(int clubId, int playId)
+    {
+        var forbid = await VerifyClubAccess(clubId, "master", "owner", "supervisor");
+        if (forbid is not null) return forbid;
+
+        var (restrictToMasterId, err) = await ResolveOwnershipRestrictionAsync(clubId);
+        if (err is not null) return err;
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var isAdmin = User.IsInRole("admin");
+
+        try
+        {
+            var deleted = await _clubPlayService.DeleteClubPlayAsync(clubId, playId, userId, isAdmin, restrictToMasterId);
+            if (!deleted)
+                return NotFound(new { message = "بازی یافت نشد" });
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("deleted")]
+    [Authorize(Policy = "AdminOrClub")]
+    public async Task<IActionResult> GetDeletedPlays(int clubId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        var forbid = await VerifyClubAccess(clubId, "owner");
+        if (forbid is not null) return forbid;
+
+        var (items, total) = await _clubPlayService.GetDeletedPlaysAsync(clubId, page, pageSize);
+        return Ok(new { items, total, page, pageSize });
+    }
+
     [HttpGet("my-stats")]
     [Authorize(Policy = "ClubOnly")]
     public async Task<IActionResult> GetMyStats(int clubId, [FromQuery] string period = "week")
@@ -270,9 +310,11 @@ public class ClubPlayController : ClubControllerBase
         var (restrictToMasterId, err) = await ResolveOwnershipRestrictionAsync(clubId);
         if (err is not null) return err;
 
+        var actingClubRole = await ResolveActingClubRoleAsync(clubId);
+
         try
         {
-            var result = await _clubPlayService.UpdateClubPlayAsync(clubId, playId, restrictToMasterId, dto);
+            var result = await _clubPlayService.UpdateClubPlayAsync(clubId, playId, restrictToMasterId, actingClubRole, dto);
             if (result is null) return NotFound(new { message = "بازی یافت نشد" });
             return Ok(result);
         }
@@ -286,16 +328,16 @@ public class ClubPlayController : ClubControllerBase
         }
     }
 
-    [HttpPut("{playId:int}/participants/{clubPlayerId:int}")]
+    [HttpPut("{playId:int}/participants/{participantRowId:int}")]
     [Authorize(Policy = "ClubOnly")]
-    public async Task<IActionResult> ReplaceParticipant(int clubId, int playId, int clubPlayerId, [FromBody] ReplaceParticipantDto dto)
+    public async Task<IActionResult> ReplaceParticipant(int clubId, int playId, int participantRowId, [FromBody] ReplaceParticipantDto dto)
     {
         var (restrictToMasterId, err) = await ResolveOwnershipRestrictionAsync(clubId);
         if (err is not null) return err;
 
         try
         {
-            var result = await _clubPlayService.ReplaceParticipantAsync(clubId, playId, restrictToMasterId, clubPlayerId, dto);
+            var result = await _clubPlayService.ReplaceParticipantAsync(clubId, playId, restrictToMasterId, participantRowId, dto);
             return Ok(result);
         }
         catch (KeyNotFoundException ex)
@@ -348,6 +390,13 @@ public class ClubPlayController : ClubControllerBase
         var (ctx, err) = await ResolveMasterAsync(clubId);
         if (err is not null) return (null, err);
         return (ctx!.MasterId, null);
+    }
+
+    private async Task<string?> ResolveActingClubRoleAsync(int clubId)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var clubUser = await ClubUserService.GetClubUserAsync(userId, clubId);
+        return clubUser?.ClubuserRole;
     }
 
     private async Task<bool> IsPrivilegedClubStaffAsync(int clubId)

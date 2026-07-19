@@ -1,57 +1,37 @@
 <template>
-  <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 space-y-5">
+  <div class="bg-surface border border-border rounded-xl p-6 space-y-5">
     <div v-if="mode === 'edit' && initialStatusProgressed" class="bg-[rgba(255,165,0,0.08)] border border-[rgba(255,165,0,0.2)] rounded-lg px-4 py-3 text-sm text-[#ffa500]">
       تغییر سناریو یا شرکت‌کنندگان باعث باز پخش نقش فعلی بازی می‌شود
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div v-if="masters && masters.length > 0 && !masterCtx">
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">گرداننده <span class="text-[#e07070]">*</span></label>
-        <select v-model="selectedMasterId" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" @change="onMasterChange">
+        <label class="text-sm text-muted">گرداننده <span class="text-danger">*</span></label>
+        <select v-model="selectedMasterId" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg focus:outline-none focus:border-gold transition" @change="onMasterChange">
           <option :value="null" disabled>انتخاب گرداننده</option>
           <option v-for="m in masters" :key="m.id" :value="m.id">{{ m.name }}</option>
         </select>
       </div>
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">عنوان</label>
-        <input v-model="form.title" type="text" placeholder="اختیاری" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" @input="onTitleInput" />
-      </div>
-      <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">فصل / Event</label>
-        <div v-if="events.length === 0 && !eventsLoading">
-          <p class="text-xs text-[#e07070]">این کافه هنوز فصل پیش‌فرض ندارد</p>
-        </div>
-        <select v-else v-model="form.eventId" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition">
-          <option value="" disabled>انتخاب فصل</option>
-          <option v-for="ev in events" :key="ev.id" :value="ev.id">
-            {{ ev.name }} <span v-if="ev.isDefault" class="text-[#c9b07a]">(پیش‌فرض)</span>
-          </option>
-        </select>
-      </div>
-      <div>
-        <label for="dtpicker-cf" class="text-sm text-[rgba(232,228,217,0.4)]">تاریخ و ساعت <span class="text-[#e07070]">*</span></label>
-        <input id="dtpicker-cf" v-model="form.dateTime" type="datetime-local" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" @change="onDateTimeChange" @click="($event.target as HTMLInputElement).showPicker?.()" />
-      </div>
-      <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">سالن <span class="text-[#e07070]">*</span></label>
-        <select v-model="form.roomId" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition">
+        <label class="text-sm text-muted">سالن <span class="text-danger">*</span></label>
+        <select v-model="form.roomId" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg focus:outline-none focus:border-gold transition">
           <option value="" disabled>انتخاب سالن</option>
           <option v-for="room in rooms" :key="room.id" :value="room.id">{{ room.name }}</option>
         </select>
       </div>
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">سناریو <span class="text-[#e07070]">*</span></label>
-        <select v-model="form.senarioId" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition">
+        <label class="text-sm text-muted">سناریو <span class="text-danger">*</span></label>
+        <select v-model="form.senarioId" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg focus:outline-none focus:border-gold transition">
           <option value="" disabled>انتخاب سناریو</option>
           <option v-for="s in scenarios" :key="s.id" :value="s.id">{{ s.name }}</option>
         </select>
       </div>
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">تعداد بازیکن <span class="text-[#e07070]">*</span></label>
-        <input v-model.number="form.playersCount" type="number" min="2" max="30" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition ltr" />
+        <label class="text-sm text-muted">تعداد بازیکن <span class="text-danger">*</span></label>
+        <input v-model.number="form.playersCount" type="number" min="2" max="30" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg focus:outline-none focus:border-gold transition ltr" />
       </div>
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">نوع بازی <span class="text-[#e07070]">*</span></label>
-        <select v-model="form.playType" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition">
+        <label class="text-sm text-muted">نوع بازی <span class="text-danger">*</span></label>
+        <select v-model="form.playType" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg focus:outline-none focus:border-gold transition">
           <option value="normal">Normal</option>
           <option value="rank">Rank</option>
           <option value="superrank">Super Rank</option>
@@ -59,30 +39,77 @@
         </select>
       </div>
       <div>
-        <label class="text-sm text-[rgba(232,228,217,0.4)]">لینک یوتیوب</label>
-        <input v-model="form.link" type="text" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" placeholder="اختیاری" />
+        <label class="text-sm text-muted">نرخ</label>
+        <select v-model="form.nerkhId" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg focus:outline-none focus:border-gold transition">
+          <option value="">پیش‌فرض کافه</option>
+          <option v-for="n in nerkhs" :key="n.id" :value="n.id">{{ n.name }} ({{ n.price.toLocaleString() }})</option>
+        </select>
       </div>
     </div>
 
-    <div>
-      <label class="text-sm text-[rgba(232,228,217,0.4)]">توضیحات</label>
-      <textarea v-model="form.desc" rows="2" class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition resize-none" placeholder="اختیاری"></textarea>
+    <button
+      type="button"
+      @click="showDetails = !showDetails"
+      class="flex items-center gap-1.5 text-sm text-gold-text hover:opacity-80 transition"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-4 h-4 transition-transform"
+        :style="{ transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)' }"
+        viewBox="0 0 20 20" fill="currentColor"
+      >
+        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
+      {{ showDetails ? 'پنهان کردن جزئیات' : 'جزئیات بیشتر (عنوان، فصل، تاریخ، لینک، توضیحات)' }}
+    </button>
+
+    <div v-if="showDetails" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-muted">عنوان</label>
+          <input v-model="form.title" type="text" placeholder="اختیاری" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition" @input="onTitleInput" />
+        </div>
+        <div>
+          <label class="text-sm text-muted">فصل / Event</label>
+          <div v-if="events.length === 0 && !eventsLoading">
+            <p class="text-xs text-danger">این کافه هنوز فصل پیش‌فرض ندارد</p>
+          </div>
+          <select v-else v-model="form.eventId" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg focus:outline-none focus:border-gold transition">
+            <option value="" disabled>انتخاب فصل</option>
+            <option v-for="ev in events" :key="ev.id" :value="ev.id">
+              {{ ev.name }} <span v-if="ev.isDefault" class="text-gold-text">(پیش‌فرض)</span>
+            </option>
+          </select>
+        </div>
+        <div>
+          <label for="dtpicker-cf" class="text-sm text-muted">تاریخ و ساعت <span class="text-danger">*</span></label>
+          <input id="dtpicker-cf" v-model="form.dateTime" type="datetime-local" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg focus:outline-none focus:border-gold transition" @change="onDateTimeChange" @click="($event.target as HTMLInputElement).showPicker?.()" />
+        </div>
+        <div>
+          <label class="text-sm text-muted">لینک یوتیوب</label>
+          <input v-model="form.link" type="text" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition" placeholder="اختیاری" />
+        </div>
+      </div>
+      <div>
+        <label class="text-sm text-muted">توضیحات</label>
+        <textarea v-model="form.desc" rows="2" class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition resize-none" placeholder="اختیاری"></textarea>
+      </div>
     </div>
 
     <div class="flex items-start gap-3">
-      <input id="shuffleToggle-cf" type="checkbox" v-model="form.shuffleRoles" class="mt-1 w-4 h-4 accent-[#c9b07a]" />
+      <input id="shuffleToggle-cf" type="checkbox" v-model="form.shuffleRoles" class="mt-1 w-4 h-4 accent-gold" />
       <div>
-        <label for="shuffleToggle-cf" class="text-sm text-[#e8e4d9] cursor-pointer">پخش تصادفی نقش‌ها</label>
-        <p class="text-xs text-[rgba(232,228,217,0.3)] mt-0.5">در حالت غیرفعال، نقش‌ها به همان ترتیبی که بازیکنان را اضافه کردید داده می‌شوند (فقط برای تست).</p>
+        <label for="shuffleToggle-cf" class="text-sm text-fg cursor-pointer">پخش تصادفی نقش‌ها</label>
+        <p class="text-xs text-muted mt-0.5">در حالت غیرفعال، نقش‌ها به همان ترتیبی که بازیکنان را اضافه کردید داده می‌شوند (فقط برای تست).</p>
       </div>
     </div>
 
     <div>
-      <label class="text-sm text-[rgba(232,228,217,0.4)] mb-2 block">
-        شرکت‌کنندگان <span class="text-[#e07070]">*</span>
-        <span class="text-xs mr-2" :class="participantCount === form.playersCount ? 'text-[#4ade80]' : 'text-[rgba(232,228,217,0.3)]'">
-          {{ participantCount }} از {{ form.playersCount }} انتخاب شده
-          <span v-if="guestCount > 0" class="text-[rgba(232,228,217,0.4)]">({{ guestCount }} نفر مهمان)</span>
+      <label class="text-sm text-muted mb-2 block">
+        شرکت‌کنندگان <span class="text-danger">*</span>
+        <span class="text-xs mr-2" :class="participantCount === form.playersCount ? 'text-success' : 'text-muted'">
+          {{ participantCount }} از {{ form.playersCount }} ورودی انتخاب شده
+          <span v-if="guestCount > 0" class="text-muted">({{ guestCount }} نفر مهمان)</span>
         </span>
       </label>
       <ParticipantPicker
@@ -90,15 +117,16 @@
         :initialSelected="initialParticipants"
         :allowInPlaceReplace="mode === 'edit'"
         :playId="playIdForReplace"
+        :playType="form.playType"
         @change="onParticipantsChange"
       />
     </div>
 
-    <p v-if="error" class="text-sm text-[#e07070]">{{ error }}</p>
+    <p v-if="error" class="text-sm text-danger">{{ error }}</p>
 
-    <div class="flex gap-3 justify-end pt-4 border-t border-[rgba(255,255,255,0.07)]">
-      <button type="button" @click="$emit('cancel')" class="px-4 py-2 border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] text-sm rounded font-medium transition">انصراف</button>
-      <button type="button" @click="handleSubmit" :disabled="!canSubmit || submitting || events.length === 0" class="px-6 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-bold transition inline-flex items-center gap-2">
+    <div class="flex gap-3 justify-end pt-4 border-t border-border">
+      <button type="button" @click="$emit('cancel')" class="px-4 py-2 border border-border text-muted hover:text-fg text-sm rounded font-medium transition">انصراف</button>
+      <button type="button" @click="handleSubmit" :disabled="!canSubmit || submitting || events.length === 0" class="px-6 py-2 bg-gold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-bold transition inline-flex items-center gap-2">
         <div v-if="submitting" class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
         {{ mode === 'edit' ? 'ویرایش بازی' : 'ثبت و پخش نقش' }}
       </button>
@@ -108,12 +136,15 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { ClubPlayApi } from '@/api'
+import { ClubPlayApi, FinanceApi } from '@/api'
 import { toPersianOrdinal } from '@/utils/persianOrdinal'
+import { useToast } from '@/composables/useToast'
 import type { MasterContextDto, ClubPlayDetailDto, EventDto, CreateClubPlayDto } from '@/types/clubPlay'
 import type { RoomDto, MasterDto } from '@/types/club'
 import type { Senario } from '@/types'
 import ParticipantPicker, { type PickerParticipant } from '@/components/master/ParticipantPicker.vue'
+
+const { toastWarning } = useToast()
 
 const props = defineProps<{
   mode: 'create' | 'edit'
@@ -132,6 +163,8 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
+const nerkhs = ref<{ id: number; name: string; price: number; isDefault: boolean }[]>([])
+const showDetails = ref(props.mode === 'edit')
 const selectedMasterId = ref<number | null>(null)
 const participants = ref<PickerParticipant[]>([])
 const error = ref('')
@@ -141,8 +174,10 @@ let titleDebounce: ReturnType<typeof setTimeout>
 
 function mapParticipants(p: ClubPlayDetailDto['participants'][number]): PickerParticipant {
   return {
+    id: p.id,
     player: { id: p.clubPlayerId, name: p.name, mobile: '', picture: null } as any,
     isGuest: p.isGuest,
+    entryCount: p.entryCount ?? 1,
   }
 }
 
@@ -163,6 +198,7 @@ const form = reactive({
   link: props.initial?.link || '',
   desc: props.initial?.desc || '',
   eventId: props.initial?.eventId || ('' as number | ''),
+  nerkhId: props.initial?.nerkhId || ('' as number | ''),
   shuffleRoles: true,
 })
 
@@ -183,12 +219,26 @@ watch(
   { immediate: true }
 )
 
+watch(() => form.playType, (newType, oldType) => {
+  if (oldType && oldType !== newType && newType !== 'normal') {
+    const hasEntryCountAbove1 = participants.value.some(p => p.entryCount > 1)
+    if (hasEntryCountAbove1) {
+      participants.value.forEach(p => { p.entryCount = 1 })
+      toastWarning('چون نوع بازی از normal تغییر کرد، تعداد ورودی‌ها به ۱ بازنشانی شد')
+    }
+  }
+})
+
 const initialStatusProgressed = computed(() =>
   props.mode === 'edit' && props.initial != null && props.initial.status !== 'pending'
 )
 const playIdForReplace = computed(() => props.mode === 'edit' ? props.initial?.id : undefined)
-const participantCount = computed(() => participants.value.length)
-const guestCount = computed(() => participants.value.filter(p => p.isGuest).length)
+const participantCount = computed(() =>
+  participants.value.reduce((sum, p) => sum + (p.entryCount || 1), 0)
+)
+const guestCount = computed(() =>
+  participants.value.filter(p => p.isGuest).reduce((sum, p) => sum + (p.entryCount || 1), 0)
+)
 
 const canSubmit = computed(() => {
   const masterOk = props.masterCtx || selectedMasterId.value !== null
@@ -261,8 +311,9 @@ function handleSubmit() {
     playersCount: form.playersCount,
     playType: form.playType as any,
     eventId: form.eventId || undefined,
+    nerkhId: form.nerkhId || null,
     ...(props.mode === 'create' ? { shuffleRoles: form.shuffleRoles } : {}),
-    participants: participants.value.map(p => ({ clubPlayerId: p.player.id, isGuest: p.isGuest })),
+    participants: participants.value.map(p => ({ clubPlayerId: p.player.id, isGuest: p.isGuest, entryCount: p.entryCount })),
     desc: form.desc || undefined,
     link: form.link || undefined,
   }
@@ -276,7 +327,21 @@ onMounted(() => {
   if (props.mode === 'create' && form.dateTime) {
     fetchPlayCount()
   }
+  loadNerkhs()
 })
+
+async function loadNerkhs() {
+  const cid = effectiveClubId.value
+  if (!cid) return
+  try {
+    const res = await FinanceApi.getNerkhs(cid)
+    nerkhs.value = res.data
+    if (!form.nerkhId && props.mode === 'create') {
+      const def = res.data.find(n => n.isDefault)
+      if (def) form.nerkhId = def.id
+    }
+  } catch { /* ignore */ }
+}
 </script>
 
 <style scoped>

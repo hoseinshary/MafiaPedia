@@ -8,69 +8,69 @@
       >
         <div
           class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition"
-          :class="s === currentStep ? 'bg-[#c9b07a] text-[#0d0d0f]' : s < currentStep ? 'bg-[rgba(111,207,138,0.3)] text-[#6fcf8a]' : 'bg-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.3)]'"
+          :class="s === currentStep ? 'bg-gold text-[#0d0d0f]' : s < currentStep ? 'bg-success/30 text-success' : 'bg-border text-muted'"
         >
           {{ s < currentStep ? '✓' : s }}
         </div>
-        <span v-if="s < 4" class="w-8 h-px" :class="s < currentStep ? 'bg-[#6fcf8a]' : 'bg-[rgba(255,255,255,0.07)]'" />
+        <span v-if="s < 4" class="w-8 h-px" :class="s < currentStep ? 'bg-success' : 'bg-border'" />
       </div>
     </div>
 
-    <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-[rgba(111,207,138,0.1)] border-[rgba(111,207,138,0.2)] text-[#6fcf8a]' : 'bg-[rgba(224,112,112,0.1)] border-[rgba(224,112,112,0.2)] text-[#e07070]'">
+    <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-success/20 border-success text-success' : 'bg-danger/20 border-danger text-danger'">
       {{ notification.message }}
     </div>
 
     <!-- Step 1: Club Info -->
     <div v-if="currentStep === 1" class="max-w-md mx-auto">
-      <h2 class="text-xl font-bold text-[#e8e4d9] mb-6">اطلاعات کافه</h2>
+      <h2 class="text-xl font-bold text-fg mb-6">اطلاعات کافه</h2>
       <div class="flex flex-col gap-3 mb-6">
         <div>
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">نام کافه <span class="text-[#e07070]">*</span></label>
+          <label class="text-sm text-muted">نام کافه <span class="text-danger">*</span></label>
           <input
             v-model="clubName"
             type="text"
-            class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+            class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
           />
         </div>
         <div>
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">شهر</label>
+          <label class="text-sm text-muted">شهر</label>
           <input
             v-model="clubCity"
             type="text"
-            class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+            class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
           />
         </div>
         <div>
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">آدرس</label>
+          <label class="text-sm text-muted">آدرس</label>
           <input
             v-model="clubAddress"
             type="text"
-            class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+            class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
           />
         </div>
         <div>
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">تلفن</label>
+          <label class="text-sm text-muted">تلفن</label>
           <input
             v-model="clubPhone"
             type="text"
-            class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+            class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
           />
         </div>
         <div>
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">توضیحات</label>
+          <label class="text-sm text-muted">توضیحات</label>
           <textarea
             v-model="clubDescription"
             rows="3"
-            class="w-full bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition resize-none"
+            class="w-full bg-input border border-border rounded px-4 py-2.5 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition resize-none"
           />
         </div>
-        <p v-if="step1Error" class="text-xs text-[#e07070]">{{ step1Error }}</p>
+        <p v-if="step1Error" class="text-xs text-danger">{{ step1Error }}</p>
       </div>
       <div class="flex justify-end">
         <button
           @click="goStep2"
           :disabled="!clubName.trim() || creatingClub"
-          class="px-6 py-2.5 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition inline-flex items-center gap-2"
+          class="px-6 py-2.5 bg-gold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition inline-flex items-center gap-2"
         >
           <div v-if="creatingClub" class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
           بعدی
@@ -81,10 +81,10 @@
     <!-- Step 2: Rooms -->
     <div v-if="currentStep === 2">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-[#e8e4d9]">اتاق‌ها</h2>
+        <h2 class="text-xl font-bold text-fg">اتاق‌ها</h2>
         <button
           @click="openRoomModal(null)"
-          class="px-3 py-1.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-xs rounded font-medium transition"
+          class="px-3 py-1.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-xs rounded font-medium transition"
         >
           افزودن اتاق
         </button>
@@ -93,31 +93,31 @@
         <div
           v-for="r in rooms"
           :key="r.id"
-          class="flex items-center justify-between bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5"
+          class="flex items-center justify-between bg-surface-hover border border-border rounded px-4 py-2.5"
         >
           <div class="flex items-center gap-2">
-            <span class="text-sm text-[#e8e4d9]">{{ r.name }}</span>
-            <span v-if="!r.isActive" class="text-xs text-[#e07070]">(غیرفعال)</span>
+            <span class="text-sm text-fg">{{ r.name }}</span>
+            <span v-if="!r.isActive" class="text-xs text-danger">(غیرفعال)</span>
           </div>
           <div class="flex items-center gap-2">
-            <button @click="openRoomModal(r)" class="text-xs text-[rgba(232,228,217,0.4)] hover:text-[#c9b07a] transition">ویرایش</button>
-            <button @click="confirmDeleteRoom(r)" class="text-xs text-[#e07070] hover:underline">حذف</button>
+            <button @click="openRoomModal(r)" class="text-xs text-muted hover:text-gold-text transition">ویرایش</button>
+            <button @click="confirmDeleteRoom(r)" class="text-xs text-danger hover:underline">حذف</button>
           </div>
         </div>
       </div>
-      <div v-else class="text-center py-6 text-sm text-[rgba(232,228,217,0.3)] mb-6">
+      <div v-else class="text-center py-6 text-sm text-muted mb-6">
         هنوز اتاقی اضافه نشده (می‌توانید بعداً اضافه کنید)
       </div>
       <div class="flex justify-between gap-4">
         <button
           @click="currentStep = 1"
-          class="px-6 py-2.5 border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] text-sm rounded font-medium transition"
+          class="px-6 py-2.5 border border-border text-muted hover:text-fg text-sm rounded font-medium transition"
         >
           قبلی
         </button>
         <button
           @click="currentStep = 3"
-          class="px-6 py-2.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-medium transition"
+          class="px-6 py-2.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-sm rounded font-medium transition"
         >
           بعدی
         </button>
@@ -127,10 +127,10 @@
     <!-- Step 3: Masters -->
     <div v-if="currentStep === 3">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-[#e8e4d9]">گردانندگان</h2>
+        <h2 class="text-xl font-bold text-fg">گردانندگان</h2>
         <button
           @click="openMasterModal(null)"
-          class="px-3 py-1.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-xs rounded font-medium transition"
+          class="px-3 py-1.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-xs rounded font-medium transition"
         >
           افزودن گرداننده
         </button>
@@ -139,32 +139,32 @@
         <div
           v-for="m in masters"
           :key="m.id"
-          class="flex items-center justify-between bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded px-4 py-2.5"
+          class="flex items-center justify-between bg-surface-hover border border-border rounded px-4 py-2.5"
         >
           <div class="flex items-center gap-3">
-            <span class="text-sm text-[#e8e4d9]">{{ m.name }}</span>
-            <span v-if="m.userDisplayName" class="text-xs text-[rgba(232,228,217,0.4)]">({{ m.userDisplayName }})</span>
+            <span class="text-sm text-fg">{{ m.name }}</span>
+            <span v-if="m.userDisplayName" class="text-xs text-muted">({{ m.userDisplayName }})</span>
           </div>
           <div class="flex items-center gap-2">
-            <button @click="openMasterModal(m)" class="text-xs text-[rgba(232,228,217,0.4)] hover:text-[#c9b07a] transition">ویرایش</button>
-            <button @click="confirmDeleteMaster(m)" class="text-xs text-[#e07070] hover:underline">حذف</button>
+            <button @click="openMasterModal(m)" class="text-xs text-muted hover:text-gold-text transition">ویرایش</button>
+            <button @click="confirmDeleteMaster(m)" class="text-xs text-danger hover:underline">حذف</button>
           </div>
         </div>
       </div>
-      <div v-else class="text-center py-6 text-sm text-[rgba(232,228,217,0.3)] mb-6">
+      <div v-else class="text-center py-6 text-sm text-muted mb-6">
         هنوز گرداننده‌ای اضافه نشده (می‌توانید بعداً اضافه کنید)
       </div>
 
       <div class="flex justify-between gap-4">
         <button
           @click="currentStep = 2"
-          class="px-6 py-2.5 border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] text-sm rounded font-medium transition"
+          class="px-6 py-2.5 border border-border text-muted hover:text-fg text-sm rounded font-medium transition"
         >
           قبلی
         </button>
         <button
           @click="currentStep = 4"
-          class="px-6 py-2.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-medium transition"
+          class="px-6 py-2.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-sm rounded font-medium transition"
         >
           بعدی
         </button>
@@ -173,29 +173,29 @@
 
     <!-- Step 4: Review -->
     <div v-if="currentStep === 4">
-      <h2 class="text-xl font-bold text-[#e8e4d9] mb-6">مرور اطلاعات</h2>
+      <h2 class="text-xl font-bold text-fg mb-6">مرور اطلاعات</h2>
       <div class="space-y-4">
-        <div class="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded p-4">
-          <p class="text-sm text-[rgba(232,228,217,0.4)] mb-1">نام کافه</p>
-          <p class="text-[#e8e4d9] font-medium">{{ clubName }}</p>
-          <p v-if="clubCity" class="text-xs text-[rgba(232,228,217,0.4)] mt-1">{{ clubCity }}</p>
-          <p v-if="clubAddress" class="text-xs text-[rgba(232,228,217,0.4)]">{{ clubAddress }}</p>
-          <p v-if="clubPhone" class="text-xs text-[rgba(232,228,217,0.4)]" dir="ltr">{{ clubPhone }}</p>
-          <p v-if="clubDescription" class="text-xs text-[rgba(232,228,217,0.4)] mt-1">{{ clubDescription }}</p>
+        <div class="bg-surface-hover border border-border rounded p-4">
+          <p class="text-sm text-muted mb-1">نام کافه</p>
+          <p class="text-fg font-medium">{{ clubName }}</p>
+          <p v-if="clubCity" class="text-xs text-muted mt-1">{{ clubCity }}</p>
+          <p v-if="clubAddress" class="text-xs text-muted">{{ clubAddress }}</p>
+          <p v-if="clubPhone" class="text-xs text-muted" dir="ltr">{{ clubPhone }}</p>
+          <p v-if="clubDescription" class="text-xs text-muted mt-1">{{ clubDescription }}</p>
         </div>
-        <div class="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded p-4">
-          <p class="text-sm text-[rgba(232,228,217,0.4)] mb-2">اتاق‌ها ({{ rooms.length }})</p>
-          <p v-if="rooms.length === 0" class="text-sm text-[rgba(232,228,217,0.3)]">هیچ اتاقی ثبت نشده</p>
+        <div class="bg-surface-hover border border-border rounded p-4">
+          <p class="text-sm text-muted mb-2">اتاق‌ها ({{ rooms.length }})</p>
+          <p v-if="rooms.length === 0" class="text-sm text-muted">هیچ اتاقی ثبت نشده</p>
           <ul v-else class="space-y-1">
-            <li v-for="r in rooms" :key="r.id" class="text-sm text-[#e8e4d9]">• {{ r.name }}</li>
+            <li v-for="r in rooms" :key="r.id" class="text-sm text-fg">• {{ r.name }}</li>
           </ul>
         </div>
-        <div class="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.07)] rounded p-4">
-          <p class="text-sm text-[rgba(232,228,217,0.4)] mb-2">گردانندگان ({{ masters.length }})</p>
-          <p v-if="masters.length === 0" class="text-sm text-[rgba(232,228,217,0.3)]">هیچ گرداننده‌ای ثبت نشده</p>
+        <div class="bg-surface-hover border border-border rounded p-4">
+          <p class="text-sm text-muted mb-2">گردانندگان ({{ masters.length }})</p>
+          <p v-if="masters.length === 0" class="text-sm text-muted">هیچ گرداننده‌ای ثبت نشده</p>
           <ul v-else class="space-y-1">
-            <li v-for="m in masters" :key="m.id" class="text-sm text-[#e8e4d9]">
-              • {{ m.name }}<span v-if="m.userDisplayName" class="text-[rgba(232,228,217,0.4)]"> ({{ m.userDisplayName }})</span>
+            <li v-for="m in masters" :key="m.id" class="text-sm text-fg">
+              • {{ m.name }}<span v-if="m.userDisplayName" class="text-muted"> ({{ m.userDisplayName }})</span>
             </li>
           </ul>
         </div>
@@ -203,13 +203,13 @@
       <div class="flex justify-between gap-4 mt-8">
         <button
           @click="currentStep = 3"
-          class="px-6 py-2.5 border border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] text-sm rounded font-medium transition"
+          class="px-6 py-2.5 border border-border text-muted hover:text-fg text-sm rounded font-medium transition"
         >
           قبلی
         </button>
         <button
           @click="finish"
-          class="px-6 py-2.5 bg-[#c9b07a] hover:bg-[#b8a16e] text-[#0d0d0f] text-sm rounded font-medium transition"
+          class="px-6 py-2.5 bg-gold hover:opacity-80 text-[#0d0d0f] text-sm rounded font-medium transition"
         >
           پایان
         </button>

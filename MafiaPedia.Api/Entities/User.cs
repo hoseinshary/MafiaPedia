@@ -33,9 +33,21 @@ public partial class User
 
     public DateTime? LastLoginAt { get; set; }
 
-    public virtual Clubplayer? Clubplayer { get; set; }
+    public virtual ICollection<ClubOrder> ClubOrderDeletedByUsers { get; set; } = new List<ClubOrder>();
 
-    public virtual ICollection<Clubplay> Clubplays { get; set; } = new List<Clubplay>();
+    public virtual ICollection<ClubOrderItem> ClubOrderItems { get; set; } = new List<ClubOrderItem>();
+
+    public virtual ICollection<ClubOrder> ClubOrderRegisteredByUsers { get; set; } = new List<ClubOrder>();
+
+    public virtual ICollection<ClubSettlement> ClubSettlementCreatedByUsers { get; set; } = new List<ClubSettlement>();
+
+    public virtual ICollection<ClubSettlement> ClubSettlementDeletedByUsers { get; set; } = new List<ClubSettlement>();
+
+    public virtual ICollection<Clubplay> ClubplayDeletedByUsers { get; set; } = new List<Clubplay>();
+
+    public virtual ICollection<Clubplay> ClubplayUsers { get; set; } = new List<Clubplay>();
+
+    public virtual Clubplayer? Clubplayer { get; set; }
 
     public virtual ICollection<Clubuser> Clubusers { get; set; } = new List<Clubuser>();
 
@@ -45,9 +57,15 @@ public partial class User
 
     public virtual Master? Master { get; set; }
 
+    public virtual ICollection<Nerkh> Nerkhs { get; set; } = new List<Nerkh>();
+
     public virtual Player? Player { get; set; }
 
     public virtual ICollection<Play> Plays { get; set; } = new List<Play>();
+
+    public virtual ICollection<ProductCategory> ProductCategories { get; set; } = new List<ProductCategory>();
+
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 

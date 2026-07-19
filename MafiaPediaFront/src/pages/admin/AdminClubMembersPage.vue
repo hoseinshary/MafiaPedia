@@ -1,10 +1,10 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto w-full">
     <div class="mb-6">
-      <router-link :to="`/admin/clubs/${clubId}`" class="text-xs text-[rgba(232,228,217,0.4)] hover:text-[#c9b07a] transition">
-        &larr; بازگشت به کافه
+      <router-link :to="`/admin/clubs/${clubId}`" class="text-xs text-muted hover:text-gold-text transition">
+        &larr; بازگشت 
       </router-link>
-      <h1 class="text-xl font-bold text-[#e8e4d9] mt-2">مدیریت اعضای کافه</h1>
+      <h1 class="text-xl font-bold text-fg mt-2">مدیریت اعضا</h1>
     </div>
     <ClubMembersManager :club-id="clubId" :allow-owner-role="true" />
   </div>

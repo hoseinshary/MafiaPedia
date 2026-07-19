@@ -1,8 +1,8 @@
 namespace MafiaPedia.Api.DTOs.Phase2.Club;
 
 public record CreateClubDto(string Name, string? Address, string? Phone, string? City, string? Description);
-public record UpdateClubDto(string? Name, string? Address, string? Phone, string? City, string? Description);
-public record ClubDto(int Id, string Name, string? Address, string? Phone, string? City, string? Description, string? Logo);
+public record UpdateClubDto(string? Name, string? Address, string? Phone, string? City, string? Description, decimal? VatPercent);
+public record ClubDto(int Id, string Name, string? Address, string? Phone, string? City, string? Description, string? Logo, decimal? VatPercent);
 
 public record CreateRoomDto(string Name, bool IsActive = true);
 public record UpdateRoomDto(string? Name, bool? IsActive);
@@ -20,6 +20,6 @@ public record MasterDto(
 
 public record ClubDetailDto(
     int Id, string Name,
-    string? Address, string? Phone, string? City, string? Description, string? Logo,
+    string? Address, string? Phone, string? City, string? Description, string? Logo, decimal? VatPercent,
     List<RoomDto> Rooms, List<MasterDto> Masters
 );

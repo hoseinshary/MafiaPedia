@@ -37,11 +37,23 @@ public partial class Clubplay
 
     public DateOnly? BusinessDate { get; set; }
 
+    public bool IsDeleted { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
+
+    public int? DeletedByUserId { get; set; }
+
+    public int? NerkhId { get; set; }
+
     public virtual ICollection<Clubplayplayer> Clubplayplayers { get; set; } = new List<Clubplayplayer>();
+
+    public virtual User? DeletedByUser { get; set; }
 
     public virtual Event Event { get; set; } = null!;
 
     public virtual Master Master { get; set; } = null!;
+
+    public virtual Nerkh? Nerkh { get; set; }
 
     public virtual Room Room { get; set; } = null!;
 

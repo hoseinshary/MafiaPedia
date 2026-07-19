@@ -3,6 +3,8 @@ node_modules/
 packages/
 graphify-out/
 .github/
+Entities.bak-20260716-144128/
+db-migrations/
 
 # Environment variables
 .env
@@ -33,6 +35,7 @@ App_Data/
 /src-cordova/platforms/
 /src-cordova/plugins/
 /src-cordova/www/
+db-backups/
 
 # Logs
 *.log
@@ -47,6 +50,7 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 .thumbs.db
+.mimocode/
 
 # Visual Studio / MSBuild
 *.obj

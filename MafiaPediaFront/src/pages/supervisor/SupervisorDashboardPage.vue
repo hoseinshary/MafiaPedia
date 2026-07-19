@@ -1,8 +1,8 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto w-full">
     <div class="mb-8">
-      <h1 class="text-xl font-bold text-[#60a5fa]">داشبورد سوپروایزر</h1>
-      <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ authStore.activeClubContext?.clubName }}</p>
+      <h1 class="text-xl font-bold text-blue-400">داشبورد سوپروایزر</h1>
+      <p class="text-sm text-muted mt-1">{{ authStore.activeClubContext?.clubName }}</p>
     </div>
 
     <ClubTodaysPlaysCard :club-id="authStore.activeClubId!" />

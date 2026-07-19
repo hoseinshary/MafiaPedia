@@ -59,19 +59,12 @@ public class ClubPlayerController : ClubControllerBase
         var forbid = await VerifyClubAccess(clubId, "master", "owner", "supervisor", "cashier");
         if (forbid is not null) return forbid;
 
-        try
-        {
-            string? picturePath = null;
-            if (picture is not null)
-                picturePath = await SaveCustomerPictureAsync(picture);
+        string? picturePath = null;
+        if (picture is not null)
+            picturePath = await SaveCustomerPictureAsync(picture);
 
-            var result = await _service.CreateOrJoinAsync(clubId, dto, picturePath);
-            return CreatedAtAction(nameof(GetClubPlayerDetail), new { clubId, customerId = result.ClubPlayer.Id }, result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
+        var result = await _service.CreateOrJoinAsync(clubId, dto, picturePath);
+        return StatusCode(201, result);
     }
 
     [Authorize(Policy = "AdminOnly")]
@@ -79,40 +72,20 @@ public class ClubPlayerController : ClubControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UpdateClubPlayer(int clubId, int customerId, [FromForm] UpdateClubPlayerDto dto, IFormFile? picture)
     {
-        try
-        {
-            string? newPicturePath = null;
-            if (picture is not null)
-                newPicturePath = await SaveCustomerPictureAsync(picture);
+        string? newPicturePath = null;
+        if (picture is not null)
+            newPicturePath = await SaveCustomerPictureAsync(picture);
 
-            var result = await _service.UpdateClubPlayerAsync(customerId, dto, newPicturePath);
-            if (result is null)
-                return NotFound(new { message = "مشتری یافت نشد" });
-
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var result = await _service.UpdateClubPlayerAsync(customerId, dto, newPicturePath);
+        return Ok(result);
     }
 
     [Authorize(Policy = "AdminOnly")]
     [HttpDelete("api/clubs/{clubId:int}/customers/{customerId:int}")]
     public async Task<IActionResult> RemoveFromClub(int clubId, int customerId)
     {
-        try
-        {
-            var removed = await _service.RemoveFromClubAsync(clubId, customerId);
-            if (!removed)
-                return NotFound(new { message = "این مشتری عضو این کافه نیست" });
-
-            return Ok(new { message = "مشتری با موفقیت از کافه حذف شد" });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
+        await _service.RemoveFromClubAsync(clubId, customerId);
+        return NoContent();
     }
 
     [Authorize(Policy = "AdminOrClub")]

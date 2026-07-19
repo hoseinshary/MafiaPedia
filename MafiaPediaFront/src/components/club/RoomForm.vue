@@ -4,21 +4,21 @@
       v-model="name"
       type="text"
       placeholder="نام اتاق"
-      class="flex-1 bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+      class="flex-1 bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition"
       @keydown.enter.prevent="submit"
     />
-    <label class="flex items-center gap-1.5 text-xs text-[rgba(232,228,217,0.4)] cursor-pointer">
+    <label class="flex items-center gap-1.5 text-xs text-muted cursor-pointer">
       <input
         v-model="isActive"
         type="checkbox"
-        class="accent-[#c9b07a]"
+        class="accent-gold"
       />
       فعال
     </label>
     <button
       @click="submit"
       :disabled="!name.trim() || loading"
-      class="px-4 py-2 bg-[#c9b07a] hover:bg-[#b8a16e] disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition whitespace-nowrap inline-flex items-center gap-2"
+      class="px-4 py-2 bg-gold hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed text-[#0d0d0f] text-sm rounded font-medium transition whitespace-nowrap inline-flex items-center gap-2"
     >
       <div v-if="loading" class="w-4 h-4 border-2 border-[#0d0d0f] border-t-transparent rounded-full animate-spin" />
       {{ room ? 'ویرایش' : 'افزودن اتاق' }}
@@ -26,12 +26,12 @@
     <button
       v-if="room"
       @click="$emit('cancelled')"
-      class="px-3 py-2 text-sm text-[rgba(232,228,217,0.4)] hover:text-[#e8e4d9] transition"
+      class="px-3 py-2 text-sm text-muted hover:text-fg transition"
     >
       انصراف
     </button>
   </div>
-  <p v-if="error" class="text-xs text-[#e07070] mt-1">{{ error }}</p>
+  <p v-if="error" class="text-xs text-danger mt-1">{{ error }}</p>
 </template>
 
 <script setup lang="ts">

@@ -1,7 +1,7 @@
 <template>
   <button
     @click="open = true"
-    class="p-2 rounded text-[#c9b07a] hover:bg-white/10 transition-colors"
+    class="p-2 rounded dark:text-gold text-gold-text hover:bg-white/10 transition-colors"
     :title="title || 'منو'"
   >
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -12,10 +12,10 @@
   <Teleport to="body">
     <div v-if="open" dir="rtl" class="fixed inset-0 z-50">
       <div class="absolute inset-0 bg-black/60" @click="open = false" />
-      <div class="absolute top-0 right-0 h-full w-64 bg-[var(--color-card)] border-l border-[var(--color-border)] shadow-xl overflow-y-auto">
+      <div class="absolute top-0 right-0 h-full w-64 bg-[var(--color-surface)] border-l border-[var(--color-border)] shadow-xl overflow-y-auto">
         <div class="px-4 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-400 tracking-wide">{{ title }}</h3>
-          <button @click="open = false" class="text-gray-400 hover:text-white text-lg leading-none p-1">&times;</button>
+          <h3 class="text-sm font-semibold text-muted tracking-wide">{{ title }}</h3>
+          <button @click="open = false" class="text-muted hover:text-fg text-lg leading-none p-1">&times;</button>
         </div>
         <nav class="mt-2 space-y-1 px-2">
           <router-link
@@ -24,7 +24,7 @@
             :to="link.to"
             @click="open = false"
             class="block px-3 py-2.5 rounded text-sm font-medium transition"
-            :class="isActive(link.to) ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'"
+            :class="isActive(link.to) ? 'bg-surface text-fg' : 'text-muted hover:text-fg hover:bg-surface'"
           >
             {{ link.label }}
           </router-link>

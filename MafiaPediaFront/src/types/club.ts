@@ -6,6 +6,7 @@ export interface ClubDto {
   city: string | null
   description: string | null
   logo: string | null
+  vatPercent: number | null
 }
 
 export interface RoomDto {
@@ -35,6 +36,7 @@ export interface ClubDetailDto {
   city: string | null
   description: string | null
   logo: string | null
+  vatPercent: number | null
   rooms: RoomDto[]
   masters: MasterDto[]
 }
@@ -53,6 +55,7 @@ export interface UpdateClubDto {
   phone?: string | null
   city?: string | null
   description?: string | null
+  vatPercent?: number | null
 }
 
 export interface CreateRoomDto {

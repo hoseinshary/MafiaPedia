@@ -1,18 +1,35 @@
-﻿using System.Security.Claims;
-using System.Text;
+﻿using MafiaPedia.Api.Data;
+using MafiaPedia.Api.IServices.Phase1;
+using MafiaPedia.Api.IServices.Phase2;
+using MafiaPedia.Api.Services.Phase1;
+using MafiaPedia.Api.Services.Phase2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using MafiaPedia.Api.Data;
-using MafiaPedia.Api.Services.Phase1;
-using MafiaPedia.Api.Services.Phase2;
-using MafiaPedia.Api.IServices.Phase1;
-using MafiaPedia.Api.IServices.Phase2;
+using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Globalization;
+using System.Security.Claims;
+using System.Text;
 
+
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;   
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, config) => config
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(
+        "logs/mafiapedia-.log",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 14,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Exception}{NewLine}"));
 
 builder.Services.AddControllers();
 
@@ -33,6 +50,12 @@ builder.Services.AddScoped<IClubPlayService, ClubPlayService>();
 builder.Services.AddScoped<IMasterAuthService, MasterAuthService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IClubUserService, ClubUserService>();
+builder.Services.AddScoped<INerkhService, NerkhService>();
+builder.Services.AddScoped<IProductCategoryService, ProductCategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IClubOrderService, ClubOrderService>();
+builder.Services.AddScoped<IClubSettlementService, ClubSettlementService>();
+builder.Services.AddScoped<IFinanceAuditService, FinanceAuditService>();
 
 builder.Services.AddDbContext<MafiaDbContext>(options =>
     options.UseMySql(
@@ -107,6 +130,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseMiddleware<MafiaPedia.Api.Middleware.ExceptionHandlingMiddleware>();
+app.UseSerilogRequestLogging();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -120,5 +146,7 @@ app.UseAuthorization();
 app.UseCors("AllowFrontend");
 
 app.MapControllers();
+
+app.Lifetime.ApplicationStopped.Register(Log.CloseAndFlush);
 
 app.Run();

@@ -1,36 +1,36 @@
 <template>
-  <div class="bg-[var(--color-card)] border border-[rgba(255,255,255,0.07)] rounded-xl p-6 mb-8">
+  <div class="bg-surface border border-border rounded-xl p-6 mb-8">
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-3">
         <button
           @click="navigateDate(-1)"
-          class="text-xs text-[rgba(232,228,217,0.3)] hover:text-[#c9b07a] transition px-2 py-1 border border-[rgba(255,255,255,0.07)] rounded"
+          class="text-xs text-muted hover:text-gold-text transition px-2 py-1 border border-border rounded"
         >
           ▶ روز قبل
         </button>
-        <h2 class="text-sm font-bold text-[#e8e4d9]">
+        <h2 class="text-sm font-bold text-fg">
           بازی‌های {{ formatHeadingDate(viewedDate) }}
-          <span class="text-[rgba(232,228,217,0.8)] font-normal">— {{ totalEntries }} نفر-بازی</span>
+          <span class="text-muted font-normal">— {{ totalEntries }} نفر-بازی</span>
         </h2>
         <button
           @click="navigateDate(1)"
           :disabled="isToday"
-          class="text-xs text-[rgba(232,228,217,0.3)] hover:text-[#c9b07a] disabled:opacity-30 disabled:cursor-not-allowed transition px-2 py-1 border border-[rgba(255,255,255,0.07)] rounded"
+          class="text-xs text-muted hover:text-gold-text disabled:opacity-30 disabled:cursor-not-allowed transition px-2 py-1 border border-border rounded"
         >
           روز بعد ◀
         </button>
       </div>
     </div>
     <div v-if="loading" class="flex justify-center py-8">
-      <div class="w-6 h-6 border-2 border-[#c9b07a] border-t-transparent rounded-full animate-spin" />
+      <div class="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
     </div>
-    <div v-else-if="plays.length === 0" class="text-center py-8 text-sm text-[rgba(232,228,217,0.3)]">
+    <div v-else-if="plays.length === 0" class="text-center py-8 text-sm text-muted">
       این روز هنوز بازی‌ای ثبت نشده
     </div>
     <div v-else class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="border-b border-[rgba(255,255,255,0.07)] text-[rgba(232,228,217,0.5)]">
+          <tr class="border-b border-border text-muted">
             <th class="px-3 py-2 text-right">عنوان</th>
             <th class="px-3 py-2 text-right">ساعت</th>
             <th class="px-3 py-2 text-right">سالن</th>
@@ -46,15 +46,15 @@
             v-for="play in plays"
             :key="play.id"
             @click="goToPlay(play.id)"
-            class="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition cursor-pointer text-[#e8e4d9]"
+            class="border-b border-border hover:bg-surface-hover transition cursor-pointer text-fg"
           >
             <td class="px-3 py-2.5 font-medium">{{ play.title || 'بدون عنوان' }}</td>
-            <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ formatTime(play.dateTime) }}</td>
-            <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.roomName }}</td>
-            <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.senarioName }}</td>
+            <td class="px-3 py-2.5 text-muted">{{ formatTime(play.dateTime) }}</td>
+            <td class="px-3 py-2.5 text-muted">{{ play.roomName }}</td>
+            <td class="px-3 py-2.5 text-muted">{{ play.senarioName }}</td>
             <td class="px-3 py-2.5"><span class="status-badge" :class="playTypeClass(play.playType)">{{ playTypeLabel(play.playType) }}</span></td>
-            <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.playersCount }}</td>
-            <td class="px-3 py-2.5 text-[rgba(232,228,217,0.5)]">{{ play.masterName || '—' }}</td>
+            <td class="px-3 py-2.5 text-muted">{{ play.playersCount }}</td>
+            <td class="px-3 py-2.5 text-muted">{{ play.masterName || '—' }}</td>
             <td class="px-3 py-2.5"><span class="status-badge" :class="statusClass(play.status)">{{ statusLabel(play.status) }}</span></td>
           </tr>
         </tbody>
@@ -170,7 +170,7 @@ onMounted(fetchPlays)
 }
 .status-pending {
   background: rgba(128, 128, 128, 0.15);
-  color: #a0a0a0;
+  color: var(--color-muted);
 }
 .status-notwinside {
   background: rgba(255, 165, 0, 0.15);
@@ -186,7 +186,7 @@ onMounted(fetchPlays)
 }
 .playtype-normal {
   background: rgba(128, 128, 128, 0.15);
-  color: #a0a0a0;
+  color: var(--color-muted);
 }
 .playtype-rank {
   background: rgba(201, 176, 122, 0.15);

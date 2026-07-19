@@ -13,5 +13,6 @@ public class UpdatePlayDto
     public int? MasterId { get; set; }
     public int? GuestCount { get; set; }
     public string? Link { get; set; }
-    public List<CreatePlayPlayerDto>? Players { get; set; }
+    public string? PlayersJson { get; set; }
+    public IFormFile? Picture { get; set; }
 }

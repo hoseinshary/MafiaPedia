@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MafiaPedia.Api.Common.Exceptions;
 using MafiaPedia.Api.Data;
 using MafiaPedia.Api.DTOs.Phase2.ClubPlayer;
 using MafiaPedia.Api.Entities;
@@ -78,6 +79,10 @@ public class ClubPlayerService : IClubPlayerService
 
     public async Task<ClubPlayerJoinResultDto> CreateOrJoinAsync(int clubId, CreateOrJoinClubPlayerDto dto, string? picturePath)
     {
+        var clubExists = await _context.Clubs.AnyAsync(c => c.Id == clubId);
+        if (!clubExists)
+            throw new NotFoundAppException("کافه مورد نظر یافت نشد.");
+
         var existing = await _context.Clubplayers
             .FirstOrDefaultAsync(p => p.Mobile == dto.Mobile);
 
@@ -85,7 +90,7 @@ public class ClubPlayerService : IClubPlayerService
 
         if (existing is null)
         {
-            DateOnly? birthday = dto.Birthday.HasValue ? (DateOnly?)DateOnly.FromDateTime(dto.Birthday.Value) : null;
+            DateOnly? birthday = dto.Birthday.HasValue ? DateOnly.FromDateTime(dto.Birthday.Value) : null;
 
             var player = new Clubplayer
             {
@@ -110,7 +115,7 @@ public class ClubPlayerService : IClubPlayerService
             .AnyAsync(cc => cc.ClubId == clubId && cc.ClubplayerId == existing.Id);
 
         if (alreadyMember)
-            throw new InvalidOperationException("این مشتری قبلاً عضو این کافه است");
+            throw new ConflictAppException("این مشتری قبلاً عضو این کافه است");
 
         await _context.Database.ExecuteSqlRawAsync(
             "INSERT INTO club_clubplayer (clubId, clubplayerId, JoinedAt) VALUES ({0}, {1}, {2})",
@@ -119,10 +124,11 @@ public class ClubPlayerService : IClubPlayerService
         return new ClubPlayerJoinResultDto(ToDto(existing, now), true);
     }
 
-    public async Task<ClubPlayerDto?> UpdateClubPlayerAsync(int customerId, UpdateClubPlayerDto dto, string? newPicturePath)
+    public async Task<ClubPlayerDto> UpdateClubPlayerAsync(int customerId, UpdateClubPlayerDto dto, string? newPicturePath)
     {
         var player = await _context.Clubplayers.FindAsync(customerId);
-        if (player is null) return null;
+        if (player is null)
+            throw new NotFoundAppException();
 
         if (dto.Name != null) player.Name = PersianTextNormalizer.Normalize(dto.Name);
         if (dto.Birthday.HasValue) player.Birthday = DateOnly.FromDateTime(dto.Birthday.Value);
@@ -178,22 +184,22 @@ public class ClubPlayerService : IClubPlayerService
         return new CustomerSearchResultDto(inClub, globalOthers);
     }
 
-    public async Task<bool> RemoveFromClubAsync(int clubId, int customerId)
+    public async Task RemoveFromClubAsync(int clubId, int customerId)
     {
         var membership = await _context.ClubClubplayers
             .FirstOrDefaultAsync(cc => cc.ClubId == clubId && cc.ClubplayerId == customerId);
 
-        if (membership is null) return false;
+        if (membership is null)
+            throw new NotFoundAppException("این مشتری عضو این کافه نیست");
 
         var hasGames = await _context.Clubplayplayers
             .AnyAsync(cpp => cpp.PlayerId == customerId && cpp.Play.Room.ClubId == clubId);
 
         if (hasGames)
-            throw new InvalidOperationException("این مشتری در بازی‌های این کافه ثبت شده است و قابل حذف نیست");
+            throw new ConflictAppException("این مشتری در بازی‌های این کافه ثبت شده است و قابل حذف نیست");
 
         _context.ClubClubplayers.Remove(membership);
         await _context.SaveChangesAsync();
-        return true;
     }
 
     private static ClubPlayerDto ToDto(Clubplayer p, DateTime? joinedAt = null)

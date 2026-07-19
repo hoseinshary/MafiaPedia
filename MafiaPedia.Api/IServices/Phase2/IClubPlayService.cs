@@ -24,7 +24,11 @@ public interface IClubPlayService
     Task<List<MasterPerformanceDto>> GetMasterPerformanceAsync(int clubId, string period);
 
     // Editing
-    Task<ClubPlayDetailDto?> UpdateClubPlayAsync(int clubId, int playId, int? restrictToMasterId, UpdateClubPlayDto dto);
+    Task<ClubPlayDetailDto?> UpdateClubPlayAsync(int clubId, int playId, int? restrictToMasterId, string? actingClubRole, UpdateClubPlayDto dto);
     Task<ClubPlayParticipantDto> ReplaceParticipantAsync(
-        int clubId, int playId, int? restrictToMasterId, int currentClubPlayerId, ReplaceParticipantDto dto);
+        int clubId, int playId, int? restrictToMasterId, int participantRowId, ReplaceParticipantDto dto);
+
+    // Soft delete
+    Task<bool> DeleteClubPlayAsync(int clubId, int playId, int actingUserId, bool isAdmin, int? restrictToMasterId);
+    Task<(List<ClubPlayDeletedListItemDto> Items, int Total)> GetDeletedPlaysAsync(int clubId, int page, int pageSize);
 }

@@ -1,5 +1,5 @@
 import apiClient from './apiClient'
-import type { ClubPlayDetailDto, ClubPlayListItemDto, CreateClubPlayDto, EventDto, MasterStatsDto, MasterPerformanceDto, ClubPlayParticipantDto, ReplaceParticipantDto } from '@/types/clubPlay'
+import type { ClubPlayDetailDto, ClubPlayListItemDto, ClubPlayDeletedListItemDto, CreateClubPlayDto, EventDto, MasterStatsDto, MasterPerformanceDto, ClubPlayParticipantDto, ReplaceParticipantDto } from '@/types/clubPlay'
 
 export type { ClubPlayParticipantDto }
 
@@ -35,7 +35,7 @@ export const ClubPlayApi = {
     return apiClient.post<ClubPlayDetailDto>(`/clubs/${clubId}/clubplays/${playId}/submit-winnerside`, { winnersideId })
   },
 
-  submitRanks(clubId: number, playId: number, ranks: { clubPlayerId: number; rank: number }[]) {
+  submitRanks(clubId: number, playId: number, ranks: { id: number; rank: number }[]) {
     return apiClient.post<ClubPlayDetailDto>(`/clubs/${clubId}/clubplays/${playId}/submit-ranks`, ranks)
   },
 
@@ -75,10 +75,22 @@ export const ClubPlayApi = {
     return apiClient.put<ClubPlayDetailDto>(`/clubs/${clubId}/clubplays/${playId}`, dto)
   },
 
-  replaceParticipant(clubId: number, playId: number, currentClubPlayerId: number, payload: ReplaceParticipantDto) {
+  replaceParticipant(clubId: number, playId: number, participantRowId: number, payload: ReplaceParticipantDto) {
     return apiClient.put<ClubPlayParticipantDto>(
-      `/clubs/${clubId}/clubplays/${playId}/participants/${currentClubPlayerId}`,
+      `/clubs/${clubId}/clubplays/${playId}/participants/${participantRowId}`,
       payload
+    )
+  },
+
+  // Delete
+  deleteClubPlay(clubId: number, playId: number) {
+    return apiClient.delete(`/clubs/${clubId}/clubplays/${playId}`)
+  },
+
+  // Deleted plays audit
+  getDeletedPlays(clubId: number, params: { page?: number; pageSize?: number }) {
+    return apiClient.get<{ items: ClubPlayDeletedListItemDto[]; total: number; page: number; pageSize: number }>(
+      `/clubs/${clubId}/clubplays/deleted`, { params }
     )
   },
 }

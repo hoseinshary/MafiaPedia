@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { AuthApi } from '@/api/AuthApi'
+import { getMyAccount } from '@/api/AccountApi'
 import type { ClubUserContextDto } from '@/types/club'
 import { ClubUserApi } from '@/api/ClubUserApi'
 
@@ -31,6 +32,96 @@ function extractUserId(token: string): number | null {
     return id ? Number(id) : null
   } catch {
     return null
+  }
+}
+
+function hasSessionToken(): boolean {
+  return !!(localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken'))
+}
+
+const AUTH_SYNC_CHANNEL = 'mafiapedia-auth-sync'
+const RELAY_TIMEOUT_MS = 700
+const RELAY_REQUEST_KEY = '__mafia_auth_relay_req'
+const RELAY_RESPONSE_KEY = '__mafia_auth_relay_resp'
+
+let authReadyResolve: () => void
+const authReady: Promise<void> = new Promise(resolve => { authReadyResolve = resolve })
+
+function initAuthSync(
+  setTokens: (access: string, refresh: string, name: string) => void,
+  onSynced: () => void,
+) {
+  if (hasSessionToken()) {
+    authReadyResolve()
+    return
+  }
+
+  if (typeof BroadcastChannel !== 'undefined') {
+    let resolved = false
+    const done = () => { if (!resolved) { resolved = true; authReadyResolve() } }
+
+    const channel = new BroadcastChannel(AUTH_SYNC_CHANNEL)
+    channel.onmessage = (e) => {
+      if (e.data?.type === 'SESSION_RESPONSE') {
+        setTokens(e.data.accessToken, e.data.refreshToken, e.data.displayName)
+        onSynced()
+        done()
+      }
+    }
+
+    channel.postMessage({ type: 'REQUEST_SESSION' })
+    setTimeout(done, RELAY_TIMEOUT_MS)
+  } else {
+    // localStorage fallback: write a request key (fires storage event in other tabs),
+    // other tabs respond by writing sessionStorage (tab-scoped, so requesting tab reads directly).
+    try { localStorage.setItem(RELAY_REQUEST_KEY, String(Date.now())) } catch { authReadyResolve(); return }
+
+    const readResponse = () => {
+      try {
+        const raw = sessionStorage.getItem(RELAY_RESPONSE_KEY)
+        if (raw) {
+          const data = JSON.parse(raw)
+          sessionStorage.removeItem(RELAY_RESPONSE_KEY)
+          setTokens(data.accessToken, data.refreshToken, data.displayName)
+          onSynced()
+          return true
+        }
+      } catch { /* ignore */ }
+      return false
+    }
+
+    if (readResponse()) { authReadyResolve(); return }
+
+    const interval = setInterval(() => { if (readResponse()) { clearInterval(interval); authReadyResolve() } }, 50)
+    setTimeout(() => { clearInterval(interval); try { localStorage.removeItem(RELAY_REQUEST_KEY) } catch {} authReadyResolve() }, RELAY_TIMEOUT_MS)
+  }
+}
+
+function setupSessionProvider() {
+  if (typeof BroadcastChannel !== 'undefined') {
+    const channel = new BroadcastChannel(AUTH_SYNC_CHANNEL)
+    channel.onmessage = (e) => {
+      if (e.data?.type === 'REQUEST_SESSION' && hasSessionToken()) {
+        channel.postMessage({
+          type: 'SESSION_RESPONSE',
+          accessToken: localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken') || '',
+          refreshToken: localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken') || '',
+          displayName: localStorage.getItem('displayName') || sessionStorage.getItem('displayName') || '',
+        })
+      }
+    }
+  } else {
+    window.addEventListener('storage', (e) => {
+      if (e.key === RELAY_REQUEST_KEY && e.newValue && hasSessionToken()) {
+        try {
+          sessionStorage.setItem(RELAY_RESPONSE_KEY, JSON.stringify({
+            accessToken: localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken') || '',
+            refreshToken: localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken') || '',
+            displayName: localStorage.getItem('displayName') || sessionStorage.getItem('displayName') || '',
+          }))
+        } catch { /* ignore */ }
+      }
+    })
   }
 }
 
@@ -102,14 +193,34 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function fetchDisplayName() {
+    if (!accessToken.value || displayName.value) return
+    try {
+      const account = await getMyAccount()
+      displayName.value = account.displayName
+      persist()
+    } catch { /* ignore — displayName stays empty until next attempt */ }
+  }
+
+  function setTokens(access: string, refresh: string, name: string) {
+    useLocalStorage = false
+    accessToken.value = access
+    refreshToken.value = refresh
+    displayName.value = name
+    persist()
+  }
+
+  initAuthSync(setTokens, loadClubContexts)
+  setupSessionProvider()
+
   async function login(mobile: string, password: string, rememberMe = false) {
     const res = await AuthApi.login(mobile, password)
     const data = res.data
     useLocalStorage = rememberMe
     accessToken.value = data.accessToken
     refreshToken.value = data.refreshToken
-    displayName.value = data.displayName
     persist()
+    fetchDisplayName()
   }
 
   async function register(username: string, mobile: string, password: string) {
@@ -130,6 +241,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function loadClubContexts() {
     if (!isClub.value) {
       clubContextsLoaded.value = true
+      fetchDisplayName()
       return
     }
     try {
@@ -145,6 +257,7 @@ export const useAuthStore = defineStore('auth', () => {
       clubContexts.value = []
     } finally {
       clubContextsLoaded.value = true
+      fetchDisplayName()
     }
   }
 
@@ -164,9 +277,11 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('displayName')
     localStorage.removeItem('activeClubId')
+    localStorage.removeItem(RELAY_REQUEST_KEY)
     sessionStorage.removeItem('accessToken')
     sessionStorage.removeItem('refreshToken')
     sessionStorage.removeItem('displayName')
+    sessionStorage.removeItem(RELAY_RESPONSE_KEY)
   }
 
   return {
@@ -193,5 +308,6 @@ export const useAuthStore = defineStore('auth', () => {
     refreshAccessToken,
     loadClubContexts,
     setActiveClub,
+    authReady,
   }
 })

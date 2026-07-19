@@ -1,80 +1,95 @@
 <template>
   <div dir="rtl" class="max-w-4xl mx-auto px-6 w-full">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-[#e8e4d9]">ساخت بازی جدید</h1>
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 text-fg">ساخت بازی جدید</h1>
 
-    <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-[rgba(111,207,138,0.1)] border-[rgba(111,207,138,0.2)] text-[#6fcf8a]' : 'bg-[rgba(224,112,112,0.1)] border-[rgba(224,112,112,0.2)] text-[#e07070]'">
+    <div v-if="notification" class="mb-4 px-4 py-3 rounded text-sm border" :class="notification.type === 'success' ? 'bg-success/10 border-success/20 text-success' : 'bg-danger/10 border-danger/20 text-danger'">
       {{ notification.message }}
     </div>
 
-    <section class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6 mb-6">
-      <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">اطلاعات بازی</h2>
+    <section class="bg-surface rounded-[10px] border border-border p-6 mb-6">
+      <h2 class="text-xs uppercase tracking-widest text-muted mb-4">اطلاعات بازی</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">عنوان</label>
-          <input v-model="form.title" type="text" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" />
+          <label class="text-sm text-muted">عنوان</label>
+          <input v-model="form.title" type="text" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">تاریخ</label>
+          <label class="text-sm text-muted">تاریخ</label>
           <input
             v-model="form.dateTime"
             type="date"
-            class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition"
+            class="bg-input border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-gold transition"
             dir="ltr"
           />
-          <div v-if="!form.dateTime && touched" class="text-xs text-[#e07070] mt-1">
+          <div v-if="!form.dateTime && touched" class="text-xs text-danger mt-1">
             الزامی
           </div>
         </div>
         <div class="flex flex-col gap-1 md:col-span-2">
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">توضیحات</label>
-          <textarea v-model="form.desc" rows="3" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition resize-none"></textarea>
+          <label class="text-sm text-muted">توضیحات</label>
+          <textarea v-model="form.desc" rows="3" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition resize-none"></textarea>
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">سناریو</label>
-          <select v-model.number="form.senarioId" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" @change="onSenarioChange">
+          <label class="text-sm text-muted">سناریو</label>
+          <select v-model.number="form.senarioId" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-gold transition" @change="onSenarioChange">
             <option :value="0" disabled>انتخاب سناریو</option>
             <option v-for="s in senarios" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">کلاب</label>
-          <select v-model.number="form.clubId" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" @change="onClubChange">
+          <label class="text-sm text-muted">کلاب</label>
+          <select v-model.number="form.clubId" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-gold transition" @change="onClubChange">
             <option :value="0" disabled>انتخاب کلاب</option>
             <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">ایونت</label>
-          <select v-model.number="form.eventId" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" :disabled="!form.clubId">
+          <label class="text-sm text-muted">ایونت</label>
+          <select v-model.number="form.eventId" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-gold transition" :disabled="!form.clubId">
             <option :value="0" disabled>{{ form.clubId ? 'انتخاب ایونت' : 'ابتدا کلاب را انتخاب کنید' }}</option>
             <option v-for="e in filteredEvents" :key="e.id" :value="e.id">{{ e.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">برنده</label>
+          <label class="text-sm text-muted">برنده</label>
 
           
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">لینک</label>
-          <input v-model="form.link" type="text" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" />
+          <label class="text-sm text-muted">لینک</label>
+          <input v-model="form.link" type="text" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm text-[rgba(232,228,217,0.4)]">تعداد بازیکن</label>
-          <input v-model.number="form.playersCount" type="number" min="1" max="50" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-3 py-2 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition" @input="syncPlayerRows" />
+          <label class="text-sm text-muted">تصویر بندانگشتی (اختیاری)</label>
+          <input
+            type="file"
+            accept="image/*"
+            class="bg-input border border-border rounded px-3 py-2 text-sm text-fg file:bg-gold file:text-[#0d0d0f] file:border-0 file:rounded file:px-3 file:py-1 file:font-medium file:cursor-pointer file:ml-2 focus:outline-none focus:border-gold transition"
+            @change="onThumbnailSelect"
+          />
+          <span class="text-xs text-muted mt-1">اگه خالی بذاری، به‌صورت خودکار از روی لینک یوتیوب تلاش می‌کنیم تصویر بگیریم.</span>
+          <div v-if="thumbnailPreview" class="mt-2 relative w-56 rounded-lg overflow-hidden bg-surface border border-border">
+            <div class="aspect-video relative">
+              <img :src="thumbnailPreview" class="w-full h-full object-cover" alt="" />
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-muted">تعداد بازیکن</label>
+          <input v-model.number="form.playersCount" type="number" min="1" max="50" class="bg-input border border-border rounded px-3 py-2 text-sm text-fg focus:outline-none focus:border-gold transition" @input="syncPlayerRows" />
         </div>
       </div>
     </section>
 
-    <section class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-6 mb-6">
-      <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">بازیکنان</h2>
-      <div v-if="form.players.length === 0" class="text-center py-8 text-[rgba(232,228,217,0.4)]">
+    <section class="bg-surface rounded-[10px] border border-border p-6 mb-6">
+      <h2 class="text-xs uppercase tracking-widest text-muted mb-4">بازیکنان</h2>
+      <div v-if="form.players.length === 0" class="text-center py-8 text-muted">
         تعداد بازیکن را مشخص کنید
       </div>
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm border-collapse">
           <thead>
-            <tr class="border-b border-[rgba(255,255,255,0.07)] bg-[#1a1a1e] text-[rgba(232,228,217,0.5)]">
+            <tr class="border-b border-border bg-surface-hover text-muted">
               <th class="px-4 py-3 text-right">#</th>
               <th class="px-4 py-3 text-right">بازیکن</th>
               <th class="px-4 py-3 text-right">نقش</th>
@@ -83,8 +98,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(player, index) in form.players" :key="index" class="border-b border-[rgba(255,255,255,0.04)] text-[#e8e4d9]">
-              <td class="px-4 py-2 text-[rgba(232,228,217,0.4)]">{{ index + 1 }}</td>
+            <tr v-for="(player, index) in form.players" :key="index" class="border-b border-border text-fg">
+              <td class="px-4 py-2 text-muted">{{ index + 1 }}</td>
               <td class="px-4 py-2">
                 <div class="relative">
                   <input
@@ -98,46 +113,46 @@
                     @keydown.prevent.down="onArrowDown(index)"
                     @keydown.prevent.enter="onEnter(index)"
                     placeholder="جستجوی بازیکن..."
-                    class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-2 py-1 text-sm text-[#e8e4d9] placeholder-[rgba(232,228,217,0.25)] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition w-40"
+                    class="bg-input border border-border rounded px-2 py-1 text-sm text-fg placeholder-muted focus:outline-none focus:border-gold transition w-40"
                   />
                   <div
                     v-if="playerSuggestions[index]?.show && playerSuggestions[index]?.results.length"
-                    class="absolute left-0 right-0 top-full mt-1 bg-[#141416] border border-[rgba(255,255,255,0.07)] rounded shadow-lg z-50 overflow-hidden"
+                    class="absolute left-0 right-0 top-full mt-1 bg-surface border border-border rounded shadow-lg z-50 overflow-hidden"
                   >
                     <div
                       v-for="(s, sIdx) in playerSuggestions[index].results"
                       :key="s.id"
                       @mousedown.prevent="selectPlayer(index, s)"
                       @mouseenter="playerSuggestions[index].highlightedIndex = sIdx"
-                      class="px-3 py-2 cursor-pointer text-sm text-[#e8e4d9]"
-                      :class="sIdx === playerSuggestions[index].highlightedIndex ? 'bg-[rgba(255,255,255,0.05)]' : 'hover:bg-[rgba(255,255,255,0.03)]'"
+                      class="px-3 py-2 cursor-pointer text-sm text-fg"
+                      :class="sIdx === playerSuggestions[index].highlightedIndex ? 'bg-surface-hover' : 'hover:bg-surface-hover'"
                     >
                       {{ s.name }}
-                      <span class="text-xs text-[rgba(232,228,217,0.35)]">({{ s.totalGames }} games)</span>
+                      <span class="text-xs text-muted">({{ s.totalGames }} games)</span>
                     </div>
                   </div>
-                  <div v-if="duplicateError(index)" class="text-xs text-[#e07070] mt-1">
+                  <div v-if="duplicateError(index)" class="text-xs text-danger mt-1">
                     بازیکن تکراری
                   </div>
-                  <div v-if="!player.playerId && touched" class="text-xs text-[#e07070] mt-1">
+                  <div v-if="!player.playerId && touched" class="text-xs text-danger mt-1">
                     الزامی
                   </div>
                 </div>
               </td>
               <td class="px-4 py-2">
-                <select v-model.number="player.roleId" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-2 py-1 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition w-32">
+                <select v-model.number="player.roleId" class="bg-input border border-border rounded px-2 py-1 text-sm text-fg focus:outline-none focus:border-gold transition w-32">
                   <option :value="0" disabled>انتخاب نقش</option>
                   <option v-for="r in filteredRoles" :key="r.id" :value="r.id">{{ r.name }}</option>
                 </select>
-                <div v-if="!player.roleId && touched" class="text-xs text-[#e07070] mt-1">
+                <div v-if="!player.roleId && touched" class="text-xs text-danger mt-1">
                   الزامی
                 </div>
               </td>
               <td class="px-4 py-2">
-                <input v-model.number="player.action" type="number" min="0" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-2 py-1 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition w-20" />
+                <input v-model.number="player.action" type="number" min="0" class="bg-input border border-border rounded px-2 py-1 text-sm text-fg focus:outline-none focus:border-gold transition w-20" />
               </td>
               <td class="px-4 py-2">
-                <input v-model.number="player.rank" type="number" min="0" class="bg-[#0d0d0f] border border-[rgba(255,255,255,0.07)] rounded px-2 py-1 text-sm text-[#e8e4d9] focus:outline-none focus:border-[rgba(201,176,122,0.3)] transition w-20" />
+                <input v-model.number="player.rank" type="number" min="0" class="bg-input border border-border rounded px-2 py-1 text-sm text-fg focus:outline-none focus:border-gold transition w-20" />
               </td>
             </tr>
           </tbody>
@@ -195,6 +210,18 @@ const playerSuggestions = reactive<Record<number, PlayerSuggestionState>>({})
 const playerCache = ref<Map<number, string>>(new Map())
 
 const notification = ref<{ type: 'success' | 'error'; message: string } | null>(null)
+
+const thumbnailFile = ref<File | null>(null)
+const thumbnailPreview = ref<string | null>(null)
+
+function onThumbnailSelect(e: Event) {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file) {
+    thumbnailFile.value = file
+    thumbnailPreview.value = URL.createObjectURL(file)
+  }
+}
 
 const form = reactive({
   title: '',
@@ -374,7 +401,7 @@ async function submitForm() {
         action: p.action,
         rank: p.rank,
       })),
-    })
+    }, thumbnailFile.value ?? undefined)
     notification.value = { type: 'success', message: 'بازی با موفقیت ساخته شد' }
     form.title = ''
     form.dateTime = ''

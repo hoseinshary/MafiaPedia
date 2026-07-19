@@ -6,25 +6,25 @@
 
     <template v-else-if="player">
       <section class="mb-8">
-        <div class="flex items-center gap-6 bg-[#141416] rounded-[12px] border border-[rgba(255,255,255,0.07)] p-6">
+        <div class="flex items-center gap-6 bg-surface rounded-[12px] border border-border p-6">
           <img
             v-if="player.picture"
-            :src="`http://localhost:5272/${player.picture}`"
+            :src="getImageUrl(player.picture)"
             :alt="player.name"
-            class="w-20 h-20 rounded-full object-cover shrink-0 border-2 border-[rgba(201,176,122,0.3)]"
+            class="w-20 h-20 rounded-full object-cover shrink-0 border-2 border-gold/30"
           />
-          <div v-else class="w-20 h-20 rounded-full bg-[#2a2820] flex items-center justify-center text-3xl text-[#c9b07a] shrink-0 border-[1.5px] border-[rgba(201,176,122,0.3)]">
+          <div v-else class="w-20 h-20 rounded-full bg-surface flex items-center justify-center text-3xl text-gold-text shrink-0 border-[1.5px] border-gold/30">
             {{ player.name.charAt(0) }}
           </div>
           <div>
-            <h1 class="text-xl font-bold text-[#e8e4d9]">{{ player.name }}</h1>
-            <p v-if="player.birthday" class="text-sm mt-1 text-[rgba(232,228,217,0.35)]">{{ player.birthday }}</p>
+            <h1 class="text-xl font-bold text-fg">{{ player.name }}</h1>
+            <p v-if="player.birthday" class="text-sm mt-1 text-muted">{{ player.birthday }}</p>
           </div>
         </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">آمار کلی</h2>
+        <h2 class="text-xs uppercase tracking-widest text-muted mb-4">آمار کلی</h2>
         <div class="grid grid-cols-2 gap-4">
           <PlayerStatisticsCard label="تعداد کل بازی‌ها" :value="String(player.statistics.totalGames)" />
           <PlayerStatisticsCard label="آمار برد کل" :value="formatPercent(player.statistics.overallWinRate)" />
@@ -36,7 +36,7 @@
       </section>
 
       <section class="mb-8">
-        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">رکوردها</h2>
+        <h2 class="text-xs uppercase tracking-widest text-muted mb-4">رکوردها</h2>
         <div class="grid grid-cols-2 gap-4">
           <PlayerStatisticsCard label="🔥 Win Streak فعلی" :value="`${player.winStreak} بازی`" />
           <PlayerStatisticsCard label="🏆 بهترین رکورد برد پیاپی" :value="`${player.bestRun} بازی`" />
@@ -44,68 +44,68 @@
       </section>
 
       <section class="mb-8">
-        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">بهترین هم‌تیمی‌ها</h2>
+        <h2 class="text-xs uppercase tracking-widest text-muted mb-4">بهترین هم‌تیمی‌ها</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-4 text-center">
-            <p class="text-sm text-[rgba(232,228,217,0.4)] mb-1">بهترین هم‌تیمی مافیایی</p>
+          <div class="bg-surface rounded-[10px] border border-border p-4 text-center">
+            <p class="text-sm text-muted mb-1">بهترین هم‌تیمی مافیایی</p>
             <template v-if="player.bestMafiaPartner">
               <router-link
                 :to="`/player/${player.bestMafiaPartner.playerId}`"
-                class="text-lg font-bold text-[#c9b07a] hover:underline"
+                class="text-lg font-bold text-gold-text hover:underline"
               >
                 {{ player.bestMafiaPartner.playerName }}
               </router-link>
-              <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ player.bestMafiaPartner.sharedGames }} بازی مشترک</p>
-              <p class="text-sm text-[rgba(232,228,217,0.4)]">{{ (player.bestMafiaPartner.winRate ).toFixed(2) }}% برد</p>
+              <p class="text-sm text-muted mt-1">{{ player.bestMafiaPartner.sharedGames }} بازی مشترک</p>
+              <p class="text-sm text-muted">{{ (player.bestMafiaPartner.winRate ).toFixed(2) }}% برد</p>
             </template>
-            <p v-else class="text-[rgba(232,228,217,0.4)] mt-2">اطلاعات کافی نیست</p>
+            <p v-else class="text-muted mt-2">اطلاعات کافی نیست</p>
           </div>
-          <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-4 text-center">
-            <p class="text-sm text-[rgba(232,228,217,0.4)] mb-1">بهترین هم‌تیمی شهروندی</p>
+          <div class="bg-surface rounded-[10px] border border-border p-4 text-center">
+            <p class="text-sm text-muted mb-1">بهترین هم‌تیمی شهروندی</p>
             <template v-if="player.bestCitizenPartner">
               <router-link
                 :to="`/player/${player.bestCitizenPartner.playerId}`"
-                class="text-lg font-bold text-[#c9b07a] hover:underline"
+                class="text-lg font-bold text-gold-text hover:underline"
               >
                 {{ player.bestCitizenPartner.playerName }}
               </router-link>
-              <p class="text-sm text-[rgba(232,228,217,0.4)] mt-1">{{ player.bestCitizenPartner.sharedGames }} بازی مشترک</p>
-              <p class="text-sm text-[rgba(232,228,217,0.4)]">{{ (player.bestCitizenPartner.winRate ).toFixed(2) }}% برد</p>
+              <p class="text-sm text-muted mt-1">{{ player.bestCitizenPartner.sharedGames }} بازی مشترک</p>
+              <p class="text-sm text-muted">{{ (player.bestCitizenPartner.winRate ).toFixed(2) }}% برد</p>
             </template>
-            <p v-else class="text-[rgba(232,228,217,0.4)] mt-2">اطلاعات کافی نیست</p>
+            <p v-else class="text-muted mt-2">اطلاعات کافی نیست</p>
           </div>
         </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">روند برد</h2>
-        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] p-4">
+        <h2 class="text-xs uppercase tracking-widest text-muted mb-4">روند برد</h2>
+        <div class="bg-surface rounded-[10px] border border-border p-4">
           <template v-if="player.winRateTrend.length >= 5">
             <div style="height: 250px">
               <Line :data="chartData" :options="chartOptions" />
             </div>
           </template>
-          <p v-else class="text-center text-[rgba(232,228,217,0.4)] py-10">برای نمایش نمودار حداقل 10 بازی لازم است</p>
+          <p v-else class="text-center text-muted py-10">برای نمایش نمودار حداقل 10 بازی لازم است</p>
         </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">پر تکرارترین نقش‌ها</h2>
-        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+        <h2 class="text-xs uppercase tracking-widest text-muted mb-4">پر تکرارترین نقش‌ها</h2>
+        <div class="bg-surface rounded-[10px] border border-border overflow-hidden">
           <RolesTable :roles="player.mostPlayedRoles.slice(0, 5)" />
         </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">بهترین نقش‌ها</h2>
-        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+        <h2 class="text-xs uppercase tracking-widest text-muted mb-4">بهترین نقش‌ها</h2>
+        <div class="bg-surface rounded-[10px] border border-border overflow-hidden">
           <RolesTable :roles="player.bestRoles.slice(0, 5)" :showWins="true" :showWinRate="true" />
         </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="text-xs uppercase tracking-widest text-[rgba(232,228,217,0.45)] mb-4">بازی‌های اخیر</h2>
-        <div class="bg-[#141416] rounded-[10px] border border-[rgba(255,255,255,0.07)] overflow-hidden">
+        <h2 class="text-xs uppercase tracking-widest text-muted mb-4">بازی‌های اخیر</h2>
+        <div class="bg-surface rounded-[10px] border border-border overflow-hidden">
           <RecentGamesTable :games="player.recentGames" />
         </div>
       </section>
@@ -116,19 +116,19 @@
     </template>
 
     <div v-else class="space-y-6 animate-pulse">
-      <div class="flex items-center gap-6 bg-[#141416] rounded-[12px] border border-[rgba(255,255,255,0.07)] p-6">
-        <div class="w-20 h-20 rounded-full bg-[#1e1e22]" />
+      <div class="flex items-center gap-6 bg-surface rounded-[12px] border border-border p-6">
+        <div class="w-20 h-20 rounded-full bg-surface-hover" />
         <div class="space-y-3 flex-1">
-          <div class="h-6 w-48 bg-[#1e1e22] rounded" />
-          <div class="h-4 w-32 bg-[#1e1e22] rounded" />
+          <div class="h-6 w-48 bg-surface-hover rounded" />
+          <div class="h-4 w-32 bg-surface-hover rounded" />
         </div>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div v-for="i in 6" :key="i" class="h-24 bg-[#1e1e22] rounded-lg" />
+        <div v-for="i in 6" :key="i" class="h-24 bg-surface-hover rounded-lg" />
       </div>
-      <div class="h-48 bg-[#1e1e22] rounded-lg" />
-      <div class="h-48 bg-[#1e1e22] rounded-lg" />
-      <div class="h-48 bg-[#1e1e22] rounded-lg" />
+      <div class="h-48 bg-surface-hover rounded-lg" />
+      <div class="h-48 bg-surface-hover rounded-lg" />
+      <div class="h-48 bg-surface-hover rounded-lg" />
     </div>
   </div>
 </template>
@@ -157,6 +157,8 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Filler)
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5272/api'
+
 const route = useRoute()
 const player = ref<PlayerProfile | null>(null)
 const error = ref<string | null>(null)
@@ -175,6 +177,13 @@ async function fetchPlayer(id: number) {
   } catch {
     error.value = 'Failed to load player profile. Please try again.'
   }
+}
+
+function getImageUrl(picture: string | undefined): string {
+  if (!picture) return ''
+  if (picture.startsWith('http')) return picture
+  const base = baseUrl.replace(/\/api$/, '')
+  return `${base}${picture.startsWith('/') ? '' : '/'}${picture}`
 }
 
 const chartData = computed(() => ({

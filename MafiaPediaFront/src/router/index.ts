@@ -133,6 +133,12 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, requiresAdmin: true },
       },
       {
+        path: 'admin/clubs/:id/deleted-plays',
+        name: 'AdminDeletedPlays',
+        component: () => import('@/pages/owner/DeletedPlaysPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+      },
+      {
         path: 'select-club',
         name: 'SelectClub',
         component: () => import('@/pages/SelectClubPage.vue'),
@@ -187,6 +193,30 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, requiresClubRoles: ['owner'] },
       },
       {
+        path: 'owner/deleted-plays',
+        name: 'OwnerDeletedPlays',
+        component: () => import('@/pages/owner/DeletedPlaysPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner'] },
+      },
+      {
+        path: 'owner/nerkh',
+        name: 'OwnerNerkh',
+        component: () => import('@/pages/owner/NerkhManagementPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner', 'cashier'] },
+      },
+      {
+        path: 'owner/products',
+        name: 'OwnerProducts',
+        component: () => import('@/pages/owner/ProductManagementPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner', 'cashier'] },
+      },
+      {
+        path: 'owner/finance-audit',
+        name: 'OwnerFinanceAudit',
+        component: () => import('@/pages/owner/FinanceAuditPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner'] },
+      },
+      {
         path: 'supervisor',
         name: 'SupervisorDashboard',
         component: () => import('@/pages/supervisor/SupervisorDashboardPage.vue'),
@@ -197,6 +227,54 @@ const routes: RouteRecordRaw[] = [
         name: 'CashierDashboard',
         component: () => import('@/pages/cashier/CashierDashboardPage.vue'),
         meta: { requiresAuth: true, requiresClubRoles: ['cashier'] },
+      },
+      {
+        path: 'finance/order/:clubPlayerId?/:orderId?',
+        name: 'FinanceOrder',
+        component: () => import('@/pages/ClubOrderBuilderPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner', 'cashier', 'supervisor', 'master'] },
+      },
+      {
+        path: 'finance/settlement/:clubPlayerId?',
+        name: 'FinanceSettlement',
+        component: () => import('@/pages/cashier/ClubSettlementPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner', 'cashier'] },
+      },
+      {
+        path: 'finance/today',
+        name: 'FinanceToday',
+        component: () => import('@/pages/TodayAccountsPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner', 'cashier', 'supervisor'] },
+      },
+      {
+        path: 'finance/debtors',
+        name: 'FinanceDebtors',
+        component: () => import('@/pages/DebtorsListPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner', 'cashier'] },
+      },
+      {
+        path: 'finance/ledger/:playerId?',
+        name: 'FinanceLedger',
+        component: () => import('@/pages/cashier/ClubPlayerLedgerPage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner', 'cashier'] },
+      },
+      {
+        path: 'finance/invoices',
+        name: 'FinanceInvoiceArchive',
+        component: () => import('@/pages/cashier/InvoiceArchivePage.vue'),
+        meta: { requiresAuth: true, requiresClubRoles: ['owner', 'cashier'] },
+      },
+      {
+        path: 'cashier/order',
+        redirect: to => ({ path: '/finance/order', query: to.query }),
+      },
+      {
+        path: 'cashier/settlement',
+        redirect: to => ({ path: '/finance/settlement', query: to.query }),
+      },
+      {
+        path: 'cashier/ledger/:playerId?',
+        redirect: to => ({ path: `/finance/ledger${to.params.playerId ? '/' + to.params.playerId : ''}`, query: to.query }),
       },
       {
         path: 'account/profile',
@@ -224,6 +302,8 @@ const router = createRouter({
 
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
+
+  await authStore.authReady
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'Login', query: { redirect: to.fullPath } })
